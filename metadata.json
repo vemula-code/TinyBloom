@@ -1,0 +1,6 @@
+{
+  "name": "NaraGrowth - Baby Growth & WHO Percentiles Tracker",
+  "description": "Free private baby growth tracker with WHO national percentile curves, monthly weight, height, head circumference charts, milestones, and pediatrician visit reports.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
