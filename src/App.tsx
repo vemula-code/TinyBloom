@@ -18,7 +18,7 @@ import { PWAInstallButton } from './components/PWAInstallButton';
 import { ImportPastDataModal } from './components/ImportPastDataModal';
 import { CuteBabyLogo } from './components/CuteBabyLogo';
 import { decodeSyncUrl } from './utils/syncPayload';
-import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload, ShieldCheck, CheckCircle2, Camera, Baby } from 'lucide-react';
 
 export default function App() {
   // Local storage initialization with automatic migration for Dhruv's authentic records
@@ -77,9 +77,27 @@ export default function App() {
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
 
-  // Check for partner sync payload in URL (?sync=...)
+  // Check for partner sync payload in URL (?sync=...) or fresh mode (?fresh=true)
   useEffect(() => {
     if (typeof window === 'undefined') return;
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('fresh') === 'true') {
+      const freshProf: BabyProfile = {
+        id: `baby-${Date.now()}`,
+        name: 'My Baby',
+        gender: 'boy',
+        birthDate: new Date().toISOString().split('T')[0],
+        notes: 'Track your baby’s milestones, weight, and height curves.',
+      };
+      setProfile(freshProf);
+      setEntries([]);
+      setSyncToastMessage('👶 Started a clean tracker for a new baby! You can customize details anytime in Settings.');
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const timer = setTimeout(() => setSyncToastMessage(null), 6000);
+      return () => clearTimeout(timer);
+    }
+
     const result = decodeSyncUrl(window.location.search);
     if (result && result.entries.length > 0) {
       setEntries((prev) => {
@@ -246,8 +264,17 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Zone 3: 1 primary action */}
+          {/* Zone 3: Actions */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsImportModalOpen(true)}
+              title="Scan screenshots or past logs"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-orange-900 bg-orange-50 hover:bg-orange-100 border border-orange-200/90 rounded-xl transition-all shadow-2xs whitespace-nowrap shrink-0"
+            >
+              <Camera className="w-3.5 h-3.5 text-orange-600" />
+              <span className="hidden sm:inline">Scan Screenshots</span>
+            </button>
             <PWAInstallButton />
             <button
               type="button"
@@ -515,7 +542,15 @@ export default function App() {
       </main>
 
       {/* Floating Bottom Quick Action on Mobile */}
-      <div className="sm:hidden fixed bottom-4 right-4 z-30">
+      <div className="sm:hidden fixed bottom-4 right-4 z-30 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setIsImportModalOpen(true)}
+          className="flex items-center gap-1.5 px-3.5 py-3 bg-white border border-stone-200 text-stone-900 text-xs font-bold rounded-full shadow-lg shadow-stone-900/10 active:scale-95 transition-transform"
+        >
+          <Camera className="w-4 h-4 text-orange-600" />
+          <span>Scan</span>
+        </button>
         <button
           type="button"
           onClick={() => {
