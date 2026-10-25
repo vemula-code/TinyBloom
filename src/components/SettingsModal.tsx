@@ -301,12 +301,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setTimeout(() => setStatusMsg(''), 3500);
   };
 
-  const palettes: { id: PaletteTheme; label: string; color: string }[] = [
-    { id: 'sage', label: 'Sage Meadow', color: '#91A98B' },
-    { id: 'peach', label: 'Peach Blossom', color: '#E08568' },
-    { id: 'ocean', label: 'Ocean Breeze', color: '#5494BA' },
-    { id: 'honey', label: 'Golden Sunbeam', color: '#DE9D30' },
-    { id: 'lavender', label: 'Lavender Dream', color: '#967EC4' },
+  const palettes: { id: PaletteTheme; label: string; desc: string; color: string; border: string }[] = [
+    {
+      id: 'sage',
+      label: 'Warm Sage Meadow',
+      desc: 'Clean & natural Scandinavian styling (Default)',
+      color: '#5D7C57',
+      border: '#D9E3D6',
+    },
+    {
+      id: 'linen',
+      label: 'Warm Linen & Oatmeal',
+      desc: 'Soft cashmere tones, high contrast, zero glare',
+      color: '#8C6542',
+      border: '#E8E2D8',
+    },
+    {
+      id: 'midnight',
+      label: 'Midnight Slumber',
+      desc: 'Deep low-light mode for 2 AM feedings',
+      color: '#1A221D',
+      border: '#334237',
+    },
   ];
 
   return (
@@ -392,10 +408,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
             </div>
 
-            {/* Palette Options */}
+            {/* Top 3 App Themes */}
             <div>
-              <span className="block text-xs font-semibold mb-2">Color Theme</span>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              <span className="block text-xs font-semibold mb-2">App Color Theme (Top 3 Parenting App Styles)</span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                 {palettes.map((p) => {
                   const isCurrent = paletteTheme === p.id;
                   return (
@@ -403,17 +419,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       key={p.id}
                       type="button"
                       onClick={() => onChangePaletteTheme(p.id)}
-                      className={`flex items-center gap-2 p-2 rounded-xl text-xs font-medium border transition-all text-left ${
+                      className={`p-3 rounded-2xl text-xs font-medium border transition-all text-left flex flex-col gap-1.5 ${
                         isCurrent
-                          ? 'border-[var(--color-primary,#91A98B)] bg-[var(--color-primary,#91A98B)]/15 font-bold shadow-2xs'
-                          : 'border-[var(--color-primary,#91A98B)]/20 hover:bg-[var(--color-primary,#91A98B)]/10'
+                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/15 font-bold shadow-xs ring-2 ring-[var(--color-primary)]/30'
+                          : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-[#202722] hover:bg-stone-100 dark:hover:bg-[#252e27]'
                       }`}
                     >
-                      <span
-                        className="w-3.5 h-3.5 rounded-full shrink-0 shadow-2xs"
-                        style={{ backgroundColor: p.color }}
-                      />
-                      <span className="truncate">{p.label}</span>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className="w-4 h-4 rounded-full shrink-0 shadow-xs border border-white/40"
+                          style={{ backgroundColor: p.color }}
+                        />
+                        <span className="font-bold text-xs truncate">{p.label}</span>
+                      </div>
+                      <span className="text-[10px] text-[var(--color-text-muted)] line-clamp-2 leading-tight">
+                        {p.desc}
+                      </span>
                     </button>
                   );
                 })}

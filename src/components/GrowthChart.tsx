@@ -1,6 +1,7 @@
 import React, { useState, useMemo } from 'react';
 import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
 import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, formatOrdinal } from '../data/whoGrowthStandards';
+import { Plus } from 'lucide-react';
 
 interface GrowthChartProps {
   entries: GrowthEntry[];
@@ -8,6 +9,7 @@ interface GrowthChartProps {
   gender: Gender;
   unit: MetricUnit;
   babyName: string;
+  onOpenAddModal?: () => void;
 }
 
 export const GrowthChart: React.FC<GrowthChartProps> = ({
@@ -16,6 +18,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   gender,
   unit,
   babyName,
+  onOpenAddModal,
 }) => {
   const [rangeMonths, setRangeMonths] = useState<12 | 24>(12);
   const [hoveredPoint, setHoveredPoint] = useState<{
@@ -200,42 +203,64 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   };
 
   return (
-    <div className="bg-white rounded-2xl border border-stone-200 shadow-sm p-4 md:p-6 transition-all">
+    <div className="bg-white dark:bg-[#1A221D] rounded-3xl border border-[var(--color-card-border,#E2E9E0)] shadow-2xs p-4 sm:p-6 transition-all text-[var(--color-text-main)]">
       {/* Chart Top Bar Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-stone-100">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-[var(--color-card-border,#E2E9E0)]">
         <div>
-          <h3 className="text-base font-semibold text-stone-900 tracking-tight">
-            WHO Child Growth Standard · {gender === 'boy' ? 'Boys' : 'Girls'}
-          </h3>
-          <p className="text-xs text-stone-500 mt-0.5">
-            CDC-recommended reference percentiles (P3 to P97) with {babyName}’s curve
+          <div className="flex items-center gap-2">
+            <h3 className="text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight">
+              {chartType === 'weight'
+                ? 'WHO Weight-for-Age'
+                : chartType === 'height'
+                ? 'WHO Length / Height'
+                : 'WHO Head Circumference'} · {gender === 'boy' ? 'Boys' : 'Girls'}
+            </h3>
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] uppercase">
+              WHO Reference
+            </span>
+          </div>
+          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
+            Statistical percentiles (P3 to P97) compared against {babyName}’s curve
           </p>
         </div>
 
-        {/* Range Segmented Control */}
-        <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl text-xs font-medium shrink-0">
-          <button
-            type="button"
-            onClick={() => setRangeMonths(12)}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              rangeMonths === 12
-                ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            0 – 12 Months
-          </button>
-          <button
-            type="button"
-            onClick={() => setRangeMonths(24)}
-            className={`px-3 py-1.5 rounded-lg transition-all ${
-              rangeMonths === 24
-                ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                : 'text-stone-600 hover:text-stone-900'
-            }`}
-          >
-            0 – 24 Months
-          </button>
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
+          {/* Range Segmented Control */}
+          <div className="flex items-center gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-1 rounded-xl text-xs font-medium shrink-0">
+            <button
+              type="button"
+              onClick={() => setRangeMonths(12)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                rangeMonths === 12
+                  ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+              }`}
+            >
+              0–12m
+            </button>
+            <button
+              type="button"
+              onClick={() => setRangeMonths(24)}
+              className={`px-3 py-1 rounded-lg transition-all ${
+                rangeMonths === 24
+                  ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+              }`}
+            >
+              0–24m
+            </button>
+          </div>
+
+          {onOpenAddModal && (
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold shadow-2xs hover:opacity-90 active:scale-95 transition-all shrink-0 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>+ Log Data</span>
+            </button>
+          )}
         </div>
       </div>
 

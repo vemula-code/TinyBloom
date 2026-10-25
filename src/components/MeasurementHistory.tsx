@@ -274,9 +274,9 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
 
                       {/* Weight */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-mono font-semibold text-[#303832]">{weightStr}</div>
+                        <div className="font-mono font-semibold text-[var(--color-text-main)]">{weightStr}</div>
                         {weightP && (
-                          <div className="text-[10px] text-[#5D7C57] font-semibold">
+                          <div className="text-[10px] text-[var(--color-primary)] font-semibold">
                             {weightP.displayStr}
                           </div>
                         )}
@@ -284,9 +284,9 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
 
                       {/* Length */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-mono font-semibold text-[#303832]">{heightStr}</div>
+                        <div className="font-mono font-semibold text-[var(--color-text-main)]">{heightStr}</div>
                         {heightP && (
-                          <div className="text-[10px] text-[#5D7C57] font-semibold">
+                          <div className="text-[10px] text-[var(--color-primary)] font-semibold">
                             {heightP.displayStr}
                           </div>
                         )}
@@ -294,9 +294,9 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
 
                       {/* Head */}
                       <td className="py-3 px-4 whitespace-nowrap">
-                        <div className="font-mono font-semibold text-[#303832]">{headStr}</div>
+                        <div className="font-mono font-semibold text-[var(--color-text-main)]">{headStr}</div>
                         {headP && (
-                          <div className="text-[10px] text-[#5D7C57] font-semibold">
+                          <div className="text-[10px] text-[var(--color-primary)] font-semibold">
                             {headP.displayStr}
                           </div>
                         )}

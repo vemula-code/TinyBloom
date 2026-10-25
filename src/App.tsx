@@ -111,14 +111,13 @@ export default function App() {
   // Apply theme classes and attributes to root document
   useEffect(() => {
     const root = document.documentElement;
-    if (themeMode === 'dark') {
+    if (paletteTheme === 'midnight' || themeMode === 'dark') {
       root.classList.add('dark');
-      root.setAttribute('data-theme', 'dark');
+      root.setAttribute('data-theme', 'midnight');
     } else {
       root.classList.remove('dark');
-      root.setAttribute('data-theme', 'light');
+      root.setAttribute('data-theme', paletteTheme);
     }
-    root.setAttribute('data-palette', paletteTheme);
 
     try {
       localStorage.setItem('tinybloom_theme_mode', themeMode);
@@ -406,14 +405,22 @@ export default function App() {
             {/* Day / Night Mode Toggle */}
             <button
               type="button"
-              onClick={() => setThemeMode(themeMode === 'light' ? 'dark' : 'light')}
-              title={themeMode === 'light' ? 'Switch to Night Mode (2 AM Feedings)' : 'Switch to Daylight Mode'}
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
+              onClick={() => {
+                if (paletteTheme === 'midnight' || themeMode === 'dark') {
+                  setThemeMode('light');
+                  setPaletteTheme('sage');
+                } else {
+                  setThemeMode('dark');
+                  setPaletteTheme('midnight');
+                }
+              }}
+              title={paletteTheme === 'midnight' || themeMode === 'dark' ? 'Switch to Warm Daylight (Sage)' : 'Switch to Midnight Slumber (2 AM Feedings)'}
+              className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-primary)]/10 rounded-xl transition-colors border border-[var(--color-card-border,#E2E9E0)] cursor-pointer"
             >
-              {themeMode === 'light' ? (
-                <Moon className="w-4 h-4 text-indigo-500" />
-              ) : (
+              {paletteTheme === 'midnight' || themeMode === 'dark' ? (
                 <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-500" />
               )}
             </button>
 
@@ -626,14 +633,14 @@ export default function App() {
 
                 {/* Right: Quick Unit Switcher & Quick Actions */}
                 <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-[#91A98B]/15">
-                  <div className="flex items-center gap-1 bg-[#FFF9F0] border border-[#91A98B]/20 p-1 rounded-xl text-xs font-medium">
+                  <div className="flex items-center gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-1 rounded-xl text-xs font-medium">
                     <button
                       type="button"
                       onClick={() => setUnit('metric')}
                       className={`px-2.5 py-1.5 rounded-lg transition-all ${
                         unit === 'metric'
-                          ? 'bg-[#91A98B] text-white shadow-2xs font-bold'
-                          : 'text-[#303832] hover:text-[#5D7C57]'
+                          ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
                     >
                       kg / cm
@@ -643,8 +650,8 @@ export default function App() {
                       onClick={() => setUnit('imperial')}
                       className={`px-2.5 py-1.5 rounded-lg transition-all ${
                         unit === 'imperial'
-                          ? 'bg-[#91A98B] text-white shadow-2xs font-bold'
-                          : 'text-[#303832] hover:text-[#5D7C57]'
+                          ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
                     >
                       lb·oz / in
@@ -666,98 +673,125 @@ export default function App() {
               </div>
             </div>
 
-            {/* Current Metrics Overview (Top Stat Cards) */}
-            <PercentileSummaryCards entries={entries} profile={profile} unit={unit} />
+            {/* 1. Side-by-Side Metric Selector Cards (Weight, Length, Head) */}
+            <PercentileSummaryCards
+              entries={entries}
+              profile={profile}
+              unit={unit}
+              selectedMetric={activeChartType}
+              onSelectMetric={setActiveChartType}
+            />
 
-            {/* Growth Story Teaser & Action Card */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Card 1: Growth Story Quick View */}
-              <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-[#5D7C57] font-semibold text-xs tracking-wider uppercase mb-1">
+            {/* 2. Interactive WHO Growth Chart directly below the selected metric */}
+            <GrowthChart
+              entries={entries}
+              chartType={activeChartType}
+              gender={profile.gender}
+              unit={unit}
+              babyName={profile.name}
+              onOpenAddModal={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+            />
+
+            {/* 3. Reassuring Progress & Growth Journey (Zero-Anxiety Parenting) */}
+            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-[var(--color-primary)]/15 text-[var(--color-primary)] flex items-center justify-center shrink-0">
                     <Sparkles className="w-4 h-4" />
-                    <span>Growth Trajectory Story</span>
+                  </span>
+                  <div>
+                    <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
+                      How {profile.name} is Progressing ({activeChartType === 'weight' ? 'Weight' : activeChartType === 'height' ? 'Length / Height' : 'Head Size'})
+                    </h3>
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Gentle developmental trajectory and clinical perspective
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold font-heading text-[#303832]">
-                    How is {profile.name} progressing?
-                  </h3>
-                  <p className="text-xs text-[#6E7B6C] mt-1.5 leading-relaxed">
-                    View in-depth growth velocity, rate of change between checkups, and educational insights grounded in the official WHO Child Growth Standards.
-                  </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex items-center justify-between">
-                  <span className="text-xs text-[#6E7B6C] font-mono">
-                    {entries.length} data points tracked
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('story')}
-                    className="flex items-center gap-1.5 text-xs font-bold text-[#5D7C57] hover:text-[#3D5939] transition-colors"
-                  >
-                    <span>Read Growth Story</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('story')}
+                  className="text-xs font-bold text-[var(--color-primary)] hover:underline self-start sm:self-auto flex items-center gap-1"
+                >
+                  <span>Detailed Analysis</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
               </div>
 
-              {/* Card 2: Upcoming Pediatric Checkup & Next Steps */}
-              <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
-                <div>
-                  <div className="flex items-center gap-2 text-[#9C5D47] font-semibold text-xs tracking-wider uppercase mb-1">
-                    <Calendar className="w-4 h-4 text-[#F3C9B8]" />
-                    <span>Next Milestone Stage</span>
+              {/* Crucial Gentle Reassurance Banner - Don't Worry Message */}
+              <div className="p-4 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                  <Heart className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
+                  <span>A Reminder for Parents: Growth is a Journey, Not a Race</span>
+                </div>
+                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
+                  Every single baby is beautifully unique and grows at their own pace. A percentile is simply a statistical reference curve across thousands of infants—it is <strong>never a grade, a score, or a contest</strong>. Whether {profile.name} tracks along the 15th percentile or the 85th percentile, what pediatricians look for is steady, healthy progression along their own unique trajectory.
+                </p>
+                <p className="text-[11px] text-[var(--color-text-muted)] italic">
+                  Normal daily or weekly fluctuations happen with growth spurts, active crawling, teething, or illness. Trust your instincts, cherish the small moments, and speak with your pediatrician if you ever want individualized medical guidance.
+                </p>
+              </div>
+            </div>
+
+            {/* 4. Current Milestone Stage & What's Next */}
+            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
+                <div className="flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+                    <Calendar className="w-4 h-4" />
+                  </span>
+                  <div>
+                    <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
+                      Current Milestone Stage · {currentAge.displayStr} Old
+                    </h3>
+                    <p className="text-xs text-[var(--color-text-muted)]">
+                      Play activities, natural developmental windows, and checkup tips
+                    </p>
                   </div>
-                  <h3 className="text-base font-bold font-heading text-[#303832]">
-                    Age-Appropriate Play & Checkup Prep
-                  </h3>
-                  <p className="text-xs text-[#6E7B6C] mt-1.5 leading-relaxed">
-                    Bonding play activities, upcoming pediatrician exam discussion topics, and checklist items tailored for {currentAge.displayStr} old.
-                  </p>
                 </div>
 
-                <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex items-center justify-between">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     onClick={() => setIsReportOpen(true)}
-                    className="text-xs text-[#6E7B6C] hover:text-[#303832] font-semibold"
+                    className="px-3 py-1.5 rounded-xl border border-[var(--color-card-border,#E2E9E0)] text-xs font-semibold text-[var(--color-text-main)] hover:bg-[var(--color-canvas)] transition-colors"
                   >
-                    Generate Doctor Brief
+                    Doctor Brief
                   </button>
                   <button
                     type="button"
                     onClick={() => setActiveTab('nextsteps')}
-                    className="flex items-center gap-1.5 text-xs font-bold text-[#5D7C57] hover:text-[#3D5939] transition-colors"
+                    className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary)] hover:underline"
                   >
-                    <span>Explore Next Steps</span>
+                    <span>Universal Guide (0–36m)</span>
                     <ArrowRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
-            </div>
 
-            {/* Quick Chart Preview */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-bold font-heading text-[#303832]">
-                  WHO Growth Curve (Quick Look)
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('growth')}
-                  className="text-xs font-bold text-[#5D7C57] hover:underline"
-                >
-                  Open Full Interactive Charts &rarr;
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
+                <div className="p-3.5 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-1.5">
+                  <span className="font-bold text-[var(--color-text-main)] block">
+                    ✨ Things to Observe at this Stage
+                  </span>
+                  <p>
+                    Watch for rolling, supported sitting, babbling chains of syllables, transferring toys hand-to-hand, and tracking loved ones with joyful smiles.
+                  </p>
+                </div>
+
+                <div className="p-3.5 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-1.5">
+                  <span className="font-bold text-[var(--color-text-main)] block">
+                    🧸 Bonding Play to Try Today
+                  </span>
+                  <p>
+                    Floor tummy time with mirrors, gentle peek-a-boo, exploring textured crinkle books, and conversational singing during daily diaper changes.
+                  </p>
+                </div>
               </div>
-
-              <GrowthChart
-                entries={entries}
-                chartType="weight"
-                gender={profile.gender}
-                unit={unit}
-                babyName={profile.name}
-              />
             </div>
           </div>
         )}
@@ -768,15 +802,15 @@ export default function App() {
         {activeTab === 'growth' && (
           <div className="space-y-4">
             {/* Chart Submenu Bar */}
-            <div className="bg-white rounded-3xl p-4 border border-[#91A98B]/30 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-4 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs flex flex-wrap items-center justify-between gap-3 text-[var(--color-text-main)]">
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
                   onClick={() => setActiveChartType('weight')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeChartType === 'weight'
-                      ? 'bg-[#91A98B] text-white shadow-2xs'
-                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
                   }`}
                 >
                   <Scale className="w-3.5 h-3.5" />
@@ -787,8 +821,8 @@ export default function App() {
                   onClick={() => setActiveChartType('height')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeChartType === 'height'
-                      ? 'bg-[#91A98B] text-white shadow-2xs'
-                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
                   }`}
                 >
                   <Ruler className="w-3.5 h-3.5" />
@@ -799,8 +833,8 @@ export default function App() {
                   onClick={() => setActiveChartType('head')}
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
                     activeChartType === 'head'
-                      ? 'bg-[#91A98B] text-white shadow-2xs'
-                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
                   }`}
                 >
                   <CircleDot className="w-3.5 h-3.5" />
@@ -808,7 +842,7 @@ export default function App() {
                 </button>
               </div>
 
-              <span className="text-xs text-[#6E7B6C]">
+              <span className="text-xs text-[var(--color-text-muted)]">
                 Official WHO Standards (0–24 Months)
               </span>
             </div>
