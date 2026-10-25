@@ -1,23 +1,20 @@
 import React, { useState } from 'react';
-import { BabyProfile, Gender, GrowthEntry } from '../types/growth';
-import { CuteBabyLogo } from './CuteBabyLogo';
-import { generateSyncUrl } from '../utils/syncPayload';
-import { DEFAULT_PROFILE, DEFAULT_GROWTH_ENTRIES } from '../data/defaultData';
+import { BabyProfile, Gender, GrowthEntry, MetricUnit } from '../types/growth';
+import { TinyBloomLogo } from './TinyBloomLogo';
+import { kgToLbsOz, cmToInches } from '../data/whoGrowthStandards';
 import {
   X,
   Download,
   Upload,
   RotateCcw,
   ShieldCheck,
-  Share2,
-  Users,
-  Link2,
+  FileSpreadsheet,
+  AlertTriangle,
   Check,
   Baby,
-  HelpCircle,
-  Sparkles,
-  Camera,
-  HeartHandshake
+  Trash2,
+  Lock,
+  Info
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -29,6 +26,8 @@ interface SettingsModalProps {
   onImportData: (profile: BabyProfile, entries: GrowthEntry[]) => void;
   onResetData: () => void;
   onOpenImportPastData?: () => void;
+  unit: MetricUnit;
+  onToggleUnit: (u: MetricUnit) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -40,22 +39,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onImportData,
   onResetData,
   onOpenImportPastData,
+  unit,
+  onToggleUnit,
 }) => {
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
   const [birthDate, setBirthDate] = useState(profile.birthDate);
-  const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || '');
-  const [importStatus, setImportStatus] = useState<string>('');
-  const [copiedSyncLink, setCopiedSyncLink] = useState(false);
-  const [showSharingFaq, setShowSharingFaq] = useState(false);
-
-  // New Baby Creation state
-  const [isCreatingNewBaby, setIsCreatingNewBaby] = useState(false);
-  const [newBabyName, setNewBabyName] = useState('');
-  const [newBabyGender, setNewBabyGender] = useState<Gender>('boy');
-  const [newBabyBirthDate, setNewBabyBirthDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
+  const [statusMsg, setStatusMsg] = useState<string>('');
+  const [errorMsg, setErrorMsg] = useState<string>('');
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   if (!isOpen) return null;
 
@@ -66,44 +58,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       name: name.trim() || 'My Baby',
       gender,
       birthDate,
-      avatarUrl: avatarUrl || undefined,
     });
-    onClose();
-  };
-
-  const handleStartFreshForNewBaby = (e: React.FormEvent) => {
-    e.preventDefault();
-    const freshProfile: BabyProfile = {
-      id: `baby-${Date.now()}`,
-      name: newBabyName.trim() || 'My Baby',
-      gender: newBabyGender,
-      birthDate: newBabyBirthDate,
-      notes: `Born on ${newBabyBirthDate}.`,
-    };
-    onImportData(freshProfile, []);
-    setName(freshProfile.name);
-    setGender(freshProfile.gender);
-    setBirthDate(freshProfile.birthDate);
-    setIsCreatingNewBaby(false);
-    setImportStatus(`Created fresh profile for ${freshProfile.name}!`);
-    setTimeout(() => {
-      setImportStatus('');
-      onClose();
-    }, 1500);
+    setStatusMsg('Profile updated successfully!');
+    setTimeout(() => setStatusMsg(''), 3000);
   };
 
   // Export all data as JSON
   const handleExportJSON = () => {
     const backupData = {
-      app: 'DTracker',
-      version: '1.0',
+      app: 'TinyBloom',
+      version: '2.0',
       exportedAt: new Date().toISOString(),
       profile: {
         ...profile,
         name,
         gender,
         birthDate,
-        avatarUrl,
       },
       entries,
     };
@@ -114,110 +84,156 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `dtracker-${name.toLowerCase() || 'dhruv'}-backup-${
+    a.download = `tinybloom-${name.toLowerCase().replace(/\s+/g, '-')}-backup-${
       new Date().toISOString().split('T')[0]
     }.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+    setStatusMsg('Backup downloaded to your device!');
+    setTimeout(() => setStatusMsg(''), 3500);
   };
 
-  // Share backup directly to partner via WhatsApp / Quick Share
-  const handleShareToPartner = async () => {
-    const backupData = {
-      app: 'DTracker',
-      version: '1.0',
-      exportedAt: new Date().toISOString(),
-      profile: {
-        ...profile,
-        name,
-        gender,
-        birthDate,
-        avatarUrl,
-      },
-      entries,
-    };
+  // Export records as CSV
+  const handleExportCSV = () => {
+    const sorted = [...entries].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
 
-    const jsonStr = JSON.stringify(backupData, null, 2);
-    const fileName = `dtracker-${name.toLowerCase() || 'dhruv'}-backup.json`;
-    const file = new File([jsonStr], fileName, { type: 'application/json' });
+    const headers = [
+      'Date',
+      'Age (Months)',
+      'Weight (kg)',
+      'Weight (lbs/oz)',
+      'Length (cm)',
+      'Length (in)',
+      'Head Circumference (cm)',
+      'Head Circumference (in)',
+      'Pediatrician Visit',
+      'Milestones',
+      'Notes',
+    ];
 
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({
-          files: [file],
-          title: `${name}’s Growth Backup`,
-          text: `Here is ${name}’s latest growth data for DTracker. Open DTracker on your phone, tap Settings, and choose 'Import Backup' to sync!`,
-        });
-        return;
-      } catch {
-        // Fallback
-      }
-    }
-    handleExportJSON();
+    const rows = sorted.map((e) => {
+      const wLbs = e.weightKg ? kgToLbsOz(e.weightKg).displayStr : '';
+      const hIn = e.heightCm ? cmToInches(e.heightCm).toFixed(1) : '';
+      const hcIn = e.headCircumferenceCm ? cmToInches(e.headCircumferenceCm).toFixed(1) : '';
+
+      return [
+        e.date,
+        e.ageMonths.toFixed(1),
+        e.weightKg?.toFixed(2) || '',
+        `"${wLbs}"`,
+        e.heightCm?.toFixed(1) || '',
+        hIn,
+        e.headCircumferenceCm?.toFixed(1) || '',
+        hcIn,
+        e.isPediatricianVisit ? 'Yes' : 'No',
+        `"${(e.milestones || []).join('; ')}"`,
+        `"${(e.notes || '').replace(/"/g, '""')}"`,
+      ].join(',');
+    });
+
+    const csvContent = [headers.join(','), ...rows].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `tinybloom-${name.toLowerCase().replace(/\s+/g, '-')}-data-${
+      new Date().toISOString().split('T')[0]
+    }.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    setStatusMsg('CSV data exported successfully!');
+    setTimeout(() => setStatusMsg(''), 3500);
   };
 
-  // 1-Tap WhatsApp / Browser Sync Link
-  const handleShareSyncLink = async () => {
-    const syncUrl = generateSyncUrl(profile, entries);
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: `${name}’s Growth Sync`,
-          text: `Tap this link on your phone to instantly update ${name}’s growth records in DTracker:`,
-          url: syncUrl,
-        });
-        return;
-      } catch {
-        // Fallback
-      }
-    }
-    navigator.clipboard.writeText(syncUrl);
-    setCopiedSyncLink(true);
-    setTimeout(() => setCopiedSyncLink(false), 3500);
-  };
-
-  // Import JSON backup
+  // Import JSON backup with validation
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setErrorMsg('');
     const reader = new FileReader();
     reader.onload = (event) => {
       try {
         const parsed = JSON.parse(event.target?.result as string);
-        if (parsed.entries && Array.isArray(parsed.entries)) {
-          const importedProfile = parsed.profile || profile;
-          onImportData(importedProfile, parsed.entries);
-          setName(importedProfile.name || 'Dhruv');
-          setGender(importedProfile.gender || 'boy');
-          setBirthDate(importedProfile.birthDate || '2026-03-24');
-          setImportStatus(`Successfully restored ${parsed.entries.length} measurements!`);
-          setTimeout(() => setImportStatus(''), 4000);
-        } else {
-          setImportStatus('Invalid backup file format.');
+        if (!parsed || typeof parsed !== 'object') {
+          throw new Error('File does not contain valid JSON data.');
         }
-      } catch {
-        setImportStatus('Failed to read file. Please verify JSON.');
+
+        if (!parsed.entries || !Array.isArray(parsed.entries)) {
+          throw new Error('Missing measurement entries array in backup file.');
+        }
+
+        // Validate entries structure
+        const validEntries: GrowthEntry[] = parsed.entries.filter(
+          (item: any) => item && typeof item.date === 'string'
+        );
+
+        if (validEntries.length === 0) {
+          throw new Error('No valid growth entries found in backup file.');
+        }
+
+        const importedProfile: BabyProfile = {
+          id: parsed.profile?.id || `baby-${Date.now()}`,
+          name: parsed.profile?.name || name,
+          gender: parsed.profile?.gender === 'girl' ? 'girl' : 'boy',
+          birthDate: parsed.profile?.birthDate || birthDate,
+          notes: parsed.profile?.notes || '',
+        };
+
+        const replaceConfirmed = window.confirm(
+          `Valid backup found with ${validEntries.length} measurements for ${importedProfile.name}.\n\nDo you want to restore these records? This will update your current baby profile.`
+        );
+
+        if (replaceConfirmed) {
+          onImportData(importedProfile, validEntries);
+          setName(importedProfile.name);
+          setGender(importedProfile.gender);
+          setBirthDate(importedProfile.birthDate);
+          setStatusMsg(`Successfully restored ${validEntries.length} records for ${importedProfile.name}!`);
+          setTimeout(() => setStatusMsg(''), 4000);
+        }
+      } catch (err: any) {
+        setErrorMsg(err.message || 'Failed to read file. Please verify JSON format.');
       }
     };
     reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleDeleteAll = () => {
+    onImportData(
+      {
+        id: `baby-${Date.now()}`,
+        name: 'My Baby',
+        gender: 'boy',
+        birthDate: new Date().toISOString().split('T')[0],
+      },
+      []
+    );
+    setShowDeleteConfirm(false);
+    setStatusMsg('All records have been completely wiped from this device.');
+    setTimeout(() => setStatusMsg(''), 3500);
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-xl overflow-hidden my-4 sm:my-6 max-h-[92vh] flex flex-col">
+      <div className="bg-[#FFF9F0] rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-xl overflow-hidden my-4 sm:my-6 max-h-[92vh] flex flex-col">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-stone-100 flex items-center justify-between bg-stone-50/70 shrink-0">
+        <div className="px-6 py-4 border-b border-[#91A98B]/20 flex items-center justify-between bg-white/70 shrink-0">
           <div className="flex items-center gap-3">
-            <CuteBabyLogo size={36} />
+            <TinyBloomLogo size={36} />
             <div>
-              <h2 className="text-base font-bold text-stone-900">
-                {name}’s Tracker & Settings
+              <h2 className="text-base font-bold font-heading text-[#303832]">
+                TinyBloom Settings & Privacy
               </h2>
-              <p className="text-xs text-stone-500">
-                100% Private · No Login Required · Offline Ready
+              <p className="text-xs text-[#6E7B6C]">
+                100% On-Device · Zero Cloud Tracking · Pure Local Control
               </p>
             </div>
           </div>
@@ -232,331 +248,174 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-5 overflow-y-auto flex-1">
-          {importStatus && (
-            <div className="p-3 rounded-xl bg-teal-50 border border-teal-200 text-xs text-teal-800 font-medium flex items-center gap-2">
-              <Check className="w-4 h-4 text-teal-600" />
-              <span>{importStatus}</span>
+        <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-[#FFF9F0]">
+          {/* Status Message */}
+          {statusMsg && (
+            <div className="p-3 rounded-2xl bg-[#91A98B]/20 border border-[#91A98B]/40 text-xs text-[#3D5939] font-medium flex items-center gap-2">
+              <Check className="w-4 h-4 text-[#5D7C57]" />
+              <span>{statusMsg}</span>
             </div>
           )}
 
-          {/* How Sharing with 3+ People Works FAQ Card */}
-          <div className="rounded-2xl border border-orange-200/90 bg-orange-50/40 p-4 space-y-2.5">
+          {errorMsg && (
+            <div className="p-3 rounded-2xl bg-red-100 border border-red-200 text-xs text-red-800 font-medium flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Privacy & Offline Guarantee Section */}
+          <div className="rounded-2xl border border-[#91A98B]/30 bg-white p-4 space-y-2">
+            <div className="flex items-center gap-2 text-[#5D7C57] font-bold text-xs">
+              <ShieldCheck className="w-4 h-4 text-[#5D7C57]" />
+              <span>Absolute Privacy & Offline Guarantee</span>
+            </div>
+            <p className="text-xs text-[#6E7B6C] leading-relaxed">
+              TinyBloom is designed from the ground up to keep your baby's personal records strictly on your device. There are <strong>no online databases</strong>, <strong>no accounts or passwords</strong>, <strong>no analytics tracking</strong>, and <strong>no third-party telemetry</strong>.
+            </p>
+            <div className="pt-2 text-[11px] text-[#6E7B6C] flex items-start gap-1.5 border-t border-[#91A98B]/15">
+              <Info className="w-3.5 h-3.5 text-[#5D7C57] shrink-0 mt-0.5" />
+              <span>
+                <strong>Important:</strong> Because data is stored in your device’s private local storage, clearing your browser data or uninstalling the app will delete local records. We recommend downloading a backup copy periodically below!
+              </span>
+            </div>
+          </div>
+
+          {/* Baby Profile Details */}
+          <form onSubmit={handleSubmitProfile} className="bg-white p-5 rounded-2xl border border-[#91A98B]/30 space-y-4">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-orange-800 font-bold text-xs">
-                <HelpCircle className="w-4 h-4 text-orange-600" />
-                <span>How Sharing & Privacy Works (Giving Link to 3 People)</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowSharingFaq(!showSharingFaq)}
-                className="text-xs text-orange-700 font-semibold underline hover:text-orange-900"
-              >
-                {showSharingFaq ? 'Hide details' : 'How does it work?'}
-              </button>
+              <h3 className="text-xs font-bold font-heading text-[#303832] uppercase tracking-wider">
+                Baby Profile
+              </h3>
+              <span className="text-[11px] text-[#6E7B6C] font-mono">{entries.length} records</span>
             </div>
 
-            {showSharingFaq ? (
-              <div className="text-xs text-stone-700 space-y-2 pt-1 border-t border-orange-200/60 leading-relaxed">
-                <p>
-                  <strong>1. Is my baby's data secure?</strong>
-                  <br />
-                  Yes, 100%! All measurements exist solely on your phone's private storage (<code>localStorage</code>). Nothing is ever sent to a public database or server.
-                </p>
-                <p>
-                  <strong>2. If I share with Wife or Family (to track Dhruv together):</strong>
-                  <br />
-                  Tap the <strong>“1-Tap Sync to Wife/Husband (WhatsApp Link)”</strong> button below. When they tap the link on their phone, Dhruv's latest measurements are safely copied to their phone with 1 tap.
-                </p>
-                <p>
-                  <strong>3. If I share with a Friend who has their OWN baby:</strong>
-                  <br />
-                  They can tap <strong>“Start Fresh for Another Baby”</strong> below. That clears Dhruv's entries on their device only and gives them a completely clean tracker for their child!
-                </p>
-              </div>
-            ) : (
-              <p className="text-[11px] text-stone-600">
-                Data is stored privately on your phone. You can sync Dhruv’s latest records with family via WhatsApp, or let friends start a fresh baby profile.
-              </p>
-            )}
-          </div>
+            <div>
+              <label className="block text-xs font-semibold text-[#303832] mb-1">
+                Baby's Name
+              </label>
+              <input
+                type="text"
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2 text-sm bg-[#FFF9F0]/60 border border-[#91A98B]/30 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#91A98B] text-[#303832] font-medium"
+              />
+            </div>
 
-          {/* Profile Form */}
-          {!isCreatingNewBaby ? (
-            <form onSubmit={handleSubmitProfile} className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
-                  Baby Profile Details
-                </h3>
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingNewBaby(true)}
-                  className="flex items-center gap-1 text-xs text-orange-700 hover:text-orange-900 font-semibold"
-                >
-                  <Baby className="w-3.5 h-3.5" />
-                  <span>+ Start Fresh for Another Baby</span>
-                </button>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-semibold text-[#303832] mb-1">
+                  Sex (For WHO standard curves)
+                </label>
+                <div className="grid grid-cols-2 p-1 bg-[#FFF9F0] border border-[#91A98B]/20 rounded-xl text-xs font-medium">
+                  <button
+                    type="button"
+                    onClick={() => setGender('boy')}
+                    className={`py-1.5 rounded-lg transition-all ${
+                      gender === 'boy'
+                        ? 'bg-[#91A98B] text-white font-semibold shadow-2xs'
+                        : 'text-[#303832] hover:text-[#5D7C57]'
+                    }`}
+                  >
+                    Boy
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setGender('girl')}
+                    className={`py-1.5 rounded-lg transition-all ${
+                      gender === 'girl'
+                        ? 'bg-[#91A98B] text-white font-semibold shadow-2xs'
+                        : 'text-[#303832] hover:text-[#5D7C57]'
+                    }`}
+                  >
+                    Girl
+                  </button>
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  Baby’s Name
+                <label className="block text-xs font-semibold text-[#303832] mb-1">
+                  Date of Birth
                 </label>
                 <input
-                  type="text"
+                  type="date"
                   required
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  className="w-full px-3.5 py-2 text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-400 text-stone-900 font-medium"
+                  value={birthDate}
+                  onChange={(e) => setBirthDate(e.target.value)}
+                  className="w-full px-3 py-1.5 text-xs bg-[#FFF9F0]/60 border border-[#91A98B]/30 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#91A98B] font-medium text-[#303832]"
                 />
               </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Sex (For WHO curves)
-                  </label>
-                  <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl text-xs font-medium">
-                    <button
-                      type="button"
-                      onClick={() => setGender('boy')}
-                      className={`py-1.5 rounded-lg transition-all ${
-                        gender === 'boy'
-                          ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                          : 'text-stone-600 hover:text-stone-900'
-                      }`}
-                    >
-                      Boy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setGender('girl')}
-                      className={`py-1.5 rounded-lg transition-all ${
-                        gender === 'girl'
-                          ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                          : 'text-stone-600 hover:text-stone-900'
-                      }`}
-                    >
-                      Girl
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">
-                    Date of Birth
-                  </label>
-                  <input
-                    type="date"
-                    required
-                    value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-medium text-stone-800"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-1 flex justify-end">
-                <button
-                  type="submit"
-                  className="px-4 py-2 text-xs font-semibold text-white bg-stone-900 hover:bg-stone-800 rounded-xl transition-colors shadow-xs"
-                >
-                  Save Profile Changes
-                </button>
-              </div>
-            </form>
-          ) : (
-            /* Create New Fresh Baby Profile Form (For friends / new baby) */
-            <form onSubmit={handleStartFreshForNewBaby} className="p-4 bg-stone-50 rounded-2xl border border-stone-200 space-y-3">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-stone-900 font-bold text-xs">
-                  <Baby className="w-4 h-4 text-orange-600" />
-                  <span>Start Fresh for Another Baby</span>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingNewBaby(false)}
-                  className="text-xs text-stone-500 hover:text-stone-700"
-                >
-                  Cancel
-                </button>
-              </div>
-              <p className="text-xs text-stone-500">
-                This sets up a clean, blank slate for a friend or second baby. You can always restore Dhruv’s 18+ records below anytime!
-              </p>
-
-              <div>
-                <label className="block text-xs font-semibold text-stone-700 mb-1">
-                  New Baby's Name
-                </label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Liam, Maya"
-                  value={newBabyName}
-                  onChange={(e) => setNewBabyName(e.target.value)}
-                  className="w-full px-3 py-2 text-xs bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Sex</label>
-                  <div className="grid grid-cols-2 p-1 bg-stone-200/80 rounded-xl text-xs font-medium">
-                    <button
-                      type="button"
-                      onClick={() => setNewBabyGender('boy')}
-                      className={`py-1 rounded-lg ${newBabyGender === 'boy' ? 'bg-white font-bold' : 'text-stone-600'}`}
-                    >
-                      Boy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setNewBabyGender('girl')}
-                      className={`py-1 rounded-lg ${newBabyGender === 'girl' ? 'bg-white font-bold' : 'text-stone-600'}`}
-                    >
-                      Girl
-                    </button>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-stone-700 mb-1">Birth Date</label>
-                  <input
-                    type="date"
-                    required
-                    value={newBabyBirthDate}
-                    onChange={(e) => setNewBabyBirthDate(e.target.value)}
-                    className="w-full px-3 py-1.5 text-xs bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-medium"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsCreatingNewBaby(false)}
-                  className="px-3 py-1.5 text-xs font-semibold text-stone-600 hover:bg-stone-200 rounded-xl"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-1.5 text-xs font-bold text-white bg-orange-600 hover:bg-orange-700 rounded-xl shadow-xs"
-                >
-                  Create Fresh Baby Profile
-                </button>
-              </div>
-            </form>
-          )}
-
-          {/* Two-Phone Sync (Husband & Wife) */}
-          <div className="pt-4 border-t border-stone-100 space-y-2.5">
-            <div className="flex items-center gap-2 text-orange-600">
-              <Users className="w-4 h-4" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800">
-                Sync with Wife / Husband (No Gmail Needed)
-              </h3>
             </div>
-            <p className="text-xs text-stone-600 leading-relaxed">
-              To keep both phones in sync, tap the button below and send the link to your partner on WhatsApp. When they open it, their phone updates instantly with all measurements!
-            </p>
-            <div className="space-y-2 pt-1">
-              <button
-                type="button"
-                onClick={handleShareSyncLink}
-                className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-xs active:scale-98"
-              >
-                {copiedSyncLink ? (
-                  <>
-                    <Check className="w-4 h-4 text-orange-200" />
-                    <span>Sync Link Copied! Send it on WhatsApp</span>
-                  </>
-                ) : (
-                  <>
-                    <Link2 className="w-4 h-4" />
-                    <span>1-Tap Sync to Wife/Husband (WhatsApp Link)</span>
-                  </>
-                )}
-              </button>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {/* Units Toggle */}
+            <div className="pt-2 flex items-center justify-between border-t border-[#91A98B]/15">
+              <span className="text-xs font-semibold text-[#303832]">Preferred Measurement Units</span>
+              <div className="flex items-center gap-1 bg-[#FFF9F0] border border-[#91A98B]/20 p-1 rounded-xl text-xs font-medium">
                 <button
                   type="button"
-                  onClick={handleShareToPartner}
-                  className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors shadow-2xs"
+                  onClick={() => onToggleUnit('metric')}
+                  className={`px-2.5 py-1 rounded-lg ${
+                    unit === 'metric' ? 'bg-[#91A98B] text-white font-bold' : 'text-[#303832]'
+                  }`}
                 >
-                  <Share2 className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Send Backup File</span>
+                  kg / cm
                 </button>
-                <label className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs">
-                  <Upload className="w-3.5 h-3.5 text-stone-500" />
-                  <span>Import Backup File</span>
-                  <input
-                    type="file"
-                    accept=".json,application/json"
-                    onChange={handleImportJSON}
-                    className="hidden"
-                  />
-                </label>
+                <button
+                  type="button"
+                  onClick={() => onToggleUnit('imperial')}
+                  className={`px-2.5 py-1 rounded-lg ${
+                    unit === 'imperial' ? 'bg-[#91A98B] text-white font-bold' : 'text-[#303832]'
+                  }`}
+                >
+                  lb·oz / in
+                </button>
               </div>
             </div>
-          </div>
 
-          {/* AI Screenshot & Past Data Import trigger */}
-          {onOpenImportPastData && (
-            <div className="pt-4 border-t border-stone-100">
+            <div className="pt-2 flex justify-end">
               <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenImportPastData();
-                }}
-                className="w-full flex items-center justify-between p-3.5 rounded-2xl border border-orange-200 bg-orange-50/70 hover:bg-orange-100/80 text-orange-950 transition-all shadow-2xs group"
+                type="submit"
+                className="px-4 py-2 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-xs"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-xl bg-orange-200/80 text-orange-800 flex items-center justify-center">
-                    <Camera className="w-4 h-4" />
-                  </div>
-                  <div className="text-left">
-                    <span className="text-xs font-bold block">
-                      Import from Nara Baby Screenshots (AI Scanner)
-                    </span>
-                    <span className="text-[11px] text-orange-700">
-                      Upload chart photos or paste CSV to transcribe 30+ logs
-                    </span>
-                  </div>
-                </div>
-                <Sparkles className="w-4 h-4 text-orange-600 group-hover:scale-110 transition-transform" />
+                Save Profile Changes
               </button>
             </div>
-          )}
+          </form>
 
-          {/* Backup & Data Freedom */}
-          <div className="pt-4 border-t border-stone-100 space-y-3">
-            <div className="flex items-center gap-2 text-emerald-700">
-              <ShieldCheck className="w-4 h-4" />
-              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800">
-                Data Ownership & Backup
-              </h3>
-            </div>
-            <p className="text-xs text-stone-500 leading-relaxed">
-              All logs are stored safely in your browser. You can export a JSON file anytime to save on your computer or Google Drive.
+          {/* Backup, Export & Restore */}
+          <div className="bg-white p-5 rounded-2xl border border-[#91A98B]/30 space-y-3">
+            <h3 className="text-xs font-bold font-heading text-[#303832] uppercase tracking-wider">
+              Local Data Backup & Freedom
+            </h3>
+            <p className="text-xs text-[#6E7B6C] leading-relaxed">
+              Export your records to keep on your computer, external USB, or personal drive. You can restore your data onto any phone or tablet anytime.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
               <button
                 type="button"
                 onClick={handleExportJSON}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors"
+                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[#91A98B]/30 bg-[#FFF9F0]/60 hover:bg-[#FFF9F0] text-[#303832] text-xs font-semibold transition-colors shadow-2xs"
               >
-                <Download className="w-4 h-4 text-stone-500" />
-                <span>Export JSON Backup</span>
+                <Download className="w-3.5 h-3.5 text-[#5D7C57]" />
+                <span>Export Backup (JSON)</span>
               </button>
 
-              <label className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold cursor-pointer transition-colors">
-                <Upload className="w-4 h-4 text-stone-500" />
-                <span>Import JSON Backup</span>
+              <button
+                type="button"
+                onClick={handleExportCSV}
+                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[#91A98B]/30 bg-[#FFF9F0]/60 hover:bg-[#FFF9F0] text-[#303832] text-xs font-semibold transition-colors shadow-2xs"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 text-[#5D7C57]" />
+                <span>Export Spreadsheet (CSV)</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              <label className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[#91A98B]/30 bg-white hover:bg-[#FFF9F0] text-[#303832] text-xs font-semibold cursor-pointer transition-colors shadow-2xs">
+                <Upload className="w-3.5 h-3.5 text-[#5D7C57]" />
+                <span>Restore Backup (JSON)</span>
                 <input
                   type="file"
                   accept=".json,application/json"
@@ -564,30 +423,86 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   className="hidden"
                 />
               </label>
+
+              {onOpenImportPastData && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenImportPastData();
+                  }}
+                  className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[#91A98B]/30 bg-[#FFF9F0]/60 hover:bg-[#FFF9F0] text-[#303832] text-xs font-semibold transition-colors shadow-2xs"
+                >
+                  <Upload className="w-3.5 h-3.5 text-[#5D7C57]" />
+                  <span>Import Past Rows (Nara / Text)</span>
+                </button>
+              )}
             </div>
           </div>
 
-          {/* Reset / Sample data */}
-          <div className="pt-4 border-t border-stone-100 flex items-center justify-between">
-            <span className="text-xs text-stone-400">
-              {entries.length} growth entries logged
-            </span>
+          {/* Reset / Clear Data */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
             <button
               type="button"
               onClick={() => {
-                if (window.confirm("Restore Dhruv's authentic 18 Nara Baby growth records?")) {
+                if (window.confirm('Restore authentic 7-month sample records for Dhruv?')) {
                   onResetData();
-                  onClose();
+                  setStatusMsg("Restored sample records for Dhruv!");
+                  setTimeout(() => setStatusMsg(''), 3000);
                 }
               }}
-              className="flex items-center gap-1.5 text-xs text-stone-500 hover:text-stone-800 font-medium transition-colors"
+              className="text-[#6E7B6C] hover:text-[#303832] font-semibold flex items-center gap-1.5 transition-colors"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restore Dhruv's Authentic Records</span>
+              <span>Restore Sample Profile (Dhruv)</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="text-red-600 hover:text-red-800 font-semibold flex items-center gap-1.5 transition-colors"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Delete All Data & Start Fresh</span>
             </button>
           </div>
         </div>
       </div>
+
+      {/* Wipe Confirmation Modal */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl p-6 border border-red-200 max-w-sm w-full shadow-2xl space-y-4">
+            <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+              <AlertTriangle className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-base font-bold font-heading text-[#303832]">
+                Permanently delete all baby data?
+              </h3>
+              <p className="text-xs text-[#6E7B6C] mt-1 leading-relaxed">
+                This will wipe all {entries.length} measurements and the profile from this device. Please ensure you have downloaded a backup if you need your records.
+              </p>
+            </div>
+            <div className="flex items-center justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="px-4 py-2 text-xs font-semibold text-[#303832] bg-stone-100 hover:bg-stone-200 rounded-xl"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteAll}
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs"
+              >
+                Wipe Everything
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

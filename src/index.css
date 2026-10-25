@@ -1,19 +1,34 @@
 @import "tailwindcss";
 
 @layer base {
+  :root {
+    --color-sage: #91A98B;
+    --color-sage-dark: #3D5939;
+    --color-cream: #FFF9F0;
+    --color-peach: #F3C9B8;
+    --color-yellow: #F5D77A;
+    --color-blue: #AFCDE0;
+    --color-dark: #303832;
+  }
+
   body {
-    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #faf9f6;
-    color: #1c1917;
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFF9F0;
+    color: #303832;
     -webkit-font-smoothing: antialiased;
+  }
+
+  h1, h2, h3, h4, .font-heading {
+    font-family: 'Nunito', 'Inter', system-ui, sans-serif;
   }
 }
 
 @media print {
   body {
     background-color: #ffffff !important;
+    color: #000000 !important;
   }
-  header, nav, button {
+  header, nav, button, .no-print {
     display: none !important;
   }
   #printable-report {

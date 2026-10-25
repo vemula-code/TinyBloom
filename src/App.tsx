@@ -9,28 +9,47 @@ import { DEFAULT_PROFILE, DEFAULT_GROWTH_ENTRIES, DEFAULT_AVATAR } from './data/
 import { calculateAge } from './data/whoGrowthStandards';
 import { GrowthChart } from './components/GrowthChart';
 import { PercentileSummaryCards } from './components/PercentileSummaryCards';
-import { GrowthTimeline } from './components/GrowthTimeline';
-import { MilestoneGuide } from './components/MilestoneGuide';
+import { GrowthStory } from './components/GrowthStory';
+import { MeasurementHistory } from './components/MeasurementHistory';
+import { NextStepsGuide } from './components/NextStepsGuide';
 import { QuickLogModal } from './components/QuickLogModal';
 import { PrintDoctorReport } from './components/PrintDoctorReport';
 import { SettingsModal } from './components/SettingsModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { ImportPastDataModal } from './components/ImportPastDataModal';
-import { CuteBabyLogo } from './components/CuteBabyLogo';
+import { TinyBloomLogo } from './components/TinyBloomLogo';
 import { decodeSyncUrl } from './utils/syncPayload';
-import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload, ShieldCheck, CheckCircle2, Camera, Baby } from 'lucide-react';
+import {
+  Plus,
+  Settings,
+  Printer,
+  Sparkles,
+  Scale,
+  Ruler,
+  CircleDot,
+  Heart,
+  Upload,
+  ShieldCheck,
+  CheckCircle2,
+  Calendar,
+  BookOpen,
+  ArrowRight,
+  TrendingUp,
+  Activity,
+  Layers,
+  Baby
+} from 'lucide-react';
 
 export default function App() {
-  // Local storage initialization with automatic migration for Dhruv's authentic records
+  // Local storage initialization with automatic migration from previous version
   const [profile, setProfile] = useState<BabyProfile>(() => {
     try {
-      const saved = localStorage.getItem('naragrowth_profile');
+      const saved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.name === 'Leo' || parsed.birthDate === '2026-03-24' || !parsed.birthDate) {
-          return DEFAULT_PROFILE;
+        if (parsed && parsed.birthDate) {
+          return parsed;
         }
-        return parsed;
       }
       return DEFAULT_PROFILE;
     } catch {
@@ -40,17 +59,14 @@ export default function App() {
 
   const [entries, setEntries] = useState<GrowthEntry[]>(() => {
     try {
-      const savedVersion = localStorage.getItem('naragrowth_data_version');
-      const saved = localStorage.getItem('naragrowth_entries');
-      if (savedVersion !== 'v2_dhruv_nara' || !saved) {
-        localStorage.setItem('naragrowth_data_version', 'v2_dhruv_nara');
-        return DEFAULT_GROWTH_ENTRIES;
+      const saved = localStorage.getItem('tinybloom_entries') || localStorage.getItem('naragrowth_entries');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
       }
-      const parsed = JSON.parse(saved);
-      if (!Array.isArray(parsed) || parsed.length < 10) {
-        return DEFAULT_GROWTH_ENTRIES;
-      }
-      return parsed;
+      return DEFAULT_GROWTH_ENTRIES;
     } catch {
       return DEFAULT_GROWTH_ENTRIES;
     }
@@ -58,15 +74,15 @@ export default function App() {
 
   const [unit, setUnit] = useState<MetricUnit>(() => {
     try {
-      const saved = localStorage.getItem('naragrowth_unit');
+      const saved = localStorage.getItem('tinybloom_unit') || localStorage.getItem('naragrowth_unit');
       return (saved as MetricUnit) || 'metric';
     } catch {
       return 'metric';
     }
   });
 
-  // UI View States
-  const [activeTab, setActiveTab] = useState<'charts' | 'timeline' | 'guide'>('charts');
+  // Navigation tab states: 'home' | 'growth' | 'story' | 'history' | 'nextsteps'
+  const [activeTab, setActiveTab] = useState<'home' | 'growth' | 'story' | 'history' | 'nextsteps'>('home');
   const [activeChartType, setActiveChartType] = useState<ChartType>('weight');
 
   // Modals
@@ -75,9 +91,34 @@ export default function App() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
-  const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Check for partner sync payload in URL (?sync=...) or fresh mode (?fresh=true)
+  // Sync to local storage whenever state changes (100% on-device)
+  useEffect(() => {
+    try {
+      localStorage.setItem('tinybloom_profile', JSON.stringify(profile));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [profile]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('tinybloom_entries', JSON.stringify(entries));
+    } catch (e) {
+      console.error(e);
+    }
+  }, [entries]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('tinybloom_unit', unit);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [unit]);
+
+  // Handle partner URL sync if opened (?sync=...) or clean template (?fresh=true)
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
@@ -92,9 +133,9 @@ export default function App() {
       };
       setProfile(freshProf);
       setEntries([]);
-      setSyncToastMessage('👶 Started a clean tracker for a new baby! You can customize details anytime in Settings.');
+      setToastMessage('👶 Started a clean tracker for a new baby!');
       window.history.replaceState({}, document.title, window.location.pathname);
-      const timer = setTimeout(() => setSyncToastMessage(null), 6000);
+      const timer = setTimeout(() => setToastMessage(null), 5000);
       return () => clearTimeout(timer);
     }
 
@@ -121,38 +162,12 @@ export default function App() {
         }));
       }
 
-      setSyncToastMessage(`✨ Successfully synced with your partner! Dhruv’s tracker updated with ${result.entries.length} measurements.`);
-      // Clean query parameter from browser address bar smoothly
+      setToastMessage(`✨ Successfully synced with your partner! ${result.entries.length} measurements loaded.`);
       window.history.replaceState({}, document.title, window.location.pathname);
-      const timer = setTimeout(() => setSyncToastMessage(null), 6000);
+      const timer = setTimeout(() => setToastMessage(null), 5000);
       return () => clearTimeout(timer);
     }
   }, []);
-
-  // Sync to local storage
-  useEffect(() => {
-    try {
-      localStorage.setItem('naragrowth_profile', JSON.stringify(profile));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('naragrowth_entries', JSON.stringify(entries));
-    } catch (e) {
-      console.error(e);
-    }
-  }, [entries]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('naragrowth_unit', unit);
-    } catch (e) {
-      console.error(e);
-    }
-  }, [unit]);
 
   // Handlers for entries
   const handleSaveEntry = (newEntry: GrowthEntry) => {
@@ -161,17 +176,20 @@ export default function App() {
       if (index >= 0) {
         const updated = [...prev];
         updated[index] = newEntry;
-        return updated;
+        return updated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
       }
-      return [...prev, newEntry];
+      const added = [...prev, newEntry];
+      return added.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     });
     setEditingEntry(null);
+    setToastMessage('Growth record saved to your device!');
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleDeleteEntry = (id: string) => {
-    if (window.confirm('Delete this measurement log?')) {
-      setEntries((prev) => prev.filter((e) => e.id !== id));
-    }
+    setEntries((prev) => prev.filter((e) => e.id !== id));
+    setToastMessage('Measurement deleted.');
+    setTimeout(() => setToastMessage(null), 3000);
   };
 
   const handleEditEntry = (entry: GrowthEntry) => {
@@ -202,87 +220,116 @@ export default function App() {
         );
       });
     }
+    setToastMessage(`Imported ${newEntries.length} entries successfully!`);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Baby current age calculation
   const currentAge = calculateAge(profile.birthDate);
 
   return (
-    <div className="min-h-screen bg-[#faf9f6] text-stone-900 font-sans selection:bg-orange-100 selection:text-orange-900 pb-16">
+    <div className="min-h-screen bg-[#FFF9F0] text-[#303832] font-sans selection:bg-[#91A98B]/30 pb-20">
       {/* ========================================================
-          TOP BAR CONTRACT (3-Zone strict layout)
+          STICKY TOP HEADER
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-stone-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-8">
-          {/* Zone 1: Single text wordmark */}
-          <a
-            href="/"
-            className="text-lg font-bold tracking-tight text-stone-900 whitespace-nowrap shrink-0 flex items-center gap-2.5 group"
+      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#91A98B]/20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+          {/* Brand Identity with Sprout Motif */}
+          <button
+            type="button"
+            onClick={() => setActiveTab('home')}
+            className="flex items-center text-left transition-opacity hover:opacity-90"
           >
-            <CuteBabyLogo size={38} />
-            <div className="flex flex-col">
-              <span className="font-bold tracking-tight text-stone-900 leading-tight">DTracker</span>
-              <span className="text-[10px] font-medium text-orange-700 leading-none">Dhruv’s Growth</span>
-            </div>
-          </a>
+            <TinyBloomLogo size={38} showText={true} />
+          </button>
 
-          {/* Zone 2: 4 concise single-line nav links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-stone-600">
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-[#6E7B6C]">
             <button
               type="button"
-              onClick={() => setActiveTab('charts')}
-              className={`hover:text-stone-900 transition-colors whitespace-nowrap shrink-0 ${
-                activeTab === 'charts' ? 'text-stone-950 font-bold underline underline-offset-8 decoration-orange-500 decoration-2' : ''
+              onClick={() => setActiveTab('home')}
+              className={`hover:text-[#303832] transition-colors ${
+                activeTab === 'home'
+                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  : ''
               }`}
             >
-              Growth Curves
+              Home
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('timeline')}
-              className={`hover:text-stone-900 transition-colors whitespace-nowrap shrink-0 ${
-                activeTab === 'timeline' ? 'text-stone-950 font-bold underline underline-offset-8 decoration-orange-500 decoration-2' : ''
+              onClick={() => setActiveTab('growth')}
+              className={`hover:text-[#303832] transition-colors ${
+                activeTab === 'growth'
+                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  : ''
               }`}
             >
-              Monthly Journal
+              WHO Charts
             </button>
             <button
               type="button"
-              onClick={() => setActiveTab('guide')}
-              className={`hover:text-stone-900 transition-colors whitespace-nowrap shrink-0 ${
-                activeTab === 'guide' ? 'text-stone-950 font-bold underline underline-offset-8 decoration-orange-500 decoration-2' : ''
+              onClick={() => setActiveTab('story')}
+              className={`hover:text-[#303832] transition-colors ${
+                activeTab === 'story'
+                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  : ''
               }`}
             >
-              7-Month Guide
+              Growth Story
             </button>
             <button
               type="button"
-              onClick={() => setIsReportOpen(true)}
-              className="hover:text-stone-900 transition-colors whitespace-nowrap shrink-0"
+              onClick={() => setActiveTab('history')}
+              className={`hover:text-[#303832] transition-colors ${
+                activeTab === 'history'
+                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  : ''
+              }`}
             >
-              Doctor Report
+              History ({entries.length})
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveTab('nextsteps')}
+              className={`hover:text-[#303832] transition-colors ${
+                activeTab === 'nextsteps'
+                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  : ''
+              }`}
+            >
+              Next Steps
             </button>
           </nav>
 
-          {/* Zone 3: Actions */}
+          {/* Action Buttons */}
           <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
-              onClick={() => setIsImportModalOpen(true)}
-              title="Scan screenshots or past logs"
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-orange-900 bg-orange-50 hover:bg-orange-100 border border-orange-200/90 rounded-xl transition-all shadow-2xs whitespace-nowrap shrink-0"
+              onClick={() => setIsReportOpen(true)}
+              title="Doctor Visit Brief"
+              className="p-2 text-[#6E7B6C] hover:text-[#303832] hover:bg-[#91A98B]/10 rounded-xl transition-colors border border-[#91A98B]/30"
             >
-              <Camera className="w-3.5 h-3.5 text-orange-600" />
-              <span className="hidden sm:inline">Scan Screenshots</span>
+              <Printer className="w-4 h-4 text-[#5D7C57]" />
             </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              title="Settings & Privacy"
+              className="p-2 text-[#6E7B6C] hover:text-[#303832] hover:bg-[#91A98B]/10 rounded-xl transition-colors border border-[#91A98B]/30"
+            >
+              <Settings className="w-4 h-4 text-[#5D7C57]" />
+            </button>
+
             <PWAInstallButton />
+
             <button
               type="button"
               onClick={() => {
                 setEditingEntry(null);
                 setIsLogModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-stone-900 rounded-xl hover:bg-stone-800 transition-all shadow-xs active:scale-95 whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Log Growth</span>
@@ -291,201 +338,319 @@ export default function App() {
         </div>
       </header>
 
-      {syncToastMessage && (
-        <div className="bg-emerald-600 text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
-          <CheckCircle2 className="w-4 h-4 text-emerald-100 shrink-0" />
-          <span>{syncToastMessage}</span>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="bg-[#5D7C57] text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
+          <CheckCircle2 className="w-4 h-4 text-[#FFF9F0] shrink-0" />
+          <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
-        {/* Baby Profile Hero Banner */}
-        <div className="bg-white rounded-3xl border border-stone-200/90 p-5 sm:p-6 shadow-xs relative overflow-hidden">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
-            {/* Left: Avatar + Details */}
-            <div className="flex items-center gap-4">
-              <div className="relative group shrink-0">
-                <img
-                  src={profile.avatarUrl || DEFAULT_AVATAR}
-                  alt={profile.name}
-                  referrerPolicy="no-referrer"
-                  className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-stone-200/80 shadow-xs"
-                />
-              </div>
+        {/* Mobile Navigation Pills */}
+        <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 border-b border-[#91A98B]/20">
+          <button
+            type="button"
+            onClick={() => setActiveTab('home')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              activeTab === 'home'
+                ? 'bg-[#91A98B] text-white shadow-2xs'
+                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
+            }`}
+          >
+            Home
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('growth')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              activeTab === 'growth'
+                ? 'bg-[#91A98B] text-white shadow-2xs'
+                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
+            }`}
+          >
+            WHO Charts
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('story')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              activeTab === 'story'
+                ? 'bg-[#91A98B] text-white shadow-2xs'
+                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
+            }`}
+          >
+            Growth Story
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('history')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              activeTab === 'history'
+                ? 'bg-[#91A98B] text-white shadow-2xs'
+                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
+            }`}
+          >
+            History ({entries.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab('nextsteps')}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              activeTab === 'nextsteps'
+                ? 'bg-[#91A98B] text-white shadow-2xs'
+                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
+            }`}
+          >
+            Next Steps
+          </button>
+        </div>
 
-              <div>
-                <div className="flex items-center gap-2.5">
-                  <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-stone-900">
-                    {profile.name}
-                  </h1>
-                  <span className="text-xs text-stone-500 font-medium capitalize">
-                    · {profile.gender}
-                  </span>
+        {/* ========================================================
+            TAB 1: HOME SCREEN
+           ======================================================== */}
+        {activeTab === 'home' && (
+          <div className="space-y-6">
+            {/* Baby Profile Hero Banner */}
+            <div className="bg-white rounded-3xl border border-[#91A98B]/30 p-5 sm:p-6 shadow-2xs relative overflow-hidden">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+                {/* Left: Avatar + Details */}
+                <div className="flex items-center gap-4">
+                  <div className="relative group shrink-0">
+                    <img
+                      src={profile.avatarUrl || DEFAULT_AVATAR}
+                      alt={profile.name}
+                      referrerPolicy="no-referrer"
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#91A98B]/30 shadow-2xs"
+                    />
+                  </div>
+
+                  <div>
+                    <div className="flex items-center gap-2.5">
+                      <h1 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-[#303832]">
+                        {profile.name}
+                      </h1>
+                      <span className="text-xs text-[#6E7B6C] font-semibold capitalize bg-[#91A98B]/15 px-2 py-0.5 rounded-full">
+                        {profile.gender}
+                      </span>
+                    </div>
+
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#6E7B6C]">
+                      <span className="font-bold text-[#303832]">{currentAge.displayStr} old</span>
+                      <span aria-hidden="true">·</span>
+                      <span>Born {profile.birthDate}</span>
+                      <button
+                        type="button"
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="text-[11px] font-semibold text-[#5D7C57] underline decoration-[#91A98B]/60 hover:text-[#3D5939] transition-colors ml-0.5"
+                      >
+                        Edit
+                      </button>
+                      <span aria-hidden="true">·</span>
+                      <span className="font-mono">{entries.length} measurements</span>
+                    </div>
+
+                    <p className="mt-1 text-xs text-[#6E7B6C] line-clamp-1 italic max-w-md">
+                      {profile.notes || 'Every little milestone matters.'}
+                    </p>
+
+                    <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-medium text-[#3D5939] bg-[#91A98B]/15 border border-[#91A98B]/30 px-2.5 py-1 rounded-xl w-fit">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#5D7C57] shrink-0" />
+                      <span>100% On-Device Storage · Zero Cloud Tracking · Offline Ready</span>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Clean unboxed metadata with typographic separators */}
-                <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-stone-500">
-                  <span className="font-semibold text-stone-800">{currentAge.displayStr} old</span>
-                  <span aria-hidden="true">·</span>
-                  <span>Born {profile.birthDate}</span>
+                {/* Right: Quick Unit Switcher & Quick Actions */}
+                <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-[#91A98B]/15">
+                  <div className="flex items-center gap-1 bg-[#FFF9F0] border border-[#91A98B]/20 p-1 rounded-xl text-xs font-medium">
+                    <button
+                      type="button"
+                      onClick={() => setUnit('metric')}
+                      className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                        unit === 'metric'
+                          ? 'bg-[#91A98B] text-white shadow-2xs font-bold'
+                          : 'text-[#303832] hover:text-[#5D7C57]'
+                      }`}
+                    >
+                      kg / cm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUnit('imperial')}
+                      className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                        unit === 'imperial'
+                          ? 'bg-[#91A98B] text-white shadow-2xs font-bold'
+                          : 'text-[#303832] hover:text-[#5D7C57]'
+                      }`}
+                    >
+                      lb·oz / in
+                    </button>
+                  </div>
+
                   <button
                     type="button"
-                    onClick={() => setIsSettingsOpen(true)}
-                    className="text-[11px] font-semibold text-orange-700 hover:text-orange-800 underline decoration-orange-300 underline-offset-2 transition-colors ml-0.5 cursor-pointer"
+                    onClick={() => {
+                      setEditingEntry(null);
+                      setIsLogModalOpen(true);
+                    }}
+                    className="flex items-center gap-1.5 px-3.5 py-2 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-2xs"
                   >
-                    Set Exact Birthdate
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Log Growth</span>
                   </button>
-                  <span aria-hidden="true">·</span>
-                  <span>{entries.length} measurements</span>
-                </div>
-
-                <p className="mt-1 text-xs text-stone-600 line-clamp-1 italic max-w-md">
-                  {profile.notes || 'Growing beautifully on the WHO national growth curve.'}
-                </p>
-
-                <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/60 px-2.5 py-1 rounded-lg w-fit">
-                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>100% Private & Stored on Your Phone · Zero Cloud Exposure</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Quick Unit Switcher & Settings */}
-            <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-stone-100">
-              <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl text-xs font-medium">
+            {/* Current Metrics Overview (Top Stat Cards) */}
+            <PercentileSummaryCards entries={entries} profile={profile} unit={unit} />
+
+            {/* Growth Story Teaser & Action Card */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Card 1: Growth Story Quick View */}
+              <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[#5D7C57] font-semibold text-xs tracking-wider uppercase mb-1">
+                    <Sparkles className="w-4 h-4" />
+                    <span>Growth Trajectory Story</span>
+                  </div>
+                  <h3 className="text-base font-bold font-heading text-[#303832]">
+                    How is {profile.name} progressing?
+                  </h3>
+                  <p className="text-xs text-[#6E7B6C] mt-1.5 leading-relaxed">
+                    View in-depth growth velocity, rate of change between checkups, and educational insights grounded in the official WHO Child Growth Standards.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex items-center justify-between">
+                  <span className="text-xs text-[#6E7B6C] font-mono">
+                    {entries.length} data points tracked
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('story')}
+                    className="flex items-center gap-1.5 text-xs font-bold text-[#5D7C57] hover:text-[#3D5939] transition-colors"
+                  >
+                    <span>Read Growth Story</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* Card 2: Upcoming Pediatric Checkup & Next Steps */}
+              <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[#9C5D47] font-semibold text-xs tracking-wider uppercase mb-1">
+                    <Calendar className="w-4 h-4 text-[#F3C9B8]" />
+                    <span>Next Milestone Stage</span>
+                  </div>
+                  <h3 className="text-base font-bold font-heading text-[#303832]">
+                    Age-Appropriate Play & Checkup Prep
+                  </h3>
+                  <p className="text-xs text-[#6E7B6C] mt-1.5 leading-relaxed">
+                    Bonding play activities, upcoming pediatrician exam discussion topics, and checklist items tailored for {currentAge.displayStr} old.
+                  </p>
+                </div>
+
+                <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={() => setIsReportOpen(true)}
+                    className="text-xs text-[#6E7B6C] hover:text-[#303832] font-semibold"
+                  >
+                    Generate Doctor Brief
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveTab('nextsteps')}
+                    className="flex items-center gap-1.5 text-xs font-bold text-[#5D7C57] hover:text-[#3D5939] transition-colors"
+                  >
+                    <span>Explore Next Steps</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Quick Chart Preview */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-bold font-heading text-[#303832]">
+                  WHO Growth Curve (Quick Look)
+                </h3>
                 <button
                   type="button"
-                  onClick={() => setUnit('metric')}
-                  className={`px-2.5 py-1.5 rounded-lg transition-all ${
-                    unit === 'metric'
-                      ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
+                  onClick={() => setActiveTab('growth')}
+                  className="text-xs font-bold text-[#5D7C57] hover:underline"
                 >
-                  kg / cm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setUnit('imperial')}
-                  className={`px-2.5 py-1.5 rounded-lg transition-all ${
-                    unit === 'imperial'
-                      ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                      : 'text-stone-600 hover:text-stone-900'
-                  }`}
-                >
-                  lb·oz / in
+                  Open Full Interactive Charts &rarr;
                 </button>
               </div>
 
-              <button
-                type="button"
-                onClick={() => setIsReportOpen(true)}
-                title="Print Pediatrician Report"
-                className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition-colors border border-stone-200"
-              >
-                <Printer className="w-4 h-4" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setIsSettingsOpen(true)}
-                title="Baby Profile & Data Backup"
-                className="p-2 text-stone-500 hover:text-stone-900 hover:bg-stone-100 rounded-xl transition-colors border border-stone-200"
-              >
-                <Settings className="w-4 h-4" />
-              </button>
+              <GrowthChart
+                entries={entries}
+                chartType="weight"
+                gender={profile.gender}
+                unit={unit}
+                babyName={profile.name}
+              />
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Current Metrics Overview (Top Stat Cards) */}
-        <PercentileSummaryCards entries={entries} profile={profile} unit={unit} />
-
-        {/* View Navigation Tabs (for mobile and desktop switching) */}
-        <div className="flex items-center gap-2 border-b border-stone-200 pb-2 overflow-x-auto">
-          <button
-            type="button"
-            onClick={() => setActiveTab('charts')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 ${
-              activeTab === 'charts'
-                ? 'bg-stone-900 text-white shadow-xs'
-                : 'text-stone-600 hover:bg-stone-100'
-            }`}
-          >
-            WHO National Growth Curves
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('timeline')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 ${
-              activeTab === 'timeline'
-                ? 'bg-stone-900 text-white shadow-xs'
-                : 'text-stone-600 hover:bg-stone-100'
-            }`}
-          >
-            Monthly Timeline & Milestones ({entries.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('guide')}
-            className={`px-4 py-2 text-xs font-semibold rounded-xl transition-all whitespace-nowrap shrink-0 flex items-center gap-1.5 ${
-              activeTab === 'guide'
-                ? 'bg-stone-900 text-white shadow-xs'
-                : 'text-stone-600 hover:bg-stone-100'
-            }`}
-          >
-            <Sparkles className="w-3.5 h-3.5 text-amber-500" />
-            <span>7-Month Pediatric Guide</span>
-          </button>
-        </div>
-
-        {/* Tab 1: Interactive Growth Charts */}
-        {activeTab === 'charts' && (
+        {/* ========================================================
+            TAB 2: WHO INTERACTIVE GROWTH CHARTS
+           ======================================================== */}
+        {activeTab === 'growth' && (
           <div className="space-y-4">
-            {/* Chart Type Selector Sub-bar */}
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => setActiveChartType('weight')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeChartType === 'weight'
-                    ? 'bg-orange-100 text-orange-950 border border-orange-300'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
-                }`}
-              >
-                <Scale className="w-3.5 h-3.5 text-orange-600" />
-                <span>Weight-for-Age</span>
-              </button>
+            {/* Chart Submenu Bar */}
+            <div className="bg-white rounded-3xl p-4 border border-[#91A98B]/30 shadow-2xs flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveChartType('weight')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    activeChartType === 'weight'
+                      ? 'bg-[#91A98B] text-white shadow-2xs'
+                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                  }`}
+                >
+                  <Scale className="w-3.5 h-3.5" />
+                  <span>Weight-for-Age</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveChartType('height')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    activeChartType === 'height'
+                      ? 'bg-[#91A98B] text-white shadow-2xs'
+                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                  }`}
+                >
+                  <Ruler className="w-3.5 h-3.5" />
+                  <span>Length-for-Age</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveChartType('head')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    activeChartType === 'head'
+                      ? 'bg-[#91A98B] text-white shadow-2xs'
+                      : 'bg-[#FFF9F0] text-[#303832] border border-[#91A98B]/30 hover:bg-[#91A98B]/10'
+                  }`}
+                >
+                  <CircleDot className="w-3.5 h-3.5" />
+                  <span>Head Circumference</span>
+                </button>
+              </div>
 
-              <button
-                type="button"
-                onClick={() => setActiveChartType('height')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeChartType === 'height'
-                    ? 'bg-teal-100 text-teal-950 border border-teal-300'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
-                }`}
-              >
-                <Ruler className="w-3.5 h-3.5 text-teal-600" />
-                <span>Length-for-Age</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setActiveChartType('head')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                  activeChartType === 'head'
-                    ? 'bg-sky-100 text-sky-950 border border-sky-300'
-                    : 'bg-white text-stone-600 border border-stone-200 hover:bg-stone-50'
-                }`}
-              >
-                <CircleDot className="w-3.5 h-3.5 text-sky-600" />
-                <span>Head Circumference</span>
-              </button>
+              <span className="text-xs text-[#6E7B6C]">
+                Official WHO Standards (0–24 Months)
+              </span>
             </div>
 
-            {/* SVG Interactive Growth Chart */}
             <GrowthChart
               entries={entries}
               chartType={activeChartType}
@@ -493,63 +658,56 @@ export default function App() {
               unit={unit}
               babyName={profile.name}
             />
-
-            {/* Reassurance Callout */}
-            <div className="bg-stone-100/70 border border-stone-200 rounded-2xl p-4 flex items-start gap-3 text-xs text-stone-600">
-              <Heart className="w-4 h-4 text-orange-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="font-semibold text-stone-800">
-                  Pediatric Growth Tip:
-                </span>{' '}
-                Babies are biologically unique and can grow healthily anywhere along the 3rd to 97th percentiles. What pediatricians look for is not being in the "highest" percentile, but consistently tracking along their own smooth curve over time.
-              </div>
-            </div>
           </div>
         )}
 
-        {/* Tab 2: Monthly Timeline & Milestones */}
-        {activeTab === 'timeline' && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between pb-1">
-              <span className="text-xs text-stone-500">
-                {entries.length} measurements recorded for Dhruv
-              </span>
-              <button
-                type="button"
-                onClick={() => setIsImportModalOpen(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-orange-800 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition-colors"
-              >
-                <Upload className="w-3.5 h-3.5 text-orange-600" />
-                <span>Import Past Logs (Nara Baby)</span>
-              </button>
-            </div>
-            <GrowthTimeline
-              entries={entries}
-              gender={profile.gender}
-              unit={unit}
-              onEdit={handleEditEntry}
-              onDelete={handleDeleteEntry}
-              onAddFirstEntry={() => {
-                setEditingEntry(null);
-                setIsLogModalOpen(true);
-              }}
-            />
-          </div>
+        {/* ========================================================
+            TAB 3: GROWTH STORY
+           ======================================================== */}
+        {activeTab === 'story' && (
+          <GrowthStory
+            profile={profile}
+            entries={entries}
+            unit={unit}
+            onOpenAddModal={() => {
+              setEditingEntry(null);
+              setIsLogModalOpen(true);
+            }}
+          />
         )}
 
-        {/* Tab 3: 7-Month Pediatric Guide */}
-        {activeTab === 'guide' && <MilestoneGuide />}
+        {/* ========================================================
+            TAB 4: MEASUREMENT HISTORY
+           ======================================================== */}
+        {activeTab === 'history' && (
+          <MeasurementHistory
+            profile={profile}
+            entries={entries}
+            unit={unit}
+            onEditEntry={handleEditEntry}
+            onDeleteEntry={handleDeleteEntry}
+            onOpenAddModal={() => {
+              setEditingEntry(null);
+              setIsLogModalOpen(true);
+            }}
+          />
+        )}
+
+        {/* ========================================================
+            TAB 5: PERSONALIZED NEXT STEPS
+           ======================================================== */}
+        {activeTab === 'nextsteps' && <NextStepsGuide profile={profile} />}
       </main>
 
       {/* Floating Bottom Quick Action on Mobile */}
       <div className="sm:hidden fixed bottom-4 right-4 z-30 flex items-center gap-2">
         <button
           type="button"
-          onClick={() => setIsImportModalOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-3 bg-white border border-stone-200 text-stone-900 text-xs font-bold rounded-full shadow-lg shadow-stone-900/10 active:scale-95 transition-transform"
+          onClick={() => setIsReportOpen(true)}
+          className="flex items-center gap-1.5 px-3.5 py-3 bg-white border border-[#91A98B]/40 text-[#303832] text-xs font-bold rounded-full shadow-lg active:scale-95 transition-transform"
         >
-          <Camera className="w-4 h-4 text-orange-600" />
-          <span>Scan</span>
+          <Printer className="w-4 h-4 text-[#5D7C57]" />
+          <span>Report</span>
         </button>
         <button
           type="button"
@@ -557,7 +715,7 @@ export default function App() {
             setEditingEntry(null);
             setIsLogModalOpen(true);
           }}
-          className="flex items-center gap-2 px-4 py-3 bg-stone-900 text-white text-xs font-bold rounded-full shadow-lg shadow-stone-900/20 active:scale-95 transition-transform"
+          className="flex items-center gap-2 px-4 py-3 bg-[#91A98B] text-white text-xs font-bold rounded-full shadow-lg shadow-[#91A98B]/30 active:scale-95 transition-transform"
         >
           <Plus className="w-4 h-4" />
           <span>Log Growth</span>
@@ -596,6 +754,8 @@ export default function App() {
         onImportData={handleImportData}
         onResetData={handleResetData}
         onOpenImportPastData={() => setIsImportModalOpen(true)}
+        unit={unit}
+        onToggleUnit={setUnit}
       />
 
       <ImportPastDataModal

@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
 import { usePWAInstall } from '../hooks/usePWAInstall';
-import { CuteBabyLogo } from './CuteBabyLogo';
-import { Smartphone, Download, Check, X, Copy, ExternalLink, QrCode, Share2 } from 'lucide-react';
+import { TinyBloomLogo } from './TinyBloomLogo';
+import { Smartphone, Download, Check, X, Copy, ExternalLink, Share2 } from 'lucide-react';
 
 export const PWAInstallButton: React.FC = () => {
-  const { isInstallable, isInstalled, isAndroid, isSamsung, install } = usePWAInstall();
+  const { isInstallable, isInstalled, install } = usePWAInstall();
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  // App URL for sharing to phone
   const sharedProductionUrl = 'https://ais-pre-aqz7o4tyrwgxpak7f2uxxd-732291586868.us-west2.run.app';
   const currentUrl = typeof window !== 'undefined' ? window.location.href : sharedProductionUrl;
   const appUrl = (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1') || currentUrl.includes('webcontainer'))
@@ -27,8 +26,8 @@ export const PWAInstallButton: React.FC = () => {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: 'DTracker - Dhruv’s Growth Tracker',
-          text: 'Open DTracker on your phone to track Dhruv’s growth',
+          title: 'TinyBloom - Every Little Milestone Matters',
+          text: 'Open TinyBloom on your phone to track baby growth with official WHO curves',
           url: appUrl,
         });
       } catch {
@@ -48,17 +47,16 @@ export const PWAInstallButton: React.FC = () => {
 
   return (
     <>
-      {/* Top Bar / Mobile Header Trigger Button */}
       {isInstalled ? (
-        <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-emerald-800 font-medium bg-emerald-50 border border-emerald-200 px-2.5 py-1 rounded-xl">
-          <Check className="w-3.5 h-3.5" />
-          <span>App Installed</span>
+        <span className="hidden sm:inline-flex items-center gap-1.5 text-xs text-[#3D5939] font-medium bg-[#91A98B]/20 border border-[#91A98B]/40 px-2.5 py-1 rounded-xl">
+          <Check className="w-3.5 h-3.5 text-[#5D7C57]" />
+          <span>Installed</span>
         </span>
       ) : isInstallable ? (
         <button
           type="button"
           onClick={handleNativeInstall}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-white bg-orange-600 hover:bg-orange-700 rounded-xl transition-all shadow-xs active:scale-95 whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-xs active:scale-95 whitespace-nowrap shrink-0"
         >
           <Download className="w-3.5 h-3.5" />
           <span>Install App</span>
@@ -67,27 +65,27 @@ export const PWAInstallButton: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-xl transition-all border border-stone-200 whitespace-nowrap shrink-0"
+          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#303832] bg-white hover:bg-[#FFF9F0] rounded-xl transition-all border border-[#91A98B]/30 whitespace-nowrap shrink-0 shadow-2xs"
         >
-          <Smartphone className="w-3.5 h-3.5 text-orange-600" />
-          <span>Install on Phone (Android & iPhone)</span>
+          <Smartphone className="w-3.5 h-3.5 text-[#5D7C57]" />
+          <span>Install on Phone</span>
         </button>
       )}
 
-      {/* Samsung, Android & iPhone Installation Guide Modal */}
+      {/* Installation Guide Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-          <div className="bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-lg overflow-hidden my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
+          <div className="bg-[#FFF9F0] rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-lg overflow-hidden my-4 sm:my-6">
             {/* Modal Header */}
-            <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
+            <div className="px-6 py-4 border-b border-[#91A98B]/20 flex items-center justify-between bg-white/70">
               <div className="flex items-center gap-3">
-                <CuteBabyLogo size={38} />
+                <TinyBloomLogo size={36} />
                 <div>
-                  <h2 className="text-base font-bold text-stone-900">
-                    Install DTracker on Mobile (Android & iPhone)
+                  <h2 className="text-base font-bold font-heading text-[#303832]">
+                    Install TinyBloom on Mobile
                   </h2>
-                  <p className="text-xs text-stone-500">
-                    Native Full-Screen App · Works Offline on Any Phone
+                  <p className="text-xs text-[#6E7B6C]">
+                    Native Standalone PWA · Offline First · Android & iPhone
                   </p>
                 </div>
               </div>
@@ -95,90 +93,79 @@ export const PWAInstallButton: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-5">
+            <div className="p-6 space-y-5 bg-[#FFF9F0]">
               {/* Native Prompt button if browser allows it */}
               {isInstallable && (
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
+                <div className="p-4 bg-[#91A98B]/15 border border-[#91A98B]/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">
                   <div>
-                    <h4 className="text-xs font-bold text-orange-950">
-                      1-Tap Android Installation Ready
+                    <h4 className="text-xs font-bold text-[#303832]">
+                      1-Tap Installation Ready
                     </h4>
-                    <p className="text-xs text-orange-800">
-                      Your browser supports instant WebAPK packaging.
+                    <p className="text-xs text-[#6E7B6C]">
+                      Your browser supports instant standalone app installation.
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleNativeInstall}
-                    className="px-4 py-2 bg-orange-600 text-white rounded-xl text-xs font-bold hover:bg-orange-700 shadow-xs transition-colors shrink-0"
+                    className="px-4 py-2 bg-[#91A98B] text-white rounded-xl text-xs font-bold hover:bg-[#7D9977] shadow-xs transition-colors shrink-0"
                   >
                     Install Now
                   </button>
                 </div>
               )}
 
-              {/* Step 1: Open link on your Samsung phone */}
+              {/* Step 1: Open link on your phone */}
               <div>
-                <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-2">
-                  Step 1: Open DTracker on your Samsung Phone
+                <h3 className="text-xs font-bold font-heading text-[#303832] uppercase tracking-wider mb-2">
+                  Step 1: Open TinyBloom on Your Phone
                 </h3>
 
-                {/* Important notice about GitHub App */}
-                <div className="p-3 bg-amber-50 border border-amber-200/80 rounded-xl text-xs text-amber-900 mb-3 space-y-1">
-                  <div className="font-bold flex items-center gap-1.5">
-                    <span>💡</span>
-                    <span>No GitHub App Needed:</span>
-                  </div>
-                  <p className="text-amber-800 leading-relaxed text-[11px]">
-                    The GitHub mobile app is only for viewing raw code files. You do not need to download or login to GitHub on your phone. Simply open the web link below in Chrome or Samsung Internet!
-                  </p>
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-stone-50 border border-stone-200 rounded-2xl">
+                <div className="flex flex-col sm:flex-row items-center gap-4 p-3.5 bg-white border border-[#91A98B]/25 rounded-2xl">
                   {/* QR Code */}
-                  <div className="bg-white p-2 rounded-xl border border-stone-200 shadow-2xs shrink-0 text-center">
+                  <div className="bg-[#FFF9F0] p-2 rounded-xl border border-[#91A98B]/20 shadow-2xs shrink-0 text-center">
                     <img
                       src={qrCodeUrl}
                       alt="Scan to open on phone"
-                      className="w-28 h-28 mx-auto rounded-lg object-contain"
+                      className="w-24 h-24 mx-auto rounded-lg object-contain"
                     />
-                    <span className="text-[10px] font-medium text-stone-500 block mt-1">
-                      Scan with Samsung Camera
+                    <span className="text-[10px] font-semibold text-[#6E7B6C] block mt-1">
+                      Scan with Camera
                     </span>
                   </div>
 
                   {/* URL & Actions */}
                   <div className="w-full space-y-2">
-                    <p className="text-xs text-stone-600">
-                      Or copy and send this direct link to your phone (via WhatsApp, Quick Share, or text):
+                    <p className="text-xs text-[#6E7B6C]">
+                      Or send this link to your phone (via WhatsApp or text):
                     </p>
-                    <div className="flex items-center gap-2 p-2 bg-white border border-stone-200 rounded-xl">
+                    <div className="flex items-center gap-2 p-2 bg-[#FFF9F0] border border-[#91A98B]/30 rounded-xl">
                       <input
                         type="text"
                         readOnly
                         value={appUrl}
-                        className="grow bg-transparent text-xs font-mono text-stone-700 focus:outline-hidden truncate"
+                        className="grow bg-transparent text-xs font-mono text-[#303832] focus:outline-hidden truncate"
                       />
                       <button
                         type="button"
                         onClick={handleCopy}
-                        className="flex items-center gap-1 px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 border border-stone-200 rounded-lg text-xs font-semibold text-stone-800 transition-colors shrink-0 shadow-2xs"
+                        className="flex items-center gap-1 px-2.5 py-1.5 bg-white hover:bg-stone-50 border border-[#91A98B]/30 rounded-lg text-xs font-semibold text-[#303832] transition-colors shrink-0 shadow-2xs"
                       >
                         {copied ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span className="text-emerald-700">Copied!</span>
+                            <Check className="w-3 h-3 text-[#5D7C57]" />
+                            <span className="text-[#5D7C57]">Copied</span>
                           </>
                         ) : (
                           <>
-                            <Copy className="w-3 h-3 text-stone-500" />
+                            <Copy className="w-3 h-3 text-[#6E7B6C]" />
                             <span>Copy</span>
                           </>
                         )}
@@ -189,82 +176,56 @@ export const PWAInstallButton: React.FC = () => {
                       <button
                         type="button"
                         onClick={handleShare}
-                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-orange-600 text-white rounded-xl text-xs font-semibold hover:bg-orange-700 transition-colors shadow-xs"
+                        className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#91A98B] text-white rounded-xl text-xs font-bold hover:bg-[#7D9977] transition-colors shadow-2xs"
                       >
                         <Share2 className="w-3.5 h-3.5" />
-                        <span>Send / Share Link</span>
+                        <span>Share to Phone</span>
                       </button>
                       <a
                         href={appUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center justify-center gap-1.5 px-3 py-2 bg-stone-200 text-stone-800 rounded-xl text-xs font-semibold hover:bg-stone-300 transition-colors"
+                        className="flex items-center justify-center gap-1.5 px-3 py-2 bg-white text-[#303832] border border-[#91A98B]/30 rounded-xl text-xs font-semibold hover:bg-[#FFF9F0] transition-colors"
                       >
                         <ExternalLink className="w-3.5 h-3.5" />
-                        <span>Open Direct</span>
+                        <span>Open</span>
                       </a>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Step 2: Samsung Galaxy Instructions */}
+              {/* Step 2: Add to Home Screen Instructions */}
               <div>
-                <h3 className="text-xs font-bold text-stone-800 uppercase tracking-wider mb-2">
-                  Step 2: Add to Samsung Apps & Home Screen
+                <h3 className="text-xs font-bold font-heading text-[#303832] uppercase tracking-wider mb-2">
+                  Step 2: Add to App Screen (Android & iPhone)
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  {/* Samsung Internet Browser */}
-                  <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/60 space-y-1.5">
-                    <span className="text-xs font-bold text-stone-900 block">
-                      Samsung Internet
+                  {/* Android / Samsung */}
+                  <div className="p-3.5 rounded-2xl border border-[#91A98B]/25 bg-white space-y-1.5">
+                    <span className="text-xs font-bold text-[#303832] block">
+                      Samsung Internet / Chrome
                     </span>
-                    <ol className="text-xs text-stone-600 space-y-1 list-decimal list-inside leading-relaxed">
-                      <li>Tap the <strong>☰ menu</strong> at bottom-right</li>
-                      <li>Tap <strong>+ Add page to</strong></li>
-                      <li>Choose <strong>App screen</strong> or <strong>Home screen</strong></li>
+                    <ol className="text-xs text-[#6E7B6C] space-y-1 list-decimal list-inside leading-relaxed">
+                      <li>Tap browser menu (<strong>☰</strong> or <strong>⋮</strong>)</li>
+                      <li>Select <strong>Install app</strong> or <strong>Add to Home screen</strong></li>
                       <li>Tap <strong>Install</strong></li>
                     </ol>
                   </div>
 
-                  {/* Google Chrome on Android */}
-                  <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/60 space-y-1.5">
-                    <span className="text-xs font-bold text-stone-900 block">
-                      Google Chrome
+                  {/* iPhone (Safari) */}
+                  <div className="p-3.5 rounded-2xl border border-[#91A98B]/25 bg-white space-y-1.5">
+                    <span className="text-xs font-bold text-[#303832] block">
+                      iPhone (Safari)
                     </span>
-                    <ol className="text-xs text-stone-600 space-y-1 list-decimal list-inside leading-relaxed">
-                      <li>Tap the <strong>⋮ three dots</strong> at top-right</li>
-                      <li>Tap <strong>Install app</strong> (or <strong>Add to Home screen</strong>)</li>
-                      <li>Tap <strong>Install</strong></li>
-                      <li>Android generates the native app</li>
-                    </ol>
-                  </div>
-
-                  {/* Apple iPhone (Safari) */}
-                  <div className="p-3.5 rounded-2xl border border-stone-200 bg-stone-50/60 space-y-1.5 sm:col-span-2">
-                    <span className="text-xs font-bold text-stone-900 block flex items-center gap-1.5">
-                      <span>🍎</span>
-                      <span>Apple iPhone (Safari)</span>
-                    </span>
-                    <ol className="text-xs text-stone-600 space-y-1 list-decimal list-inside leading-relaxed">
-                      <li>Open the link in <strong>Safari</strong> on your iPhone</li>
-                      <li>Tap the <strong>Share button [↑]</strong> (the square with an arrow pointing up at the bottom)</li>
-                      <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
-                      <li>Tap <strong>Add</strong> in the top-right corner to install</li>
+                    <ol className="text-xs text-[#6E7B6C] space-y-1 list-decimal list-inside leading-relaxed">
+                      <li>Tap the <strong>Share icon [↑]</strong> at bottom</li>
+                      <li>Scroll down and tap <strong>Add to Home Screen</strong></li>
+                      <li>Tap <strong>Add</strong> at top-right</li>
                     </ol>
                   </div>
                 </div>
-              </div>
-
-              {/* Why WebAPK is better than a manual APK file */}
-              <div className="p-3.5 bg-stone-100/80 rounded-2xl border border-stone-200/80 text-xs text-stone-600 space-y-1">
-                <span className="font-semibold text-stone-800 block">
-                  Why this is better than downloading an untrusted APK file:
-                </span>
-                <p>
-                  Android’s native WebAPK engine packages DTracker directly into your Samsung Galaxy’s app drawer with its own app icon, splash screen, zero browser address bar, and offline local storage. No developer mode, ADB commands, or APK installation warnings needed!
-                </p>
               </div>
 
               {/* Close button */}
@@ -272,9 +233,9 @@ export const PWAInstallButton: React.FC = () => {
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-xs font-semibold text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-xl transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-[#303832] bg-white border border-[#91A98B]/30 hover:bg-stone-50 rounded-xl transition-colors"
                 >
-                  Got It
+                  Close
                 </button>
               </div>
             </div>

@@ -1,68 +1,78 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Warm Honey & Terracotta Gradient -->
-    <linearGradient id="logoBgGrad512" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#ea580c" />
-      <stop offset="50%" stopColor="#f97316" />
-      <stop offset="100%" stopColor="#f59e0b" />
+    <!-- Background Sage Green Gradient -->
+    <linearGradient id="tbBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#A8C1A2" />
+      <stop offset="50%" stopColor="#91A98B" />
+      <stop offset="100%" stopColor="#73936D" />
     </linearGradient>
 
-    <!-- Baby Skin Gradient -->
-    <linearGradient id="babySkinGrad512" x1="256" y1="160" x2="256" y2="400" gradientUnits="userSpaceOnUse">
-      <stop offset="0%" stopColor="#fffbeb" />
-      <stop offset="100%" stopColor="#fef3c7" />
+    <!-- Warm Glow Circle Gradient -->
+    <radialGradient id="tbWarmGlow512" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="#FFF9F0" />
+      <stop offset="70%" stopColor="#FDE8D7" />
+      <stop offset="100%" stopColor="#F6CBB0" />
+    </radialGradient>
+
+    <!-- Leaf Sage Gradients -->
+    <linearGradient id="tbLeaf512Left" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#A8C1A2" />
+      <stop offset="100%" stopColor="#5D7C57" />
+    </linearGradient>
+    <linearGradient id="tbLeaf512Right" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#8DA887" />
+      <stop offset="100%" stopColor="#4A6945" />
+    </linearGradient>
+    <linearGradient id="tbSprout512Top" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stopColor="#8BA685" />
+      <stop offset="100%" stopColor="#5D7C57" />
     </linearGradient>
 
-    <!-- Rosy Cheek Glow -->
-    <radialGradient id="cheekGlow512" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.5" />
-      <stop offset="100%" stopColor="#f43f5e" stopOpacity="0" />
+    <!-- Baby Skin & Cheeks -->
+    <linearGradient id="tbSkin512" x1="50%" y1="20%" x2="50%" y2="80%">
+      <stop offset="0%" stopColor="#FFFDF7" />
+      <stop offset="100%" stopColor="#FBE9DB" />
+    </linearGradient>
+    <radialGradient id="tbCheek512" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="#F5A28E" stopOpacity="0.6" />
+      <stop offset="100%" stopColor="#F5A28E" stopOpacity="0" />
     </radialGradient>
   </defs>
 
-  <!-- Background squircle with rounded corners -->
-  <rect width="512" height="512" rx="128" fill="url(#logoBgGrad512)" />
-  <rect x="8" y="8" width="496" height="496" rx="120" stroke="#ffffff" stroke-opacity="0.25" stroke-width="10" fill="none" />
+  <!-- App icon squircle background -->
+  <rect width="512" height="512" rx="120" fill="url(#tbBgGrad)" />
+  <rect x="12" y="12" width="488" height="488" rx="112" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="8" fill="none" />
 
-  <!-- Dhruv's Guiding North Star (top right) -->
-  <g transform="translate(370, 75) scale(3.5)">
-    <path d="M8 0L9.8 5.6L16 8L9.8 10.4L8 16L6.2 10.4L0 8L6.2 5.6L8 0Z" fill="#fef08a" />
-    <circle cx="8" cy="8" r="2.2" fill="#ffffff" />
-  </g>
+  <!-- Centered Logo Group -->
+  <g transform="translate(64, 40) scale(3.2)">
+    <!-- Soft Warm Sun/Halo circle -->
+    <circle cx="60" cy="62" r="44" fill="url(#tbWarmGlow512)" />
 
-  <!-- Baby Head -->
-  <circle cx="256" cy="265" r="135" fill="url(#babySkinGrad512)" stroke="#f59e0b" stroke-width="6" />
+    <!-- Top Sprout Leaves -->
+    <path d="M58 35 C52 23, 34 16, 32 30 C30 42, 48 40, 58 35 Z" fill="url(#tbSprout512Top)" />
+    <path d="M62 35 C68 21, 88 16, 88 30 C88 42, 70 40, 62 35 Z" fill="url(#tbSprout512Top)" />
+    <path d="M60 33 L60 44" stroke="#4A6945" stroke-width="3.5" stroke-linecap="round" />
 
-  <!-- Cute Hair Curl on top -->
-  <path d="M256 130 C248 95, 285 80, 290 105 C295 122, 270 126, 260 135" stroke="#78350f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+    <!-- Baby Head Circle -->
+    <circle cx="60" cy="58" r="23" fill="url(#tbSkin512)" stroke="#EBD2C1" stroke-width="1.5" />
 
-  <!-- Baby Ears -->
-  <circle cx="120" cy="265" r="28" fill="#fef3c7" stroke="#f59e0b" stroke-width="5" />
-  <circle cx="392" cy="265" r="28" fill="#fef3c7" stroke="#f59e0b" stroke-width="5" />
+    <!-- Sweet Hair curl -->
+    <path d="M60 41 C57 34, 69 35, 68 41 C67 45, 62 45, 60 47" stroke="#7A5239" stroke-width="2.2" stroke-linecap="round" fill="none" />
 
-  <!-- Happy Smiling Eyes (^ ^) -->
-  <path d="M190 250 C198 232, 215 232, 222 250" stroke="#451a03" stroke-width="11" stroke-linecap="round" fill="none" />
-  <path d="M290 250 C298 232, 315 232, 322 250" stroke="#451a03" stroke-width="11" stroke-linecap="round" fill="none" />
+    <!-- Peaceful Sleeping Eyes (^ ^) -->
+    <path d="M51 56 C53 52, 57 52, 59 56" stroke="#4A3425" stroke-width="2.2" stroke-linecap="round" fill="none" />
+    <path d="M63 56 C65 52, 69 52, 71 56" stroke="#4A3425" stroke-width="2.2" stroke-linecap="round" fill="none" />
 
-  <!-- Rosy Cheeks -->
-  <circle cx="180" cy="285" r="26" fill="url(#cheekGlow512)" />
-  <circle cx="332" cy="285" r="26" fill="url(#cheekGlow512)" />
+    <!-- Soft Rosy Cheeks -->
+    <circle cx="48" cy="61" r="5" fill="url(#tbCheek512)" />
+    <circle cx="72" cy="61" r="5" fill="url(#tbCheek512)" />
 
-  <!-- Button Nose -->
-  <circle cx="256" cy="272" r="7.5" fill="#d97706" />
+    <!-- Gentle Baby Smile -->
+    <path d="M58 64 C59.5 67, 62.5 67, 64 64" stroke="#543C2E" stroke-width="2" stroke-linecap="round" fill="none" />
 
-  <!-- Baby Smile -->
-  <path d="M232 298 C240 322, 272 322, 280 298" stroke="#451a03" stroke-width="10" stroke-linecap="round" fill="none" />
-  <path d="M244 306 C248 318, 264 318, 268 306" fill="#f43f5e" fill-opacity="0.8" />
-
-  <!-- White Growth Cloud & Heart Cradle -->
-  <g transform="translate(90, 365) scale(4.4)">
-    <path d="M12 14 C12 7, 20 4, 28 6 C33 0, 47 0, 52 6 C60 4, 68 7, 68 14 C68 20, 60 22, 52 22 L28 22 C20 22, 12 20, 12 14 Z" fill="#ffffff" fill-opacity="0.96" />
-    <path d="M40 9 C40 6.5, 37.5 5, 35.5 6.5 C33.5 5, 31 6.5, 31 9 C31 13, 35.5 16, 35.5 16 C35.5 16, 40 13, 40 9 Z" fill="#ea580c" />
-    <line x1="20" y1="17" x2="20" y2="21" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" />
-    <line x1="25" y1="18" x2="25" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
-    <line x1="46" y1="18" x2="46" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
-    <line x1="51" y1="17" x2="51" y2="21" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" />
-    <line x1="56" y1="18" x2="56" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
+    <!-- Cradling Sprout Leaves -->
+    <path d="M24 76 C20 54, 42 46, 54 62 C50 78, 36 86, 24 76 Z" fill="url(#tbLeaf512Left)" />
+    <path d="M96 76 C100 54, 78 46, 66 62 C70 78, 84 86, 96 76 Z" fill="url(#tbLeaf512Right)" />
+    <path d="M54 78 C57 82, 63 82, 66 78" stroke="#4A6945" stroke-width="4" stroke-linecap="round" />
   </g>
 </svg>

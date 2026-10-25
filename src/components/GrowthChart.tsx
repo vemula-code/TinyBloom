@@ -418,19 +418,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   cy={pt.y}
                   r={isHovered ? 8 : 6}
                   fill="#ffffff"
-                  stroke="#ea580c"
+                  stroke="#3D5939"
                   strokeWidth={isHovered ? 3 : 2.5}
                   className="transition-all duration-150"
                 />
                 {/* Center dot */}
-                <circle cx={pt.x} cy={pt.y} r={3} fill="#ea580c" />
+                <circle cx={pt.x} cy={pt.y} r={3} fill="#5D7C57" />
                 {/* Doctor visit icon marker */}
                 {pt.entry.isPediatricianVisit && (
                   <circle
                     cx={pt.x + 6}
                     cy={pt.y - 6}
                     r={3}
-                    fill="#0284c7"
+                    fill="#326180"
                     stroke="#ffffff"
                     strokeWidth="1"
                   />
@@ -443,36 +443,36 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         {/* Hover / Click Floating Tooltip */}
         {hoveredPoint && (
           <div
-            className="absolute z-20 pointer-events-none bg-stone-900 text-white rounded-xl px-3.5 py-2.5 shadow-xl text-xs border border-stone-700 min-w-[170px]"
+            className="absolute z-20 pointer-events-none bg-[#303832] text-white rounded-2xl px-3.5 py-2.5 shadow-xl text-xs border border-[#91A98B]/30 min-w-[170px]"
             style={{
               left: `${Math.min(Math.max(10, (hoveredPoint.x / svgWidth) * 100), 75)}%`,
               top: `${Math.max(10, (hoveredPoint.y / svgHeight) * 100 - 18)}%`,
               transform: 'translate(-50%, -100%)',
             }}
           >
-            <div className="flex items-center justify-between gap-2 border-b border-stone-800 pb-1.5 mb-1.5">
+            <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-1.5 mb-1.5">
               <span className="font-semibold text-stone-200">
-                {hoveredPoint.entry.ageMonths === 0 ? 'Birth' : `${hoveredPoint.entry.ageMonths} mo`}
+                {hoveredPoint.entry.ageMonths === 0 ? 'Birth' : `${hoveredPoint.entry.ageMonths.toFixed(1)} mo`}
               </span>
-              <span className="text-[10px] text-stone-400 font-mono">
+              <span className="text-[10px] text-stone-300 font-mono">
                 {hoveredPoint.entry.date}
               </span>
             </div>
             <div className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-bold text-orange-400">
+              <span className="text-sm font-bold text-[#F5D77A]">
                 {hoveredPoint.valStr}
               </span>
-              <span className="text-[11px] text-teal-300 font-medium">
+              <span className="text-[11px] text-[#AFCDE0] font-medium">
                 {hoveredPoint.percentileStr}
               </span>
             </div>
             {hoveredPoint.entry.notes && (
-              <p className="mt-1.5 pt-1.5 border-t border-stone-800 text-[11px] text-stone-300 line-clamp-2 italic">
+              <p className="mt-1.5 pt-1.5 border-t border-white/10 text-[11px] text-stone-300 line-clamp-2 italic">
                 “{hoveredPoint.entry.notes}”
               </p>
             )}
             {hoveredPoint.entry.milestones && hoveredPoint.entry.milestones.length > 0 && (
-              <div className="mt-1 text-[10px] text-amber-300">
+              <div className="mt-1 text-[10px] text-[#F5D77A]">
                 ★ {hoveredPoint.entry.milestones[0]}
                 {hoveredPoint.entry.milestones.length > 1 && ` (+${hoveredPoint.entry.milestones.length - 1} more)`}
               </div>
@@ -482,28 +482,28 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       </div>
 
       {/* Chart Footer Legend & Educational Context */}
-      <div className="mt-4 pt-3 border-t border-stone-100 flex flex-wrap items-center justify-between gap-4 text-xs text-stone-600">
+      <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex flex-wrap items-center justify-between gap-4 text-xs text-[#6E7B6C]">
         <div className="flex flex-wrap items-center gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-orange-600 rounded-full inline-block" />
-            <span className="font-medium text-stone-800">{babyName}’s Growth</span>
+            <span className="w-3.5 h-1 bg-[#3D5939] rounded-full inline-block" />
+            <span className="font-bold text-[#303832]">{babyName}’s Growth</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-teal-500 rounded-full inline-block" />
+            <span className="w-3.5 h-1 bg-[#5284A6] rounded-full inline-block" />
             <span>WHO 50th % (Median)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-teal-500/10 border border-teal-200 rounded-xs inline-block" />
-            <span>15th – 85th % (Core Zone)</span>
+            <span className="w-3 h-3 bg-[#91A98B]/20 border border-[#91A98B]/40 rounded-xs inline-block" />
+            <span>15th – 85th % (Core Range)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-sky-600 inline-block" />
+            <span className="w-2 h-2 rounded-full bg-[#326180] inline-block" />
             <span>Pediatrician Visit</span>
           </div>
         </div>
 
-        <span className="text-stone-400 text-[11px]">
-          Click any point to inspect exact stats & notes
+        <span className="text-[#6E7B6C] text-[11px]">
+          Tap any data point to view notes
         </span>
       </div>
     </div>
