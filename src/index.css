@@ -2,25 +2,115 @@
 
 @layer base {
   :root {
-    --color-sage: #91A98B;
-    --color-sage-dark: #3D5939;
-    --color-cream: #FFF9F0;
-    --color-peach: #F3C9B8;
-    --color-yellow: #F5D77A;
-    --color-blue: #AFCDE0;
-    --color-dark: #303832;
+    --color-primary: #91A98B;
+    --color-primary-dark: #3D5939;
+    --color-primary-light: #91A98B26;
+    --color-canvas: #FFF9F0;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(145, 169, 139, 0.3);
+    --color-text-main: #303832;
+    --color-text-muted: #6E7B6C;
+  }
+
+  /* Palette Themes (Light) */
+  [data-palette="peach"] {
+    --color-primary: #E08568;
+    --color-primary-dark: #8A3D25;
+    --color-primary-light: #E0856826;
+    --color-canvas: #FFF6F2;
+    --color-card-border: rgba(224, 133, 104, 0.3);
+  }
+
+  [data-palette="ocean"] {
+    --color-primary: #5494BA;
+    --color-primary-dark: #205374;
+    --color-primary-light: #5494BA26;
+    --color-canvas: #F2F7FA;
+    --color-card-border: rgba(84, 148, 186, 0.3);
+  }
+
+  [data-palette="honey"] {
+    --color-primary: #DE9D30;
+    --color-primary-dark: #7B5005;
+    --color-primary-light: #DE9D3026;
+    --color-canvas: #FFFBF0;
+    --color-card-border: rgba(222, 157, 48, 0.3);
+  }
+
+  [data-palette="lavender"] {
+    --color-primary: #967EC4;
+    --color-primary-dark: #50387C;
+    --color-primary-light: #967EC426;
+    --color-canvas: #F8F5FD;
+    --color-card-border: rgba(150, 126, 196, 0.3);
+  }
+
+  /* Dark Mode */
+  .dark, [data-theme="dark"] {
+    --color-canvas: #131815;
+    --color-card: #1D241F;
+    --color-card-border: rgba(145, 169, 139, 0.22);
+    --color-text-main: #EDF3EE;
+    --color-text-muted: #A3B5A5;
+  }
+
+  .dark[data-palette="peach"], [data-theme="dark"][data-palette="peach"] {
+    --color-canvas: #191413;
+    --color-card: #251E1C;
+    --color-card-border: rgba(224, 133, 104, 0.22);
+    --color-text-main: #FBF0ED;
+    --color-text-muted: #C7ADA5;
+  }
+
+  .dark[data-palette="ocean"], [data-theme="dark"][data-palette="ocean"] {
+    --color-canvas: #11171B;
+    --color-card: #192228;
+    --color-card-border: rgba(84, 148, 186, 0.22);
+    --color-text-main: #EDF4F9;
+    --color-text-muted: #A5BAC7;
+  }
+
+  .dark[data-palette="honey"], [data-theme="dark"][data-palette="honey"] {
+    --color-canvas: #191712;
+    --color-card: #26221A;
+    --color-card-border: rgba(222, 157, 48, 0.22);
+    --color-text-main: #FBF7EC;
+    --color-text-muted: #C7BC9E;
+  }
+
+  .dark[data-palette="lavender"], [data-theme="dark"][data-palette="lavender"] {
+    --color-canvas: #16131C;
+    --color-card: #221E2A;
+    --color-card-border: rgba(150, 126, 196, 0.22);
+    --color-text-main: #F5F0FB;
+    --color-text-muted: #B8A8D1;
   }
 
   body {
     font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #FFF9F0;
-    color: #303832;
+    background-color: var(--color-canvas);
+    color: var(--color-text-main);
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.25s ease, color 0.25s ease;
   }
 
   h1, h2, h3, h4, .font-heading {
     font-family: 'Nunito', 'Inter', system-ui, sans-serif;
   }
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  opacity: 0.4;
+  border-radius: 9999px;
 }
 
 @media print {

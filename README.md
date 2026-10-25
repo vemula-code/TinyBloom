@@ -1,79 +1,121 @@
-# 👶 DTracker · Watching My Little Love Grow
-> *"You never realize how fast time moves until you look down at the little human who was once just a tiny bundle in your arms, now sitting up, laughing with two tiny teeth, and reaching for the world."*
+# 🌱 TinyBloom · Every little milestone matters.
 
-A tender, private, and 100% free baby growth tracker built with love for **Dhruv**, powered by official **World Health Organization (WHO)** national growth standards.
+> *"You never realize how fast time moves until you look down at the little human who was once just a tiny bundle in your arms, now sitting up, laughing with two tiny teeth, and reaching for the world with wonder."*
 
----
-
-## 💛 A Parent’s Note
-
-They tell you that the days are long, but the years are short. 
-
-One day you are bringing a newborn home, learning the weight of a tiny breathing chest against your shoulder. Then suddenly, it is 7 months later—your baby is sitting up by himself, babbling consonant songs (`ba-ba`, `da-da`), eagerly tasting sweet potatoes and avocados, and grabbing your hand with curious little fingers.
-
-Every gram gained, every centimeter grown, and every little head-circumference checkup is a quiet miracle. It is proof of life, of nourishment, and of how big our little love is getting.
-
-When commercial parenting apps like Nara Baby began putting growth charts and historical data behind paid subscriptions and paywalls, I refused to let memories and health records of my child be locked behind a credit card. **DTracker** was born—crafted by a parent, for my son Dhruv, and for every parent who wants to lovingly monitor their child’s growth with clinical precision and complete data freedom.
+A calm, gentle, and 100% private offline-first baby growth and milestone companion powered by the official **World Health Organization (WHO) Child Growth Standards**.
 
 ---
 
-## ✨ Features That Every Parent Needs
+## 💛 A Letter to Parents
 
-### 📈 Official WHO & CDC Growth Percentile Curves
-- **Clinical Precision**: Plots weight-for-age, length-for-age, and head circumference-for-age against official World Health Organization standards (the gold standard recommended by the American Academy of Pediatrics & CDC for 0–24 months).
-- **Exact Percentile Calculations**: Instant percentile feedback (e.g., *“8.42 kg · 53rd Percentile · On Track”*) so you know your baby is following their own healthy growth curve.
-- **Metric & Imperial Harmony**: Seamless 1-tap switching between **kg / cm** and **lb·oz / inches** across all graphs and logs.
+They tell you that the days are long, but the years are short.
 
-### 📖 Monthly Milestones & Memory Journal
-- Record monthly checkup notes, doctor observations, sleep rhythms, and feeding adventures.
-- Celebrate developmental breakthroughs: *first social smile, rolling over, sitting unsupported, first tooth, pincer grasp, babbling, and finger foods*.
-- Attach milestone moments and photos safely stored right in your browser.
+One quiet night, you were holding a tiny, fragile bundle against your chest, learning the rhythm of newborn breaths and counting every single ounce gained. Then, before you know it, months slip by—and that same little human is sitting up, laughing out loud with tiny teeth, babbling whole conversations (`ba-ba`, `da-da`), and reaching for your hand with curious fingers.
 
-### 🩺 Pediatrician Wellness Visit Report
-- One-click printable clinical summary formatted specifically for 6-month, 9-month, and 12-month well-child examinations.
-- Clean vector tables with date, age, weight, height, percentiles, and parent questions to show your doctor.
+Every gram gained, every centimeter grown, and every little head-circumference checkup is a quiet miracle. It is tangible proof of love, of nourishment, and of how big your little heart is getting.
 
-### 📱 Installs on Samsung Galaxy & Android (WebAPK)
-- Certified Progressive Web App (PWA) with native WebAPK integration.
-- Installs directly to your Samsung phone's **App Drawer and Home Screen** with a dedicated app icon—no browser address bar, no app store downloads, and works completely offline.
+When commercial parenting apps began locking growth charts, percentiles, and historical records behind paid monthly subscriptions or selling personal family data to advertisers, we built **TinyBloom**. 
 
-### 🔒 100% Free & Private — Zero Paywalls Forever
-- **Local Sovereignty**: All measurements and photos stay securely on your own device.
-- **Data Export & Import**: Download your complete growth history as a JSON file anytime, or import past data from Nara Baby or doctor visit logs with a single click.
+**TinyBloom** belongs to parents. No paywalls, no subscriptions, no accounts, and no surveillance. 100% of your baby's data stays securely on your device.
 
 ---
 
-## 📲 How to Install DTracker on your Samsung Phone
+## 🌟 Key Features
 
-No developer mode, APK sideloading warnings, or USB cables needed:
+### 🛡️ 1. Absolute On-Device Privacy (Zero Cloud Tracking)
+- **Local Sovereignty**: All measurements, photos, milestone checklists, and doctor questions are stored in your device's browser/local storage (`localStorage`).
+- **No Accounts or Passwords**: Never asks for email, login, or phone number.
+- **No Remote Telemetry**: Zero ads, zero tracking pixels, zero analytics scripts, and zero online AI APIs transmitting baby data.
+- **Offline First**: Works completely offline—in pediatric clinics, on airplanes, or in the nursery without Wi-Fi.
 
-1. Open the app link in **Samsung Internet** or **Google Chrome** on your Samsung phone.
-2. **On Samsung Internet**: Tap the `☰ (Menu)` button at the bottom-right &rarr; tap `+ Add page to` &rarr; select **App screen** &rarr; tap **Install**.
-3. **On Google Chrome**: Tap the `⋮ (three dots)` at the top-right &rarr; tap **Install app** &rarr; tap **Install**.
-4. Android will automatically package DTracker into a native app with Dhruv’s terracotta icon right on your phone!
+### 📈 2. Clinical WHO Growth Percentiles
+- **Official WHO Standards**: Calibrated to the World Health Organization Child Growth Standards (the gold standard recommended by the CDC and American Academy of Pediatrics).
+- **Three Core Indicators**:
+  - **Weight-for-Age** (kg / lbs·oz)
+  - **Length-for-Age** (cm / inches)
+  - **Head Circumference-for-Age** (cm / inches)
+- **Interactive SVG Trajectory Curves**: Plots your baby's actual measurements against official 3rd, 15th, 50th, 85th, and 97th percentile bands.
+- **Growth Philosophy**: Clear pediatric reminders that a single percentile is a marker of trajectory, never a grade or a competition.
+
+### 👶 3. Universal Milestones Guide (0 to 36 Months / 3 Years)
+Covers month-by-month and milestone-stage granularity from birth up to 3 years:
+- **0–1 Month (Newborn Wonder)**: Chest-to-chest tummy time, high-contrast tracking, regaining birth weight.
+- **2 Months**: Social smiles, 45° head lifts, coos, 2-month vaccine prep.
+- **3 Months**: Bringing hands to mouth, batting play-gym toys, vocal squeals.
+- **4 Months**: Rolling tummy-to-back, belly laughs, 4-month checkup.
+- **5 Months**: Grabbing toes, rolling both ways, high-chair curiosity.
+- **6 Months**: Tripod sitting, single-ingredient solids, first teeth signs, 6-month vaccines.
+- **7 Months**: Independent sitting, lower central incisors erupting, consonant babbles (`ba-ba`, `da-da`).
+- **8 Months**: Pincer grasp, peek-a-boo, army crawling, separation warmth.
+- **9 Months**: Hands-and-knees crawling, pulling to stand, 9-month developmental checkup.
+- **10–11 Months**: Cruising along furniture, waving bye-bye, standing alone briefly.
+- **12 Months (1 Year)**: First independent steps, first words, 1-year birthday milestone, transitioning to whole milk.
+- **15 Months**: Climbing onto couches, stacking 2–3 blocks, 5+ words.
+- **18 Months**: Word explosion (10–20+ words), running, spoon feeding, 18-month autism screening (M-CHAT).
+- **24 Months (2 Years)**: 2-word sentences ("more milk"), jumping with both feet, toddler autonomy.
+- **30 Months (2.5 Years)**: Potty training readiness, pretend kitchen play, 3-word sentences.
+- **36 Months (3 Years)**: Full sentences, tricycle pedaling, cooperative preschool friendships, 3-year visit.
+
+### 🎨 4. Day & Night Modes + 5 Color Palettes
+- **Night Mode (2 AM Feedings)**: Gentle midnight slate theme designed for tired eyes during late-night nursing and diaper changes.
+- **5 Color Palettes**:
+  - 🌿 **Sage Meadow** (Calming natural sage, cream, and forest)
+  - 🌸 **Peach Blossom** (Warm apricot, soft terracotta, and rose)
+  - 🌊 **Ocean Breeze** (Muted coastal sky blue and periwinkle)
+  - 🍯 **Golden Sunbeam** (Gentle honey, buttercup, and warm amber)
+  - 💜 **Lavender Dream** (Soft lilac, plum, and evening mist)
+
+### 🩺 5. Doctor Visit Brief (Printable Report)
+- One-click printable clinical summary formatted for 8.5x11 / A4 paper.
+- Shows latest measurements, percentile rankings, growth velocity, and custom parent questions for your pediatrician.
+
+### 💾 6. Private Backup & Device Sync
+- **Instant JSON Export**: Save a complete backup to your personal computer or cloud drive anytime.
+- **CSV Spreadsheet Export**: Export full audit tables to Excel or Google Sheets.
+- **Validated Restore**: Move data between your phone and your spouse's phone with zero friction.
+
+---
+
+## 📱 How to Install on Your Phone
+
+TinyBloom is a certified Progressive Web App (PWA). You can install it directly to your home screen with zero app store downloads:
+
+### On Samsung / Android:
+1. Open the app link in **Google Chrome** or **Samsung Internet**.
+2. Tap the **Install TinyBloom** button at the top header (or tap the `⋮` three dots &rarr; **Add to Home screen** / **Install App**).
+3. TinyBloom will install directly into your phone's App Drawer with its own icon and launch full-screen without address bars.
+
+### On iPhone (iOS):
+1. Open the app link in **Safari**.
+2. Tap the **Share** button (the square with an arrow pointing upward).
+3. Scroll down and tap **Add to Home Screen**.
+4. Tap **Add**. TinyBloom will appear on your iPhone home screen!
+
+---
+
+## 🚀 Deployment Guide
+
+### Option 1: GitHub Pages
+1. Go to your repository on GitHub &rarr; **Settings** &rarr; **Pages** (in the left sidebar).
+2. Under **Build and deployment** &rarr; **Source**, select **GitHub Actions**.
+3. *(If your repository is Private on a free account, scroll to Settings &rarr; General &rarr; Danger Zone &rarr; Change repository visibility &rarr; Make public)*.
+4. Go to the **Actions** tab &rarr; **Deploy TinyBloom to GitHub Pages** &rarr; click **Re-run all jobs**.
+5. Your app will deploy to `https://<username>.github.io/<repo-name>/`.
+
+### Option 2: Vercel
+1. Connect your GitHub repository to Vercel.
+2. Vercel will automatically use the included `vercel.json` and `.npmrc` (`legacy-peer-deps=true`).
+3. Click **Deploy**.
 
 ---
 
 ## 🛠️ Built With
-
 - **React 19** & **TypeScript**
-- **Tailwind CSS v4** (Warm Honey & Terracotta palette)
-- **Vite** & **vite-plugin-pwa** (Native WebAPK service worker)
-- **Interactive SVG Charting** (Custom-crafted WHO growth envelopes)
----
-
-## 🚀 How to Host for Both Parents (No Gmail Login Required)
-
-Because DTracker is in your GitHub repository, you can enable **GitHub Pages** so both you and your wife can open it on your phones anytime with zero Google account restrictions:
-
-1. In your GitHub repository, go to **Settings** &rarr; **Pages** (in the left sidebar).
-2. Under **Build and deployment** &gt; **Source**, select **GitHub Actions**.
-3. That's it! The included `.github/workflows/deploy.yml` workflow will automatically build DTracker and give you your personal free permanent link: `https://<your-username>.github.io/<repo-name>/`.
-4. Send that link to your wife! Both of you can open it in **Chrome** or **Samsung Internet** and tap **"Install app"** or **"Add to Home screen"**.
+- **Tailwind CSS v4**
+- **Vite** & **vite-plugin-pwa**
+- **Bundled WHO Child Growth Standards** (LMS reference datasets)
 
 ---
 
-## 🕊️ For Dhruv
-
-*To our little Dhruv:*  
+## 🕊️ For Dhruv & Every Growing Child
 *May you always grow strong, curious, kind, and full of joy. We love you more than all the stars in the night sky.*

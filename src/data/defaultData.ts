@@ -1,8 +1,18 @@
 import { BabyProfile, GrowthEntry } from '../types/growth';
 
-// Generated portrait asset
-export const DEFAULT_AVATAR = '/src/assets/images/baby_portrait_gentle_1792885703662.jpg';
-export const HERO_IMAGE = '/src/assets/images/baby_growth_hero_1792885704783.jpg';
+import defaultAvatarImg from '../assets/images/baby_portrait_gentle_1792885703662.jpg';
+
+// Bundled portrait asset with public fallback
+export const DEFAULT_AVATAR = defaultAvatarImg || '/assets/images/baby_portrait.jpg';
+export const HERO_IMAGE = '/assets/images/baby_growth_hero_1792885704783.jpg';
+
+export const PRESET_AVATARS = [
+  { id: 'baby-portrait', label: 'Dhruv Portrait', url: DEFAULT_AVATAR },
+  { id: 'sprout-badge', label: 'Sprout Baby', url: 'sprout' },
+  { id: 'bear-badge', label: 'Cozy Bear', url: 'bear' },
+  { id: 'lion-badge', label: 'Little Lion', url: 'lion' },
+  { id: 'chick-badge', label: 'Sunny Chick', url: 'chick' },
+];
 
 export const DEFAULT_PROFILE: BabyProfile = {
   id: 'baby-main',

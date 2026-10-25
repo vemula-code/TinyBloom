@@ -4,7 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { BabyProfile, ChartType, GrowthEntry, MetricUnit } from './types/growth';
+import { BabyProfile, ChartType, GrowthEntry, MetricUnit, ThemeMode, PaletteTheme } from './types/growth';
 import { DEFAULT_PROFILE, DEFAULT_GROWTH_ENTRIES, DEFAULT_AVATAR } from './data/defaultData';
 import { calculateAge } from './data/whoGrowthStandards';
 import { GrowthChart } from './components/GrowthChart';
@@ -18,6 +18,8 @@ import { SettingsModal } from './components/SettingsModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { ImportPastDataModal } from './components/ImportPastDataModal';
 import { TinyBloomLogo } from './components/TinyBloomLogo';
+import { BabyAvatar } from './components/BabyAvatar';
+import { HeartfeltModal } from './components/HeartfeltModal';
 import { decodeSyncUrl } from './utils/syncPayload';
 import {
   Plus,
@@ -37,7 +39,10 @@ import {
   TrendingUp,
   Activity,
   Layers,
-  Baby
+  Baby,
+  Sun,
+  Moon,
+  Palette
 } from 'lucide-react';
 
 export default function App() {
@@ -85,12 +90,50 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<'home' | 'growth' | 'story' | 'history' | 'nextsteps'>('home');
   const [activeChartType, setActiveChartType] = useState<ChartType>('weight');
 
+  // Appearance & Themes
+  const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
+    try {
+      return (localStorage.getItem('tinybloom_theme_mode') as ThemeMode) || 'light';
+    } catch {
+      return 'light';
+    }
+  });
+
+  const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>(() => {
+    try {
+      return (localStorage.getItem('tinybloom_palette') as PaletteTheme) || 'sage';
+    } catch {
+      return 'sage';
+    }
+  });
+
+  // Apply theme classes and attributes to root document
+  useEffect(() => {
+    const root = document.documentElement;
+    if (themeMode === 'dark') {
+      root.classList.add('dark');
+      root.setAttribute('data-theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      root.setAttribute('data-theme', 'light');
+    }
+    root.setAttribute('data-palette', paletteTheme);
+
+    try {
+      localStorage.setItem('tinybloom_theme_mode', themeMode);
+      localStorage.setItem('tinybloom_palette', paletteTheme);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [themeMode, paletteTheme]);
+
   // Modals
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<GrowthEntry | null>(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [isHeartModalOpen, setIsHeartModalOpen] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Sync to local storage whenever state changes (100% on-device)
@@ -227,11 +270,11 @@ export default function App() {
   const currentAge = calculateAge(profile.birthDate);
 
   return (
-    <div className="min-h-screen bg-[#FFF9F0] text-[#303832] font-sans selection:bg-[#91A98B]/30 pb-20">
+    <div className="min-h-screen bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-20 transition-colors duration-250">
       {/* ========================================================
           STICKY TOP HEADER
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-white/90 backdrop-blur-md border-b border-[#91A98B]/20">
+      <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#1D241F]/90 backdrop-blur-md border-b border-[var(--color-primary,#91A98B)]/20">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
           {/* Brand Identity with Sprout Motif */}
           <button
@@ -243,13 +286,13 @@ export default function App() {
           </button>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-[#6E7B6C]">
+          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-[var(--color-text-muted,#6E7B6C)]">
             <button
               type="button"
               onClick={() => setActiveTab('home')}
-              className={`hover:text-[#303832] transition-colors ${
+              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
                 activeTab === 'home'
-                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
                   : ''
               }`}
             >
@@ -258,9 +301,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab('growth')}
-              className={`hover:text-[#303832] transition-colors ${
+              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
                 activeTab === 'growth'
-                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
                   : ''
               }`}
             >
@@ -269,9 +312,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab('story')}
-              className={`hover:text-[#303832] transition-colors ${
+              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
                 activeTab === 'story'
-                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
                   : ''
               }`}
             >
@@ -280,9 +323,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab('history')}
-              className={`hover:text-[#303832] transition-colors ${
+              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
                 activeTab === 'history'
-                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
                   : ''
               }`}
             >
@@ -291,9 +334,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setActiveTab('nextsteps')}
-              className={`hover:text-[#303832] transition-colors ${
+              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
                 activeTab === 'nextsteps'
-                  ? 'text-[#303832] font-bold underline underline-offset-8 decoration-[#91A98B] decoration-2'
+                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
                   : ''
               }`}
             >
@@ -302,23 +345,47 @@ export default function App() {
           </nav>
 
           {/* Action Buttons */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Day / Night Mode Toggle */}
+            <button
+              type="button"
+              onClick={() => setThemeMode(themeMode === 'light' ? 'dark' : 'light')}
+              title={themeMode === 'light' ? 'Switch to Night Mode (2 AM Feedings)' : 'Switch to Daylight Mode'}
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
+            >
+              {themeMode === 'light' ? (
+                <Moon className="w-4 h-4 text-indigo-500" />
+              ) : (
+                <Sun className="w-4 h-4 text-amber-400" />
+              )}
+            </button>
+
+            {/* A Letter to Parents / Our Story */}
+            <button
+              type="button"
+              onClick={() => setIsHeartModalOpen(true)}
+              title="A Letter to Parents · Why TinyBloom Exists"
+              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors border border-rose-200 dark:border-rose-900/40"
+            >
+              <Heart className="w-4 h-4 fill-rose-500" />
+            </button>
+
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
               title="Doctor Visit Brief"
-              className="p-2 text-[#6E7B6C] hover:text-[#303832] hover:bg-[#91A98B]/10 rounded-xl transition-colors border border-[#91A98B]/30"
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
             >
-              <Printer className="w-4 h-4 text-[#5D7C57]" />
+              <Printer className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
             </button>
 
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              title="Settings & Privacy"
-              className="p-2 text-[#6E7B6C] hover:text-[#303832] hover:bg-[#91A98B]/10 rounded-xl transition-colors border border-[#91A98B]/30"
+              title="Settings & Themes"
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
             >
-              <Settings className="w-4 h-4 text-[#5D7C57]" />
+              <Settings className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
             </button>
 
             <PWAInstallButton />
@@ -329,10 +396,11 @@ export default function App() {
                 setEditingEntry(null);
                 setIsLogModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>Log Growth</span>
+              <span className="hidden sm:inline">Log Growth</span>
+              <span className="sm:hidden">Log</span>
             </button>
           </div>
         </div>
@@ -413,37 +481,37 @@ export default function App() {
         {activeTab === 'home' && (
           <div className="space-y-6">
             {/* Baby Profile Hero Banner */}
-            <div className="bg-white rounded-3xl border border-[#91A98B]/30 p-5 sm:p-6 shadow-2xs relative overflow-hidden">
+            <div className="bg-white dark:bg-[#1D241F] rounded-3xl border border-[var(--color-primary,#91A98B)]/30 p-5 sm:p-6 shadow-2xs relative overflow-hidden transition-colors">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
                 {/* Left: Avatar + Details */}
                 <div className="flex items-center gap-4">
-                  <div className="relative group shrink-0">
-                    <img
-                      src={profile.avatarUrl || DEFAULT_AVATAR}
-                      alt={profile.name}
-                      referrerPolicy="no-referrer"
-                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-[#91A98B]/30 shadow-2xs"
-                    />
-                  </div>
+                  <BabyAvatar
+                    avatarUrl={profile.avatarUrl || DEFAULT_AVATAR}
+                    name={profile.name}
+                    gender={profile.gender}
+                    size="lg"
+                    onClick={() => setIsSettingsOpen(true)}
+                    showEditBadge={true}
+                  />
 
                   <div>
                     <div className="flex items-center gap-2.5">
-                      <h1 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-[#303832]">
+                      <h1 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-[var(--color-text-main,#303832)]">
                         {profile.name}
                       </h1>
-                      <span className="text-xs text-[#6E7B6C] font-semibold capitalize bg-[#91A98B]/15 px-2 py-0.5 rounded-full">
+                      <span className="text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-semibold capitalize bg-[var(--color-primary,#91A98B)]/15 px-2 py-0.5 rounded-full">
                         {profile.gender}
                       </span>
                     </div>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#6E7B6C]">
-                      <span className="font-bold text-[#303832]">{currentAge.displayStr} old</span>
+                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                      <span className="font-bold text-[var(--color-text-main,#303832)]">{currentAge.displayStr} old</span>
                       <span aria-hidden="true">·</span>
                       <span>Born {profile.birthDate}</span>
                       <button
                         type="button"
                         onClick={() => setIsSettingsOpen(true)}
-                        className="text-[11px] font-semibold text-[#5D7C57] underline decoration-[#91A98B]/60 hover:text-[#3D5939] transition-colors ml-0.5"
+                        className="text-[11px] font-semibold text-[var(--color-primary,#91A98B)] underline decoration-[var(--color-primary,#91A98B)]/60 hover:opacity-80 transition-colors ml-0.5"
                       >
                         Edit
                       </button>
@@ -451,13 +519,24 @@ export default function App() {
                       <span className="font-mono">{entries.length} measurements</span>
                     </div>
 
-                    <p className="mt-1 text-xs text-[#6E7B6C] line-clamp-1 italic max-w-md">
+                    <p className="mt-1 text-xs text-[var(--color-text-muted,#6E7B6C)] line-clamp-1 italic max-w-md">
                       {profile.notes || 'Every little milestone matters.'}
                     </p>
 
-                    <div className="mt-2.5 flex items-center gap-1.5 text-[11px] font-medium text-[#3D5939] bg-[#91A98B]/15 border border-[#91A98B]/30 px-2.5 py-1 rounded-xl w-fit">
-                      <ShieldCheck className="w-3.5 h-3.5 text-[#5D7C57] shrink-0" />
-                      <span>100% On-Device Storage · Zero Cloud Tracking · Offline Ready</span>
+                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 px-2.5 py-1 rounded-xl w-fit">
+                        <ShieldCheck className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
+                        <span>100% On-Device · Zero Cloud Tracking</span>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setIsHeartModalOpen(true)}
+                        className="flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 px-2.5 py-1 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
+                      >
+                        <Heart className="w-3 h-3 fill-rose-500" />
+                        <span>Our Heartfelt Story</span>
+                      </button>
                     </div>
                   </div>
                 </div>
@@ -756,6 +835,17 @@ export default function App() {
         onOpenImportPastData={() => setIsImportModalOpen(true)}
         unit={unit}
         onToggleUnit={setUnit}
+        themeMode={themeMode}
+        onToggleThemeMode={setThemeMode}
+        paletteTheme={paletteTheme}
+        onChangePaletteTheme={setPaletteTheme}
+        onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
+      />
+
+      <HeartfeltModal
+        isOpen={isHeartModalOpen}
+        onClose={() => setIsHeartModalOpen(false)}
+        babyName={profile.name}
       />
 
       <ImportPastDataModal
