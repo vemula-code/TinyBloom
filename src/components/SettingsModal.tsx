@@ -552,17 +552,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </form>
 
-          {/* Heartfelt Note Link Banner */}
+          {/* TinyBloom Philosophy Link Card */}
           {onOpenHeartfeltModal && (
-            <div className="bg-gradient-to-r from-[var(--color-primary,#91A98B)]/15 via-[#F3C9B8]/20 to-[#AFCDE0]/20 p-4 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2.5">
-                <Heart className="w-5 h-5 text-rose-500 fill-rose-500 shrink-0" />
+            <div className="bg-gradient-to-r from-[var(--color-primary,#91A98B)]/20 via-[#F3C9B8]/25 to-[#AFCDE0]/20 p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#202722] shadow-2xs flex items-center justify-center shrink-0 border border-[var(--color-primary,#91A98B)]/20">
+                  <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
+                </div>
                 <div>
-                  <h4 className="text-xs font-bold text-[var(--color-text-main,#303832)]">
-                    A Letter to Parents · Why TinyBloom Exists
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] bg-white/70 dark:bg-[#202722] px-2 py-0.5 rounded-md">
+                      About Our Mission
+                    </span>
+                  </div>
+                  <h4 className="text-sm font-bold text-[var(--color-text-main,#303832)] mt-1 font-heading">
+                    TinyBloom Philosophy & Private Storage
                   </h4>
-                  <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
-                    Our story, sacred privacy promises, and pediatric philosophy.
+                  <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-relaxed">
+                    Explore why TinyBloom was created, why 100% on-device private storage is essential for your child's data, and our heartfelt letter for parents.
                   </p>
                 </div>
               </div>
@@ -572,9 +579,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   onClose();
                   onOpenHeartfeltModal();
                 }}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-white dark:bg-[#202722] text-[var(--color-text-main,#303832)] border border-[var(--color-primary,#91A98B)]/30 shadow-2xs hover:bg-[var(--color-primary,#91A98B)] hover:text-white transition-all shrink-0"
+                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-primary,#91A98B)] text-white hover:opacity-90 shadow-2xs transition-all shrink-0 self-start sm:self-auto flex items-center justify-center gap-1.5"
               >
-                Read Note
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Read Philosophy</span>
               </button>
             </div>
           )}

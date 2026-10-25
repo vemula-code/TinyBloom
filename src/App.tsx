@@ -776,6 +776,52 @@ export default function App() {
             TAB 5: PERSONALIZED NEXT STEPS
            ======================================================== */}
         {activeTab === 'nextsteps' && <NextStepsGuide profile={profile} />}
+
+        {/* ========================================================
+            TINYBLOOM FOOTER WITH PHILOSOPHY & PRIVACY LINK
+           ======================================================== */}
+        <footer className="mt-12 pt-8 pb-10 border-t border-[var(--color-primary,#91A98B)]/20 text-center text-xs text-[var(--color-text-muted,#6E7B6C)] space-y-3">
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            <TinyBloomLogo size={24} />
+            <span className="text-[var(--color-primary,#91A98B)] font-bold">·</span>
+            <span className="font-semibold italic text-[var(--color-text-main,#303832)]">
+              Every little milestone matters.
+            </span>
+          </div>
+
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 pt-1">
+            <button
+              type="button"
+              onClick={() => setIsHeartModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold transition-all shadow-2xs"
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+              <span>TinyBloom Philosophy & Local Privacy</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="hover:text-[var(--color-text-main,#303832)] font-medium transition-colors"
+            >
+              Settings & Backups
+            </button>
+
+            <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
+
+            <button
+              type="button"
+              onClick={() => setIsReportOpen(true)}
+              className="hover:text-[var(--color-text-main,#303832)] font-medium transition-colors"
+            >
+              Pediatrician Report
+            </button>
+          </div>
+
+          <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] max-w-md mx-auto leading-relaxed pt-1">
+            100% offline-first · Zero cloud trackers · Free forever for your family.
+          </p>
+        </footer>
       </main>
 
       {/* Floating Bottom Quick Action on Mobile */}
