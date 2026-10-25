@@ -65,7 +65,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
           <div className="border-b-2 border-stone-800 pb-4 flex items-start justify-between">
             <div>
               <h1 className="text-xl font-bold tracking-tight text-stone-900">
-                Child Growth Record & WHO Percentiles
+                DTracker · Child Growth Record & WHO Percentiles
               </h1>
               <p className="text-xs text-stone-500 mt-0.5">
                 Standard: World Health Organization (WHO) Child Growth Standards (0–24 Months)

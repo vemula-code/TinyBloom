@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="128" fill="#faf9f6"/>
+  <rect x="24" y="24" width="464" height="464" rx="112" fill="#ffffff" stroke="#e7e5e4" stroke-width="8"/>
+  <!-- D monogram with growth ruler marks -->
+  <path d="M160 120 h100 c66.27 0 120 53.73 120 120 s-53.73 120 -120 120 h-100 z" fill="#ea580c"/>
+  <path d="M220 180 h40 c33.14 0 60 26.86 60 60 s-26.86 60 -60 60 h-40 z" fill="#ffffff"/>
+  <!-- Ruler tick marks -->
+  <line x1="330" y1="190" x2="350" y2="190" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <line x1="340" y1="215" x2="354" y2="215" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <line x1="330" y1="240" x2="358" y2="240" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
+  <line x1="340" y1="265" x2="354" y2="265" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <line x1="330" y1="290" x2="350" y2="290" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+</svg>

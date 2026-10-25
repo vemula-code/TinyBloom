@@ -14,14 +14,23 @@ import { MilestoneGuide } from './components/MilestoneGuide';
 import { QuickLogModal } from './components/QuickLogModal';
 import { PrintDoctorReport } from './components/PrintDoctorReport';
 import { SettingsModal } from './components/SettingsModal';
-import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart } from 'lucide-react';
+import { PWAInstallButton } from './components/PWAInstallButton';
+import { ImportPastDataModal } from './components/ImportPastDataModal';
+import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload } from 'lucide-react';
 
 export default function App() {
   // Local storage initialization
   const [profile, setProfile] = useState<BabyProfile>(() => {
     try {
       const saved = localStorage.getItem('naragrowth_profile');
-      return saved ? JSON.parse(saved) : DEFAULT_PROFILE;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.name === 'Leo') {
+          parsed.name = 'Dhruv';
+        }
+        return parsed;
+      }
+      return DEFAULT_PROFILE;
     } catch {
       return DEFAULT_PROFILE;
     }
@@ -54,6 +63,7 @@ export default function App() {
   const [editingEntry, setEditingEntry] = useState<GrowthEntry | null>(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // Sync to local storage
   useEffect(() => {
@@ -115,6 +125,21 @@ export default function App() {
     setEntries(newEntries);
   };
 
+  const handleImportPastEntries = (newEntries: GrowthEntry[], mode: 'merge' | 'replace') => {
+    if (mode === 'replace') {
+      setEntries(newEntries);
+    } else {
+      setEntries((prev) => {
+        const map = new Map<string, GrowthEntry>();
+        prev.forEach((e) => map.set(e.date, e));
+        newEntries.forEach((e) => map.set(e.date, e));
+        return Array.from(map.values()).sort(
+          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+        );
+      });
+    }
+  };
+
   // Baby current age calculation
   const currentAge = calculateAge(profile.birthDate);
 
@@ -130,10 +155,10 @@ export default function App() {
             href="/"
             className="text-lg font-bold tracking-tight text-stone-900 whitespace-nowrap shrink-0 flex items-center gap-2"
           >
-            <span className="w-6 h-6 rounded-lg bg-orange-600 text-white flex items-center justify-center text-xs font-black">
-              N
+            <span className="w-7 h-7 rounded-lg bg-orange-600 text-white flex items-center justify-center text-xs font-black shadow-xs">
+              D
             </span>
-            <span>NaraGrowth</span>
+            <span>DTracker</span>
           </a>
 
           {/* Zone 2: 4 concise single-line nav links */}
@@ -176,6 +201,7 @@ export default function App() {
 
           {/* Zone 3: 1 primary action */}
           <div className="flex items-center gap-2 shrink-0">
+            <PWAInstallButton />
             <button
               type="button"
               onClick={() => {
@@ -222,6 +248,13 @@ export default function App() {
                   <span className="font-semibold text-stone-800">{currentAge.displayStr} old</span>
                   <span aria-hidden="true">·</span>
                   <span>Born {profile.birthDate}</span>
+                  <button
+                    type="button"
+                    onClick={() => setIsSettingsOpen(true)}
+                    className="text-[11px] font-semibold text-orange-700 hover:text-orange-800 underline decoration-orange-300 underline-offset-2 transition-colors ml-0.5 cursor-pointer"
+                  >
+                    Set Exact Birthdate
+                  </button>
                   <span aria-hidden="true">·</span>
                   <span>{entries.length} measurements</span>
                 </div>
@@ -390,17 +423,32 @@ export default function App() {
 
         {/* Tab 2: Monthly Timeline & Milestones */}
         {activeTab === 'timeline' && (
-          <GrowthTimeline
-            entries={entries}
-            gender={profile.gender}
-            unit={unit}
-            onEdit={handleEditEntry}
-            onDelete={handleDeleteEntry}
-            onAddFirstEntry={() => {
-              setEditingEntry(null);
-              setIsLogModalOpen(true);
-            }}
-          />
+          <div className="space-y-4">
+            <div className="flex items-center justify-between pb-1">
+              <span className="text-xs text-stone-500">
+                {entries.length} measurements recorded for Dhruv
+              </span>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-orange-800 bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-xl transition-colors"
+              >
+                <Upload className="w-3.5 h-3.5 text-orange-600" />
+                <span>Import Past Logs (Nara Baby)</span>
+              </button>
+            </div>
+            <GrowthTimeline
+              entries={entries}
+              gender={profile.gender}
+              unit={unit}
+              onEdit={handleEditEntry}
+              onDelete={handleDeleteEntry}
+              onAddFirstEntry={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+            />
+          </div>
         )}
 
         {/* Tab 3: 7-Month Pediatric Guide */}
@@ -453,6 +501,15 @@ export default function App() {
         entries={entries}
         onImportData={handleImportData}
         onResetData={handleResetData}
+        onOpenImportPastData={() => setIsImportModalOpen(true)}
+      />
+
+      <ImportPastDataModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        birthDate={profile.birthDate}
+        unit={unit}
+        onImport={handleImportPastEntries}
       />
     </div>
   );

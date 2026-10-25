@@ -10,6 +10,7 @@ interface SettingsModalProps {
   entries: GrowthEntry[];
   onImportData: (profile: BabyProfile, entries: GrowthEntry[]) => void;
   onResetData: () => void;
+  onOpenImportPastData?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -20,6 +21,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   entries,
   onImportData,
   onResetData,
+  onOpenImportPastData,
 }) => {
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
@@ -44,7 +46,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // Export all data as JSON
   const handleExportJSON = () => {
     const backupData = {
-      app: 'NaraGrowth',
+      app: 'DTracker',
       version: '1.0',
       exportedAt: new Date().toISOString(),
       profile: {
@@ -61,7 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${name.toLowerCase() || 'baby'}-growth-backup-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `dtracker-${name.toLowerCase() || 'dhruv'}-backup-${new Date().toISOString().split('T')[0]}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -80,7 +82,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         if (parsed.entries && Array.isArray(parsed.entries)) {
           const importedProfile = parsed.profile || profile;
           onImportData(importedProfile, parsed.entries);
-          setName(importedProfile.name || 'Baby');
+          setName(importedProfile.name || 'Dhruv');
           setGender(importedProfile.gender || 'boy');
           setBirthDate(importedProfile.birthDate || '2026-03-24');
           setImportStatus(`Successfully restored ${parsed.entries.length} measurements!`);
@@ -101,15 +103,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         {/* Header */}
         <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-stone-200 flex items-center justify-center text-stone-700">
-              <User className="w-4 h-4" />
+            <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center text-xs">
+              D
             </div>
             <div>
               <h2 className="text-base font-bold text-stone-900">
-                Baby Profile & Data Freedom
+                {name}’s Profile & Data Freedom
               </h2>
               <p className="text-xs text-stone-500">
-                100% Free · No Subscriptions · Export & Own Your Data
+                DTracker · 100% Free · No Subscriptions · Export & Own Your Data
               </p>
             </div>
           </div>
@@ -199,6 +201,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </form>
 
+          {/* Samsung Mobile / Android Installation Section */}
+          <div className="pt-5 border-t border-stone-100 space-y-2.5">
+            <div className="flex items-center gap-2 text-orange-600">
+              <span className="w-5 h-5 rounded-md bg-orange-100 flex items-center justify-center text-xs font-bold">
+                📱
+              </span>
+              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800">
+                Install as App on Samsung Phone (WebAPK)
+              </h3>
+            </div>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              DTracker is a certified Progressive Web App. When opened in <strong>Samsung Internet</strong> or <strong>Chrome</strong> on your phone, you can install it with 1 tap: tap the browser menu (<strong>⋮</strong> or <strong>☰</strong>) &rarr; <strong>“Install app”</strong> or <strong>“Add page to App screen”</strong>. Android packages it as a standalone app with Dhruv’s icon on your phone!
+            </p>
+          </div>
+
           {/* Backup & Data Freedom */}
           <div className="pt-5 border-t border-stone-100 space-y-3">
             <div className="flex items-center gap-2 text-emerald-700">
@@ -238,6 +255,20 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 />
               </label>
             </div>
+
+            {onOpenImportPastData && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onOpenImportPastData();
+                }}
+                className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-orange-200 bg-orange-50 hover:bg-orange-100 text-orange-900 text-xs font-bold transition-colors"
+              >
+                <Upload className="w-4 h-4 text-orange-600" />
+                <span>Import / Paste Past Logs from Nara Baby (CSV or Text)</span>
+              </button>
+            )}
           </div>
 
           {/* Reset / Sample data */}

@@ -6,14 +6,14 @@ export const HERO_IMAGE = '/src/assets/images/baby_growth_hero_1792885704783.jpg
 
 export const DEFAULT_PROFILE: BabyProfile = {
   id: 'baby-main',
-  name: 'Leo',
+  name: 'Dhruv',
   gender: 'boy',
   birthDate: '2026-03-24',
   birthWeightKg: 3.45,
   birthHeightCm: 50.5,
   birthHeadCircumferenceCm: 35.0,
   avatarUrl: DEFAULT_AVATAR,
-  notes: 'Born at 39 weeks. Happy, curious little explorer who loves morning babbling and watching trees sway!',
+  notes: 'Happy, curious 7-month-old explorer who loves morning babbling, trying solid foods, and sitting up tall!',
 };
 
 export const DEFAULT_GROWTH_ENTRIES: GrowthEntry[] = [
