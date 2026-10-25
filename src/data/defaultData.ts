@@ -7,7 +7,7 @@ export const DEFAULT_AVATAR = defaultAvatarImg || '/assets/images/baby_portrait.
 export const HERO_IMAGE = '/assets/images/baby_growth_hero_1792885704783.jpg';
 
 export const PRESET_AVATARS = [
-  { id: 'baby-portrait', label: 'Dhruv Portrait', url: DEFAULT_AVATAR },
+  { id: 'baby-portrait', label: 'Baby Portrait', url: DEFAULT_AVATAR },
   { id: 'sprout-badge', label: 'Sprout Baby', url: 'sprout' },
   { id: 'bear-badge', label: 'Cozy Bear', url: 'bear' },
   { id: 'lion-badge', label: 'Little Lion', url: 'lion' },

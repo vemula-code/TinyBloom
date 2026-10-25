@@ -4,6 +4,7 @@ import { TinyBloomLogo } from './TinyBloomLogo';
 import { BabyAvatar } from './BabyAvatar';
 import { PRESET_AVATARS, DEFAULT_AVATAR } from '../data/defaultData';
 import { kgToLbsOz, cmToInches } from '../data/whoGrowthStandards';
+import { generateSyncUrl } from '../utils/syncPayload';
 import {
   X,
   Download,
@@ -22,7 +23,9 @@ import {
   Palette,
   Heart,
   Camera,
-  Sparkles
+  Sparkles,
+  Share2,
+  Copy
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -41,6 +44,7 @@ interface SettingsModalProps {
   paletteTheme: PaletteTheme;
   onChangePaletteTheme: (palette: PaletteTheme) => void;
   onOpenHeartfeltModal?: () => void;
+  onOpenOnboardingModal?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -59,6 +63,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   paletteTheme,
   onChangePaletteTheme,
   onOpenHeartfeltModal,
+  onOpenOnboardingModal,
 }) => {
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
@@ -81,6 +86,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     });
     setStatusMsg('Profile updated successfully!');
     setTimeout(() => setStatusMsg(''), 3000);
+  };
+
+  // Generate and copy private Co-Parent sync link
+  const handleCopySyncLink = async () => {
+    try {
+      const activeProf: BabyProfile = {
+        ...profile,
+        name: name.trim() || profile.name,
+        gender,
+        birthDate,
+        avatarUrl,
+      };
+      const url = generateSyncUrl(activeProf, entries);
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        await navigator.clipboard.writeText(url);
+        setStatusMsg('✨ Private sync link copied to clipboard! Send to your partner.');
+      } else {
+        // Fallback for older browsers
+        window.prompt('Copy this sync link to send to your partner:', url);
+        setStatusMsg('Sync link generated!');
+      }
+      setTimeout(() => setStatusMsg(''), 4500);
+    } catch (err: any) {
+      setErrorMsg('Could not copy link to clipboard automatically.');
+    }
   };
 
   // Handle local photo upload (100% on device, zero cloud)
@@ -587,6 +617,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
+          {/* Share & Sync with Partner / Wife */}
+          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
+                <Share2 className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                <span>Share & Sync with Partner / Wife</span>
+              </h3>
+              <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                100% Private · Zero Cloud
+              </span>
+            </div>
+            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+              Want your partner or wife to have {name}’s latest records on her phone too? Tap <strong>Copy Sync Link</strong> and send it to her on WhatsApp or Messages. When she taps the link, all {entries.length} measurements load right into her phone!
+            </p>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              <button
+                type="button"
+                onClick={handleCopySyncLink}
+                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-all shadow-2xs"
+              >
+                <Copy className="w-3.5 h-3.5" />
+                <span>Copy Sync Link for Partner</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={handleExportJSON}
+                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:opacity-90 text-[var(--color-text-main,#303832)] text-xs font-semibold transition-colors shadow-2xs"
+              >
+                <Download className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
+                <span>Send File via WhatsApp (JSON)</span>
+              </button>
+            </div>
+          </div>
+
           {/* Backup, Export & Restore */}
           <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
             <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
@@ -645,22 +711,38 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           </div>
 
-          {/* Reset / Clear Data */}
+          {/* Reset / Setup New Baby / Clear Data */}
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <button
-              type="button"
-              onClick={() => {
-                if (window.confirm('Restore authentic sample records for Dhruv?')) {
-                  onResetData();
-                  setStatusMsg("Restored sample records for Dhruv!");
-                  setTimeout(() => setStatusMsg(''), 3000);
-                }
-              }}
-              className="text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>Restore Sample Profile (Dhruv)</span>
-            </button>
+            <div className="flex items-center gap-3">
+              {onOpenOnboardingModal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    onOpenOnboardingModal();
+                  }}
+                  className="text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] hover:underline font-bold flex items-center gap-1.5 transition-colors"
+                >
+                  <Baby className="w-3.5 h-3.5" />
+                  <span>Set Up a New Baby</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  if (window.confirm('Restore authentic sample records for Dhruv?')) {
+                    onResetData();
+                    setStatusMsg("Restored sample demo records for Dhruv!");
+                    setTimeout(() => setStatusMsg(''), 3000);
+                  }
+                }}
+                className="text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] font-semibold flex items-center gap-1.5 transition-colors"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+                <span>Restore Sample Profile (Dhruv)</span>
+              </button>
+            </div>
 
             <button
               type="button"

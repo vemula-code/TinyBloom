@@ -20,6 +20,7 @@ import { ImportPastDataModal } from './components/ImportPastDataModal';
 import { TinyBloomLogo } from './components/TinyBloomLogo';
 import { BabyAvatar } from './components/BabyAvatar';
 import { HeartfeltModal } from './components/HeartfeltModal';
+import { OnboardingModal } from './components/OnboardingModal';
 import { decodeSyncUrl } from './utils/syncPayload';
 import {
   Plus,
@@ -134,7 +135,63 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isHeartModalOpen, setIsHeartModalOpen] = useState(false);
+  const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
+    try {
+      const hasSaved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
+      const hasCompleted = localStorage.getItem('tinybloom_onboarded');
+      // If brand new user with no existing saved profile and no onboarding flag, open wizard!
+      return !hasSaved && !hasCompleted;
+    } catch {
+      return false;
+    }
+  });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const handleCompleteOnboarding = (
+    newProfile: BabyProfile,
+    initialWeightKg?: number,
+    initialHeightCm?: number
+  ) => {
+    setProfile(newProfile);
+    if (initialWeightKg || initialHeightCm) {
+      const birthEntry: GrowthEntry = {
+        id: `entry-${Date.now()}`,
+        date: newProfile.birthDate,
+        ageMonths: 0,
+        weightKg: initialWeightKg,
+        heightCm: initialHeightCm,
+        notes: `Birth Day! Welcome to the world ${newProfile.name}.`,
+        milestones: ['Birth Day'],
+        isPediatricianVisit: true,
+      };
+      setEntries([birthEntry]);
+    } else {
+      setEntries([]);
+    }
+
+    try {
+      localStorage.setItem('tinybloom_onboarded', 'true');
+    } catch (e) {
+      console.error(e);
+    }
+
+    setIsOnboardingOpen(false);
+    setToastMessage(`🌱 Welcome ${newProfile.name} to TinyBloom!`);
+    setTimeout(() => setToastMessage(null), 4000);
+  };
+
+  const handleChooseSampleData = () => {
+    setProfile(DEFAULT_PROFILE);
+    setEntries(DEFAULT_GROWTH_ENTRIES);
+    try {
+      localStorage.setItem('tinybloom_onboarded', 'true');
+    } catch (e) {
+      console.error(e);
+    }
+    setIsOnboardingOpen(false);
+    setToastMessage('✨ Loaded Dhruv’s sample records! You can start fresh for your own baby anytime.');
+    setTimeout(() => setToastMessage(null), 4500);
+  };
 
   // Sync to local storage whenever state changes (100% on-device)
   useEffect(() => {
@@ -416,6 +473,32 @@ export default function App() {
 
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* Sample Demo Mode Banner */}
+        {profile.id === 'baby-main' && (
+          <div className="bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
+            <div className="flex items-center gap-3">
+              <span className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 text-base shadow-2xs">
+                🌱
+              </span>
+              <div>
+                <span className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-sm">
+                  You are exploring sample demo records for Dhruv.
+                </span>
+                <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+                  Ready to track your own baby? Set up a clean, private tracker anytime.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsOnboardingOpen(true)}
+              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5"
+            >
+              <Baby className="w-3.5 h-3.5" />
+              <span>Set Up My Baby</span>
+            </button>
+          </div>
+        )}
         {/* Mobile Navigation Pills */}
         <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 border-b border-[#91A98B]/20">
           <button
@@ -886,12 +969,20 @@ export default function App() {
         paletteTheme={paletteTheme}
         onChangePaletteTheme={setPaletteTheme}
         onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
+        onOpenOnboardingModal={() => setIsOnboardingOpen(true)}
       />
 
       <HeartfeltModal
         isOpen={isHeartModalOpen}
         onClose={() => setIsHeartModalOpen(false)}
         babyName={profile.name}
+      />
+
+      <OnboardingModal
+        isOpen={isOnboardingOpen}
+        onClose={() => setIsOnboardingOpen(false)}
+        onCompleteSetup={handleCompleteOnboarding}
+        onChooseSampleData={handleChooseSampleData}
       />
 
       <ImportPastDataModal

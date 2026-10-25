@@ -83,9 +83,9 @@ export function decodeSyncUrl(search: string): { profile: Partial<BabyProfile>; 
     }
 
     const profile: Partial<BabyProfile> = {
-      name: pkg.p?.n || 'Dhruv',
+      name: pkg.p?.n || 'Baby',
       gender: pkg.p?.g || 'boy',
-      birthDate: pkg.p?.b || '2026-03-28',
+      birthDate: pkg.p?.b || new Date().toISOString().split('T')[0],
     };
 
     const entries: GrowthEntry[] = pkg.e.map((item, idx) => ({
