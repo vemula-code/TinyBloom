@@ -16,17 +16,19 @@ import { PrintDoctorReport } from './components/PrintDoctorReport';
 import { SettingsModal } from './components/SettingsModal';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { ImportPastDataModal } from './components/ImportPastDataModal';
-import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload } from 'lucide-react';
+import { CuteBabyLogo } from './components/CuteBabyLogo';
+import { decodeSyncUrl } from './utils/syncPayload';
+import { Plus, Settings, Printer, Sparkles, Scale, Ruler, CircleDot, Heart, Upload, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 export default function App() {
-  // Local storage initialization
+  // Local storage initialization with automatic migration for Dhruv's authentic records
   const [profile, setProfile] = useState<BabyProfile>(() => {
     try {
       const saved = localStorage.getItem('naragrowth_profile');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed.name === 'Leo') {
-          parsed.name = 'Dhruv';
+        if (parsed.name === 'Leo' || parsed.birthDate === '2026-03-24' || !parsed.birthDate) {
+          return DEFAULT_PROFILE;
         }
         return parsed;
       }
@@ -38,8 +40,17 @@ export default function App() {
 
   const [entries, setEntries] = useState<GrowthEntry[]>(() => {
     try {
+      const savedVersion = localStorage.getItem('naragrowth_data_version');
       const saved = localStorage.getItem('naragrowth_entries');
-      return saved ? JSON.parse(saved) : DEFAULT_GROWTH_ENTRIES;
+      if (savedVersion !== 'v2_dhruv_nara' || !saved) {
+        localStorage.setItem('naragrowth_data_version', 'v2_dhruv_nara');
+        return DEFAULT_GROWTH_ENTRIES;
+      }
+      const parsed = JSON.parse(saved);
+      if (!Array.isArray(parsed) || parsed.length < 10) {
+        return DEFAULT_GROWTH_ENTRIES;
+      }
+      return parsed;
     } catch {
       return DEFAULT_GROWTH_ENTRIES;
     }
@@ -64,6 +75,41 @@ export default function App() {
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [syncToastMessage, setSyncToastMessage] = useState<string | null>(null);
+
+  // Check for partner sync payload in URL (?sync=...)
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const result = decodeSyncUrl(window.location.search);
+    if (result && result.entries.length > 0) {
+      setEntries((prev) => {
+        const merged = [...prev];
+        for (const incoming of result.entries) {
+          const idx = merged.findIndex((m) => m.id === incoming.id || m.date === incoming.date);
+          if (idx >= 0) {
+            merged[idx] = { ...merged[idx], ...incoming };
+          } else {
+            merged.push(incoming);
+          }
+        }
+        merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return merged;
+      });
+
+      if (result.profile.name) {
+        setProfile((prev) => ({
+          ...prev,
+          ...result.profile,
+        }));
+      }
+
+      setSyncToastMessage(`✨ Successfully synced with your partner! Dhruv’s tracker updated with ${result.entries.length} measurements.`);
+      // Clean query parameter from browser address bar smoothly
+      window.history.replaceState({}, document.title, window.location.pathname);
+      const timer = setTimeout(() => setSyncToastMessage(null), 6000);
+      return () => clearTimeout(timer);
+    }
+  }, []);
 
   // Sync to local storage
   useEffect(() => {
@@ -153,12 +199,13 @@ export default function App() {
           {/* Zone 1: Single text wordmark */}
           <a
             href="/"
-            className="text-lg font-bold tracking-tight text-stone-900 whitespace-nowrap shrink-0 flex items-center gap-2"
+            className="text-lg font-bold tracking-tight text-stone-900 whitespace-nowrap shrink-0 flex items-center gap-2.5 group"
           >
-            <span className="w-7 h-7 rounded-lg bg-orange-600 text-white flex items-center justify-center text-xs font-black shadow-xs">
-              D
-            </span>
-            <span>DTracker</span>
+            <CuteBabyLogo size={38} />
+            <div className="flex flex-col">
+              <span className="font-bold tracking-tight text-stone-900 leading-tight">DTracker</span>
+              <span className="text-[10px] font-medium text-orange-700 leading-none">Dhruv’s Growth</span>
+            </div>
           </a>
 
           {/* Zone 2: 4 concise single-line nav links */}
@@ -217,6 +264,13 @@ export default function App() {
         </div>
       </header>
 
+      {syncToastMessage && (
+        <div className="bg-emerald-600 text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
+          <CheckCircle2 className="w-4 h-4 text-emerald-100 shrink-0" />
+          <span>{syncToastMessage}</span>
+        </div>
+      )}
+
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
         {/* Baby Profile Hero Banner */}
@@ -262,6 +316,11 @@ export default function App() {
                 <p className="mt-1 text-xs text-stone-600 line-clamp-1 italic max-w-md">
                   {profile.notes || 'Growing beautifully on the WHO national growth curve.'}
                 </p>
+
+                <div className="mt-2 flex items-center gap-1.5 text-[11px] font-medium text-emerald-800 bg-emerald-50/90 border border-emerald-200/60 px-2.5 py-1 rounded-lg w-fit">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  <span>100% Private & Stored on Your Phone · Zero Cloud Exposure</span>
+                </div>
               </div>
             </div>
 

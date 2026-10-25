@@ -1,13 +1,68 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
-  <rect width="512" height="512" rx="128" fill="#faf9f6"/>
-  <rect x="24" y="24" width="464" height="464" rx="112" fill="#ffffff" stroke="#e7e5e4" stroke-width="8"/>
-  <!-- D monogram with growth ruler marks -->
-  <path d="M160 120 h100 c66.27 0 120 53.73 120 120 s-53.73 120 -120 120 h-100 z" fill="#ea580c"/>
-  <path d="M220 180 h40 c33.14 0 60 26.86 60 60 s-26.86 60 -60 60 h-40 z" fill="#ffffff"/>
-  <!-- Ruler tick marks -->
-  <line x1="330" y1="190" x2="350" y2="190" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
-  <line x1="340" y1="215" x2="354" y2="215" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
-  <line x1="330" y1="240" x2="358" y2="240" stroke="#f59e0b" stroke-width="8" stroke-linecap="round"/>
-  <line x1="340" y1="265" x2="354" y2="265" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
-  <line x1="330" y1="290" x2="350" y2="290" stroke="#f59e0b" stroke-width="6" stroke-linecap="round"/>
+  <defs>
+    <!-- Warm Honey & Terracotta Gradient -->
+    <linearGradient id="logoBgGrad512" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#ea580c" />
+      <stop offset="50%" stopColor="#f97316" />
+      <stop offset="100%" stopColor="#f59e0b" />
+    </linearGradient>
+
+    <!-- Baby Skin Gradient -->
+    <linearGradient id="babySkinGrad512" x1="256" y1="160" x2="256" y2="400" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#fffbeb" />
+      <stop offset="100%" stopColor="#fef3c7" />
+    </linearGradient>
+
+    <!-- Rosy Cheek Glow -->
+    <radialGradient id="cheekGlow512" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.5" />
+      <stop offset="100%" stopColor="#f43f5e" stopOpacity="0" />
+    </radialGradient>
+  </defs>
+
+  <!-- Background squircle with rounded corners -->
+  <rect width="512" height="512" rx="128" fill="url(#logoBgGrad512)" />
+  <rect x="8" y="8" width="496" height="496" rx="120" stroke="#ffffff" stroke-opacity="0.25" stroke-width="10" fill="none" />
+
+  <!-- Dhruv's Guiding North Star (top right) -->
+  <g transform="translate(370, 75) scale(3.5)">
+    <path d="M8 0L9.8 5.6L16 8L9.8 10.4L8 16L6.2 10.4L0 8L6.2 5.6L8 0Z" fill="#fef08a" />
+    <circle cx="8" cy="8" r="2.2" fill="#ffffff" />
+  </g>
+
+  <!-- Baby Head -->
+  <circle cx="256" cy="265" r="135" fill="url(#babySkinGrad512)" stroke="#f59e0b" stroke-width="6" />
+
+  <!-- Cute Hair Curl on top -->
+  <path d="M256 130 C248 95, 285 80, 290 105 C295 122, 270 126, 260 135" stroke="#78350f" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+
+  <!-- Baby Ears -->
+  <circle cx="120" cy="265" r="28" fill="#fef3c7" stroke="#f59e0b" stroke-width="5" />
+  <circle cx="392" cy="265" r="28" fill="#fef3c7" stroke="#f59e0b" stroke-width="5" />
+
+  <!-- Happy Smiling Eyes (^ ^) -->
+  <path d="M190 250 C198 232, 215 232, 222 250" stroke="#451a03" stroke-width="11" stroke-linecap="round" fill="none" />
+  <path d="M290 250 C298 232, 315 232, 322 250" stroke="#451a03" stroke-width="11" stroke-linecap="round" fill="none" />
+
+  <!-- Rosy Cheeks -->
+  <circle cx="180" cy="285" r="26" fill="url(#cheekGlow512)" />
+  <circle cx="332" cy="285" r="26" fill="url(#cheekGlow512)" />
+
+  <!-- Button Nose -->
+  <circle cx="256" cy="272" r="7.5" fill="#d97706" />
+
+  <!-- Baby Smile -->
+  <path d="M232 298 C240 322, 272 322, 280 298" stroke="#451a03" stroke-width="10" stroke-linecap="round" fill="none" />
+  <path d="M244 306 C248 318, 264 318, 268 306" fill="#f43f5e" fill-opacity="0.8" />
+
+  <!-- White Growth Cloud & Heart Cradle -->
+  <g transform="translate(90, 365) scale(4.4)">
+    <path d="M12 14 C12 7, 20 4, 28 6 C33 0, 47 0, 52 6 C60 4, 68 7, 68 14 C68 20, 60 22, 52 22 L28 22 C20 22, 12 20, 12 14 Z" fill="#ffffff" fill-opacity="0.96" />
+    <path d="M40 9 C40 6.5, 37.5 5, 35.5 6.5 C33.5 5, 31 6.5, 31 9 C31 13, 35.5 16, 35.5 16 C35.5 16, 40 13, 40 9 Z" fill="#ea580c" />
+    <line x1="20" y1="17" x2="20" y2="21" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" />
+    <line x1="25" y1="18" x2="25" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="46" y1="18" x2="46" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
+    <line x1="51" y1="17" x2="51" y2="21" stroke="#d97706" stroke-width="1.6" stroke-linecap="round" />
+    <line x1="56" y1="18" x2="56" y2="21" stroke="#d97706" stroke-width="1.2" stroke-linecap="round" />
+  </g>
 </svg>

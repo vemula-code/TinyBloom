@@ -60,7 +60,16 @@ No developer mode, APK sideloading warnings, or USB cables needed:
 - **Tailwind CSS v4** (Warm Honey & Terracotta palette)
 - **Vite** & **vite-plugin-pwa** (Native WebAPK service worker)
 - **Interactive SVG Charting** (Custom-crafted WHO growth envelopes)
-- **Lucide Icons**
+---
+
+## 🚀 How to Host for Both Parents (No Gmail Login Required)
+
+Because DTracker is in your GitHub repository, you can enable **GitHub Pages** so both you and your wife can open it on your phones anytime with zero Google account restrictions:
+
+1. In your GitHub repository, go to **Settings** &rarr; **Pages** (in the left sidebar).
+2. Under **Build and deployment** &gt; **Source**, select **GitHub Actions**.
+3. That's it! The included `.github/workflows/deploy.yml` workflow will automatically build DTracker and give you your personal free permanent link: `https://<your-username>.github.io/<repo-name>/`.
+4. Send that link to your wife! Both of you can open it in **Chrome** or **Samsung Internet** and tap **"Install app"** or **"Add to Home screen"**.
 
 ---
 

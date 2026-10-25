@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { BabyProfile, Gender, GrowthEntry } from '../types/growth';
-import { X, Download, Upload, RotateCcw, User, ShieldCheck } from 'lucide-react';
+import { CuteBabyLogo } from './CuteBabyLogo';
+import { generateSyncUrl } from '../utils/syncPayload';
+import { X, Download, Upload, RotateCcw, User, ShieldCheck, Share2, Users, Link2, Check } from 'lucide-react';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -70,6 +72,63 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     URL.revokeObjectURL(url);
   };
 
+  // Share backup directly to partner via WhatsApp / Quick Share
+  const handleShareToPartner = async () => {
+    const backupData = {
+      app: 'DTracker',
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      profile: {
+        ...profile,
+        name,
+        gender,
+        birthDate,
+        avatarUrl,
+      },
+      entries,
+    };
+
+    const jsonStr = JSON.stringify(backupData, null, 2);
+    const fileName = `dtracker-${name.toLowerCase() || 'dhruv'}-backup.json`;
+    const file = new File([jsonStr], fileName, { type: 'application/json' });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          files: [file],
+          title: `${name}’s Growth Backup`,
+          text: `Here is ${name}’s latest growth data for DTracker. Open DTracker on your phone, tap Settings, and choose 'Import Backup' to sync!`,
+        });
+        return;
+      } catch {
+        // User cancelled or share failed, fallback to download
+      }
+    }
+    handleExportJSON();
+  };
+
+  const [copiedSyncLink, setCopiedSyncLink] = useState(false);
+
+  // 1-Tap WhatsApp / Browser Sync Link
+  const handleShareSyncLink = async () => {
+    const syncUrl = generateSyncUrl(profile, entries);
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${name}’s Growth Sync`,
+          text: `Tap this link on your phone to instantly update ${name}’s growth records in DTracker:`,
+          url: syncUrl,
+        });
+        return;
+      } catch {
+        // Fallback to copy
+      }
+    }
+    navigator.clipboard.writeText(syncUrl);
+    setCopiedSyncLink(true);
+    setTimeout(() => setCopiedSyncLink(false), 3500);
+  };
+
   // Import JSON backup
   const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -102,10 +161,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       <div className="bg-white rounded-3xl shadow-2xl border border-stone-200 w-full max-w-xl overflow-hidden my-6">
         {/* Header */}
         <div className="px-6 py-5 border-b border-stone-100 flex items-center justify-between bg-stone-50/50">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-orange-100 text-orange-700 font-bold flex items-center justify-center text-xs">
-              D
-            </div>
+          <div className="flex items-center gap-3">
+            <CuteBabyLogo size={38} />
             <div>
               <h2 className="text-base font-bold text-stone-900">
                 {name}’s Profile & Data Freedom
@@ -214,6 +271,60 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <p className="text-xs text-stone-600 leading-relaxed">
               DTracker is a certified Progressive Web App. When opened in <strong>Samsung Internet</strong> or <strong>Chrome</strong> on your phone, you can install it with 1 tap: tap the browser menu (<strong>⋮</strong> or <strong>☰</strong>) &rarr; <strong>“Install app”</strong> or <strong>“Add page to App screen”</strong>. Android packages it as a standalone app with Dhruv’s icon on your phone!
             </p>
+          </div>
+
+          {/* Two-Phone Sync (Husband & Wife) */}
+          <div className="pt-5 border-t border-stone-100 space-y-2.5">
+            <div className="flex items-center gap-2 text-orange-600">
+              <Users className="w-4 h-4" />
+              <h3 className="text-xs font-bold uppercase tracking-wider text-stone-800">
+                Use on 2 Phones (Husband & Wife · No Gmail Needed)
+              </h3>
+            </div>
+            <p className="text-xs text-stone-600 leading-relaxed">
+              Because DTracker is 100% private and does not rely on a Google account, your wife can open the exact same app on her phone! To share recent logs or keep both phones updated:
+            </p>
+            <div className="space-y-2 pt-1">
+              {/* Primary 1-tap sync link */}
+              <button
+                type="button"
+                onClick={handleShareSyncLink}
+                className="w-full flex items-center justify-center gap-2 p-3.5 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-bold transition-all shadow-xs active:scale-98"
+              >
+                {copiedSyncLink ? (
+                  <>
+                    <Check className="w-4 h-4 text-orange-200" />
+                    <span>Sync Link Copied! Send it on WhatsApp</span>
+                  </>
+                ) : (
+                  <>
+                    <Link2 className="w-4 h-4" />
+                    <span>1-Tap Sync to Wife/Husband (WhatsApp Link)</span>
+                  </>
+                )}
+              </button>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={handleShareToPartner}
+                  className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold transition-colors shadow-2xs"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-stone-500" />
+                  <span>Send Backup File</span>
+                </button>
+                <label className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-stone-200 bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold cursor-pointer transition-colors shadow-2xs">
+                  <Upload className="w-3.5 h-3.5 text-stone-500" />
+                  <span>Import Backup File</span>
+                  <input
+                    type="file"
+                    accept=".json,application/json"
+                    onChange={handleImportJSON}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
 
           {/* Backup & Data Freedom */}
