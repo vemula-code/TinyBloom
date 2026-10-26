@@ -752,16 +752,16 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               <button
                 type="button"
                 onClick={() => {
-                  if (window.confirm('Restore authentic sample records for Dhruv?')) {
+                  if (window.confirm('Restore authentic sample records for Baby?')) {
                     onResetData();
-                    setStatusMsg("Restored sample demo records for Dhruv!");
+                    setStatusMsg("Restored sample demo records for Baby!");
                     setTimeout(() => setStatusMsg(''), 3000);
                   }
                 }}
                 className="text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] font-semibold flex items-center gap-1.5 transition-colors"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restore Sample Profile (Dhruv)</span>
+                <span>Restore Sample Profile (Baby)</span>
               </button>
             </div>
 

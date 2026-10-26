@@ -1,78 +1,92 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
   <defs>
-    <!-- Background Sage Green Gradient -->
-    <linearGradient id="tbBgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#A8C1A2" />
-      <stop offset="50%" stopColor="#91A98B" />
-      <stop offset="100%" stopColor="#73936D" />
+    <!-- Solid, constant warm sage-green background gradient (Opaque: NO transparent corners so iOS/Android never turn it black!) -->
+    <linearGradient id="tbAppBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#5A7D53" />
+      <stop offset="50%" stopColor="#4A6E43" />
+      <stop offset="100%" stopColor="#3C5C36" />
     </linearGradient>
 
-    <!-- Warm Glow Circle Gradient -->
-    <radialGradient id="tbWarmGlow512" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#FFF9F0" />
-      <stop offset="70%" stopColor="#FDE8D7" />
-      <stop offset="100%" stopColor="#F6CBB0" />
+    <!-- Warm cream radial glow for halo -->
+    <radialGradient id="tbHaloGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="#FFFDF7" />
+      <stop offset="70%" stopColor="#FDF2E2" />
+      <stop offset="100%" stopColor="#F5DCBD" />
     </radialGradient>
 
-    <!-- Leaf Sage Gradients -->
-    <linearGradient id="tbLeaf512Left" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stopColor="#A8C1A2" />
-      <stop offset="100%" stopColor="#5D7C57" />
-    </linearGradient>
-    <linearGradient id="tbLeaf512Right" x1="100%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stopColor="#8DA887" />
-      <stop offset="100%" stopColor="#4A6945" />
-    </linearGradient>
-    <linearGradient id="tbSprout512Top" x1="50%" y1="0%" x2="50%" y2="100%">
-      <stop offset="0%" stopColor="#8BA685" />
-      <stop offset="100%" stopColor="#5D7C57" />
+    <!-- Vibrant fresh sprout leaf gradients -->
+    <linearGradient id="tbLeafLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stopColor="#A4C89D" />
+      <stop offset="100%" stopColor="#679160" />
     </linearGradient>
 
-    <!-- Baby Skin & Cheeks -->
-    <linearGradient id="tbSkin512" x1="50%" y1="20%" x2="50%" y2="80%">
-      <stop offset="0%" stopColor="#FFFDF7" />
-      <stop offset="100%" stopColor="#FBE9DB" />
+    <linearGradient id="tbLeafRight" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stopColor="#8EBA86" />
+      <stop offset="100%" stopColor="#4E7846" />
     </linearGradient>
-    <radialGradient id="tbCheek512" cx="50%" cy="50%" r="50%">
-      <stop offset="0%" stopColor="#F5A28E" stopOpacity="0.6" />
-      <stop offset="100%" stopColor="#F5A28E" stopOpacity="0" />
+
+    <linearGradient id="tbTopSprout" x1="50%" y1="0%" x2="50%" y2="100%">
+      <stop offset="0%" stopColor="#B3D7AC" />
+      <stop offset="100%" stopColor="#5D8755" />
+    </linearGradient>
+
+    <!-- Gentle Baby Skin Tone -->
+    <linearGradient id="tbSkin" x1="50%" y1="10%" x2="50%" y2="90%">
+      <stop offset="0%" stopColor="#FFFDFC" />
+      <stop offset="100%" stopColor="#FCEADE" />
+    </linearGradient>
+
+    <radialGradient id="tbCheek" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stopColor="#F59F89" stopOpacity="0.65" />
+      <stop offset="100%" stopColor="#F59F89" stopOpacity="0" />
     </radialGradient>
   </defs>
 
-  <!-- App icon squircle background -->
-  <rect width="512" height="512" rx="120" fill="url(#tbBgGrad)" />
-  <rect x="12" y="12" width="488" height="488" rx="112" stroke="#FFFFFF" stroke-opacity="0.3" stroke-width="8" fill="none" />
+  <!-- 100% Solid Full Square Base (Crucial for iOS PWA and Android Adaptive Icons: zero transparency prevents black circle borders) -->
+  <rect width="512" height="512" fill="url(#tbAppBg)" />
 
-  <!-- Centered Logo Group -->
-  <g transform="translate(64, 40) scale(3.2)">
-    <!-- Soft Warm Sun/Halo circle -->
-    <circle cx="60" cy="62" r="44" fill="url(#tbWarmGlow512)" />
+  <!-- Subtle inner ambient ring for luxury depth -->
+  <circle cx="256" cy="256" r="236" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="4" fill="none" />
 
-    <!-- Top Sprout Leaves -->
-    <path d="M58 35 C52 23, 34 16, 32 30 C30 42, 48 40, 58 35 Z" fill="url(#tbSprout512Top)" />
-    <path d="M62 35 C68 21, 88 16, 88 30 C88 42, 70 40, 62 35 Z" fill="url(#tbSprout512Top)" />
-    <path d="M60 33 L60 44" stroke="#4A6945" stroke-width="3.5" stroke-linecap="round" />
+  <!-- Centered Iconic Sprout & Baby Motif (Strictly placed within 66% safe zone so it displays perfectly on squircle or circle masks) -->
+  <g transform="translate(256, 264)">
+    
+    <!-- Warm Sun Halo / Cradle -->
+    <circle cx="0" cy="0" r="148" fill="url(#tbHaloGlow)" />
 
-    <!-- Baby Head Circle -->
-    <circle cx="60" cy="58" r="23" fill="url(#tbSkin512)" stroke="#EBD2C1" stroke-width="1.5" />
+    <!-- Top Crown Sprout Leaves -->
+    <g transform="translate(0, -118)">
+      <path d="M -4 4 C -22 -32 -68 -16 -64 16 C -60 42 -20 32 -4 4 Z" fill="url(#tbTopSprout)" />
+      <path d="M 4 4 C 22 -32 68 -16 64 16 C 60 42 20 32 4 4 Z" fill="url(#tbTopSprout)" />
+      <path d="M 0 0 L 0 28" stroke="#3C5C36" stroke-width="8" stroke-linecap="round" />
+    </g>
 
-    <!-- Sweet Hair curl -->
-    <path d="M60 41 C57 34, 69 35, 68 41 C67 45, 62 45, 60 47" stroke="#7A5239" stroke-width="2.2" stroke-linecap="round" fill="none" />
+    <!-- Baby Head -->
+    <circle cx="0" cy="-14" r="76" fill="url(#tbSkin)" stroke="#ECCBBA" stroke-width="3" />
+
+    <!-- Sweet Hair Curl -->
+    <path d="M 0 -68 C -10 -90 24 -92 20 -72 C 18 -60 4 -60 0 -52" stroke="#68422A" stroke-width="6" stroke-linecap="round" fill="none" />
 
     <!-- Peaceful Sleeping Eyes (^ ^) -->
-    <path d="M51 56 C53 52, 57 52, 59 56" stroke="#4A3425" stroke-width="2.2" stroke-linecap="round" fill="none" />
-    <path d="M63 56 C65 52, 69 52, 71 56" stroke="#4A3425" stroke-width="2.2" stroke-linecap="round" fill="none" />
+    <path d="M -30 -20 C -24 -32 -10 -32 -4 -20" stroke="#382519" stroke-width="6.5" stroke-linecap="round" fill="none" />
+    <path d="M 4 -20 C 10 -32 24 -32 30 -20" stroke="#382519" stroke-width="6.5" stroke-linecap="round" fill="none" />
 
-    <!-- Soft Rosy Cheeks -->
-    <circle cx="48" cy="61" r="5" fill="url(#tbCheek512)" />
-    <circle cx="72" cy="61" r="5" fill="url(#tbCheek512)" />
+    <!-- Rosy Baby Cheeks -->
+    <circle cx="-38" cy="-4" r="16" fill="url(#tbCheek)" />
+    <circle cx="38" cy="-4" r="16" fill="url(#tbCheek)" />
 
     <!-- Gentle Baby Smile -->
-    <path d="M58 64 C59.5 67, 62.5 67, 64 64" stroke="#543C2E" stroke-width="2" stroke-linecap="round" fill="none" />
+    <path d="M -8 8 C -4 18 4 18 8 8" stroke="#382519" stroke-width="5.5" stroke-linecap="round" fill="none" />
 
-    <!-- Cradling Sprout Leaves -->
-    <path d="M24 76 C20 54, 42 46, 54 62 C50 78, 36 86, 24 76 Z" fill="url(#tbLeaf512Left)" />
-    <path d="M96 76 C100 54, 78 46, 66 62 C70 78, 84 86, 96 76 Z" fill="url(#tbLeaf512Right)" />
-    <path d="M54 78 C57 82, 63 82, 66 78" stroke="#4A6945" stroke-width="4" stroke-linecap="round" />
+    <!-- Cradling Sprout Leaves (Holding the baby with tender nature) -->
+    <g transform="translate(0, 36)">
+      <!-- Left Leaf -->
+      <path d="M -112 16 C -124 -46 -52 -62 -18 -18 C -26 30 -68 56 -112 16 Z" fill="url(#tbLeafLeft)" />
+      <!-- Right Leaf -->
+      <path d="M 112 16 C 124 -46 52 -62 18 -18 C 26 30 68 56 112 16 Z" fill="url(#tbLeafRight)" />
+      <!-- Stem Base Connection -->
+      <path d="M -16 26 C -6 38 6 38 16 26" stroke="#3C5C36" stroke-width="10" stroke-linecap="round" fill="none" />
+    </g>
+
   </g>
 </svg>

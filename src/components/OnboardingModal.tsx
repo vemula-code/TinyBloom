@@ -165,7 +165,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                       Explore Sample Data
                     </h3>
                     <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-                      Preview authentic WHO curves, percentiles, and printouts using Dhruv's sample profile first.
+                      Preview authentic WHO curves, percentiles, and printouts using generic sample records first.
                     </p>
                   </div>
                   <div className="pt-4 flex items-center gap-1.5 text-xs font-bold text-[var(--color-text-muted,#6E7B6C)] group-hover:text-[var(--color-text-main,#303832)]">
@@ -238,7 +238,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Maya, Dhruv, Leo, Aria"
+                  placeholder="e.g. Maya, Liam, Leo, Aria"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="w-full px-3.5 py-2 text-sm bg-white dark:bg-[#1D241F] border border-[var(--color-primary,#91A98B)]/35 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary,#91A98B)] font-medium"

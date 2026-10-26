@@ -43,7 +43,8 @@ import {
   Baby,
   Sun,
   Moon,
-  Palette
+  Palette,
+  Home as HomeIcon
 } from 'lucide-react';
 
 export default function App() {
@@ -188,7 +189,7 @@ export default function App() {
       console.error(e);
     }
     setIsOnboardingOpen(false);
-    setToastMessage('✨ Loaded Dhruv’s sample records! You can start fresh for your own baby anytime.');
+    setToastMessage('✨ Loaded Baby’s sample records! You can start fresh for your own baby anytime.');
     setTimeout(() => setToastMessage(null), 4500);
   };
 
@@ -326,19 +327,19 @@ export default function App() {
   const currentAge = calculateAge(profile.birthDate);
 
   return (
-    <div className="min-h-screen bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-20 transition-colors duration-250">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-24 transition-colors duration-250">
       {/* ========================================================
-          STICKY TOP HEADER
+          STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-white/90 dark:bg-[#1D241F]/90 backdrop-blur-md border-b border-[var(--color-primary,#91A98B)]/20">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#1D241F]/95 backdrop-blur-md border-b border-[var(--color-primary,#91A98B)]/20 w-full max-w-full overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 h-16 flex items-center justify-between gap-3">
           {/* Brand Identity with Sprout Motif */}
           <button
             type="button"
             onClick={() => setActiveTab('home')}
-            className="flex items-center text-left transition-opacity hover:opacity-90"
+            className="flex items-center text-left transition-opacity hover:opacity-90 shrink-0"
           >
-            <TinyBloomLogo size={38} showText={true} />
+            <TinyBloomLogo size={36} showText={true} />
           </button>
 
           {/* Desktop Navigation Links */}
@@ -400,8 +401,8 @@ export default function App() {
             </button>
           </nav>
 
-          {/* Action Buttons */}
-          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+          {/* Desktop Action Buttons */}
+          <div className="hidden md:flex items-center gap-2 shrink-0">
             {/* Day / Night Mode Toggle */}
             <button
               type="button"
@@ -429,7 +430,7 @@ export default function App() {
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
               title="A Letter to Parents · Why TinyBloom Exists"
-              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors border border-rose-200 dark:border-rose-900/40"
+              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors border border-rose-200 dark:border-rose-900/40 cursor-pointer"
             >
               <Heart className="w-4 h-4 fill-rose-500" />
             </button>
@@ -438,7 +439,7 @@ export default function App() {
               type="button"
               onClick={() => setIsReportOpen(true)}
               title="Doctor Visit Brief"
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30 cursor-pointer"
             >
               <Printer className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
             </button>
@@ -447,7 +448,7 @@ export default function App() {
               type="button"
               onClick={() => setIsSettingsOpen(true)}
               title="Settings & Themes"
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30"
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30 cursor-pointer"
             >
               <Settings className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
             </button>
@@ -460,11 +461,35 @@ export default function App() {
                 setEditingEntry(null);
                 setIsLogModalOpen(true);
               }}
-              className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0"
+              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Log Growth</span>
-              <span className="sm:hidden">Log</span>
+              <span>Log Growth</span>
+            </button>
+          </div>
+
+          {/* Clean Mobile Header Action (Uncluttered & Ergonomic) */}
+          <div className="flex md:hidden items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs font-bold text-[var(--color-text-main)] active:scale-95 transition-all"
+              title="Baby Profile"
+            >
+              <Baby className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
+              <span className="max-w-[70px] truncate">{profile.name}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Log</span>
             </button>
           </div>
         </div>
@@ -479,17 +504,17 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+      <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Sample Demo Mode Banner */}
         {profile.id === 'baby-main' && (
-          <div className="bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
-            <div className="flex items-center gap-3">
+          <div className="bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
               <span className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 text-base shadow-2xs">
                 🌱
               </span>
               <div>
-                <span className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-sm">
-                  You are exploring sample demo records for Dhruv.
+                <span className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-sm block">
+                  You are exploring sample demo records for Baby.
                 </span>
                 <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
                   Ready to track your own baby? Set up a clean, private tracker anytime.
@@ -499,71 +524,13 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsOnboardingOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5"
+              className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
             >
               <Baby className="w-3.5 h-3.5" />
               <span>Set Up My Baby</span>
             </button>
           </div>
         )}
-        {/* Mobile Navigation Pills */}
-        <div className="flex md:hidden items-center gap-1.5 overflow-x-auto pb-1 border-b border-[#91A98B]/20">
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === 'home'
-                ? 'bg-[#91A98B] text-white shadow-2xs'
-                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
-            }`}
-          >
-            Home
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('growth')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === 'growth'
-                ? 'bg-[#91A98B] text-white shadow-2xs'
-                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
-            }`}
-          >
-            WHO Charts
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('story')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === 'story'
-                ? 'bg-[#91A98B] text-white shadow-2xs'
-                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
-            }`}
-          >
-            Growth Story
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('history')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === 'history'
-                ? 'bg-[#91A98B] text-white shadow-2xs'
-                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
-            }`}
-          >
-            History ({entries.length})
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('nextsteps')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-              activeTab === 'nextsteps'
-                ? 'bg-[#91A98B] text-white shadow-2xs'
-                : 'text-[#6E7B6C] hover:bg-[#91A98B]/10'
-            }`}
-          >
-            Next Steps
-          </button>
-        </div>
 
         {/* ========================================================
             TAB 1: HOME SCREEN
@@ -941,28 +908,78 @@ export default function App() {
         </footer>
       </main>
 
-      {/* Floating Bottom Quick Action on Mobile */}
-      <div className="sm:hidden fixed bottom-4 right-4 z-30 flex items-center gap-2">
+      {/* ========================================================
+          MOBILE BOTTOM NAVIGATION BAR (iOS / Android Ergonomic)
+         ======================================================== */}
+      <nav
+        aria-label="Mobile Navigation"
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#1A221D]/95 backdrop-blur-md border-t border-[var(--color-card-border,#E2E9E0)] px-2 py-1.5 flex items-center justify-around shadow-lg"
+      >
+        {/* 1. Home */}
         <button
           type="button"
-          onClick={() => setIsReportOpen(true)}
-          className="flex items-center gap-1.5 px-3.5 py-3 bg-white border border-[#91A98B]/40 text-[#303832] text-xs font-bold rounded-full shadow-lg active:scale-95 transition-transform"
+          onClick={() => setActiveTab('home')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+            activeTab === 'home'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
+          }`}
         >
-          <Printer className="w-4 h-4 text-[#5D7C57]" />
-          <span>Report</span>
+          <HomeIcon className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">Home</span>
         </button>
+
+        {/* 2. WHO Charts */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('growth')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+            activeTab === 'growth'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
+          }`}
+        >
+          <TrendingUp className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">WHO</span>
+        </button>
+
+        {/* 3. Center Elevated + Log Action */}
         <button
           type="button"
           onClick={() => {
             setEditingEntry(null);
             setIsLogModalOpen(true);
           }}
-          className="flex items-center gap-2 px-4 py-3 bg-[#91A98B] text-white text-xs font-bold rounded-full shadow-lg shadow-[#91A98B]/30 active:scale-95 transition-transform"
+          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary,#91A98B)] hover:opacity-95 text-white shadow-md active:scale-95 transition-transform cursor-pointer"
+          aria-label="Log Measurement"
         >
-          <Plus className="w-4 h-4" />
-          <span>Log Growth</span>
+          <Plus className="w-6 h-6" />
         </button>
-      </div>
+
+        {/* 4. Milestones & Story */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('story')}
+          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+            activeTab === 'story' || activeTab === 'nextsteps'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
+          }`}
+        >
+          <BookOpen className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">Milestones</span>
+        </button>
+
+        {/* 5. Settings & Tools (Themes, App Download, PDF Report, Sync) */}
+        <button
+          type="button"
+          onClick={() => setIsSettingsOpen(true)}
+          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] transition-all cursor-pointer"
+        >
+          <Settings className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">Settings</span>
+        </button>
+      </nav>
 
       {/* Modals & Sheets */}
       <QuickLogModal

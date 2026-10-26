@@ -264,11 +264,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         </div>
       </div>
 
-      {/* SVG Interactive Canvas */}
-      <div className="relative w-full overflow-x-auto pt-2">
+      {/* SVG Interactive Canvas - 100% vector responsive with zero horizontal overflow */}
+      <div className="relative w-full overflow-hidden pt-2">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto min-w-[540px] select-none"
+          className="w-full h-auto block select-none touch-manipulation"
         >
           <defs>
             {/* Shaded bands gradient */}

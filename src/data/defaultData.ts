@@ -1,5 +1,4 @@
 import { BabyProfile, GrowthEntry } from '../types/growth';
-
 import defaultAvatarImg from '../assets/images/baby_portrait_gentle_1792885703662.jpg';
 
 // Bundled portrait asset with public fallback
@@ -16,165 +15,137 @@ export const PRESET_AVATARS = [
 
 export const DEFAULT_PROFILE: BabyProfile = {
   id: 'baby-main',
-  name: 'Dhruv',
+  name: 'Baby',
   gender: 'boy',
   birthDate: '2026-03-28',
   birthWeightKg: 3.40, // 7 lb 8 oz
   birthHeightCm: 50.8, // 20 in
   birthHeadCircumferenceCm: 35.0, // 13.78 in
   avatarUrl: DEFAULT_AVATAR,
-  notes: 'Born on March 28, 2026. Loving, tall boy (89th percentile height!) exploring sitting, babbling, and purees.',
+  notes: 'Born on March 28, 2026. Happy and thriving, exploring sitting, babbling, and first purees.',
 };
 
 export const DEFAULT_GROWTH_ENTRIES: GrowthEntry[] = [
   {
-    id: 'dhruv-0',
+    id: 'sample-0',
     date: '2026-03-28',
     ageMonths: 0,
-    weightKg: 3.40, // 7 lb 8 oz (55th %)
-    heightCm: 50.8, // 20.0 in (69th %)
+    weightKg: 3.40, // 7 lb 8 oz (50th %)
+    heightCm: 50.8, // 20.0 in (55th %)
     headCircumferenceCm: 35.0,
-    notes: 'Birth Day! Welcome to the world Dhruv. 7 lb 8 oz, 20 inches.',
+    notes: 'Birth Day! Welcome to the world. 7 lb 8 oz, 20 inches.',
     milestones: ['Birth Day'],
     isPediatricianVisit: true,
   },
   {
-    id: 'dhruv-1',
-    date: '2026-04-02',
-    ageMonths: 0.2, // 5 days
-    weightKg: 3.23, // 7 lb 2 oz (35th %)
-    heightCm: 52.7, // 20.75 in (85th %)
-    headCircumferenceCm: 35.0, // 13.78 in (51st %)
-    notes: '5-day newborn checkup. Gaining momentum.',
+    id: 'sample-1',
+    date: '2026-04-04',
+    ageMonths: 0.25, // 1 week
+    weightKg: 3.32, // 7 lb 5 oz
+    notes: '1 week check-in: Feeding well, regaining birth weight.',
+  },
+  {
+    id: 'sample-2',
+    date: '2026-04-11',
+    ageMonths: 0.5, // 2 weeks
+    weightKg: 3.55, // 7 lb 13 oz
+    notes: '2-week checkup: Fully surpassed birth weight!',
     isPediatricianVisit: true,
   },
   {
-    id: 'dhruv-2',
-    date: '2026-04-06',
-    ageMonths: 0.3, // 1w 2d
-    weightKg: 3.40, // 7 lb 8 oz (38th %)
-    notes: '1 week 2 days: Fully back to birth weight!',
+    id: 'sample-3',
+    date: '2026-04-25',
+    ageMonths: 0.9, // ~4 weeks
+    weightKg: 3.95, // 8 lb 11 oz
+    notes: 'Steady weekly gain (~0.4 kg every 2 weeks).',
   },
   {
-    id: 'dhruv-3',
-    date: '2026-04-14',
-    ageMonths: 0.6, // 2w 3d
-    weightKg: 3.69, // 8 lb 2 oz (36th %)
-    notes: '2 weeks 3 days: Gaining beautifully.',
-  },
-  {
-    id: 'dhruv-4',
-    date: '2026-04-19',
-    ageMonths: 0.7, // 3w 1d
-    weightKg: 3.77, // 8 lb 5 oz (27th %)
-    notes: '3 weeks old check-in.',
-  },
-  {
-    id: 'dhruv-5',
-    date: '2026-04-29',
-    ageMonths: 1.0, // 1m 1d
-    weightKg: 4.31, // 9 lb 8 oz (35th %)
-    notes: '1 month milestone! Sweet social smiles appearing.',
+    id: 'sample-4',
+    date: '2026-05-02',
+    ageMonths: 1.15, // 1 month
+    weightKg: 4.40, // 9 lb 11 oz
+    heightCm: 54.8, // 21.6 in
+    headCircumferenceCm: 37.2,
+    notes: '1 month milestone! Beautiful social smiles appearing.',
     milestones: ['First social smile'],
     isPediatricianVisit: true,
   },
   {
-    id: 'dhruv-6',
-    date: '2026-05-07',
-    ageMonths: 1.3, // 1m 1w 2d
-    weightKg: 4.59, // 10 lb 2 oz (34th %)
-    notes: 'Over 10 pounds!',
+    id: 'sample-5',
+    date: '2026-05-18',
+    ageMonths: 1.7, // ~7 weeks
+    weightKg: 4.90, // 10 lb 13 oz
+    notes: 'Steady steady growth, tracking along the healthy curve.',
   },
   {
-    id: 'dhruv-7',
-    date: '2026-05-16',
-    ageMonths: 1.6, // 1m 2w 4d
-    weightKg: 4.71, // 10 lb 6 oz (23rd %)
-    notes: 'Steady steady growth.',
-  },
-  {
-    id: 'dhruv-8',
-    date: '2026-05-23',
-    ageMonths: 1.8, // 1m 3w 4d
-    weightKg: 5.05, // 11 lb 2 oz (29th %)
-    notes: 'Passing 11 lbs!',
-  },
-  {
-    id: 'dhruv-9',
-    date: '2026-06-03',
-    ageMonths: 2.2, // 2m 6d
-    weightKg: 5.24, // 11 lb 9 oz (23rd %)
-    notes: '2 months old check-in.',
-  },
-  {
-    id: 'dhruv-10',
-    date: '2026-06-09',
-    ageMonths: 2.4, // 2m 1w 5d
-    weightKg: 5.61, // 12 lb 6 oz (33rd %)
-    heightCm: 60.5, // 23.82 in (66th %)
-    headCircumferenceCm: 39.0, // 15.35 in (27th %)
-    notes: '2 month well-child visit. Vaccines done bravely!',
+    id: 'sample-6',
+    date: '2026-06-01',
+    ageMonths: 2.1, // 2 months
+    weightKg: 5.45, // 12 lb 0 oz
+    heightCm: 58.4, // 23.0 in
+    headCircumferenceCm: 39.1,
+    notes: '2-month checkup: Brave with vaccines! Lifting head 45 degrees in tummy time.',
     milestones: ['Holds head steady during tummy time', 'Tracks faces and objects with eyes'],
     isPediatricianVisit: true,
   },
   {
-    id: 'dhruv-11',
-    date: '2026-06-21',
-    ageMonths: 2.8, // 2m 3w 3d
-    weightKg: 5.90, // 13 lb 0 oz (32nd %)
-    heightCm: 61.5, // 24.2 in (62nd %)
-    notes: '13 pounds milestone.',
+    id: 'sample-7',
+    date: '2026-06-18',
+    ageMonths: 2.7,
+    weightKg: 5.95, // 13 lb 2 oz
+    notes: '13-pound milestone reached!',
   },
   {
-    id: 'dhruv-12',
-    date: '2026-07-15',
-    ageMonths: 3.6, // 3m 2w 3d
-    weightKg: 6.50, // 6.5 kg = 14 lb 5 oz (37th %)
-    heightCm: 63.8, // 25.1 in (66th %)
-    notes: '3.5 months: 6.5 kg and over 25 inches tall!',
-  },
-  {
-    id: 'dhruv-13',
-    date: '2026-07-29',
-    ageMonths: 4.0, // 4m 1d
-    weightKg: 6.60, // 6.6 kg = 14 lb 9 oz (29th %)
-    notes: '4 months old today! Rolling tummy to back.',
-    milestones: ['Rolls tummy to back', 'Reaches out and grasps toys'],
-  },
-  {
-    id: 'dhruv-14',
-    date: '2026-08-10',
-    ageMonths: 4.4, // 4m 1w 6d
-    weightKg: 6.89, // 15 lb 3 oz (33rd %)
-    heightCm: 66.5, // 26.2 in (80th %)
-    headCircumferenceCm: 43.0, // 43.0 cm (78th %)
-    notes: '4 month wellness visit: Tall boy at 80th percentile for length!',
+    id: 'sample-8',
+    date: '2026-07-02',
+    ageMonths: 3.2,
+    weightKg: 6.40, // 14 lb 2 oz
+    heightCm: 61.8, // 24.3 in
+    notes: '3 months: Chuckling out loud and discovering little hands.',
     milestones: ['Laughs and chuckles out loud'],
+  },
+  {
+    id: 'sample-9',
+    date: '2026-07-22',
+    ageMonths: 3.8,
+    weightKg: 6.80, // 15 lb 0 oz
+    notes: '15 pounds! Reaching for dangling toys.',
+  },
+  {
+    id: 'sample-10',
+    date: '2026-08-05',
+    ageMonths: 4.3, // 4 months
+    weightKg: 7.15, // 15 lb 12 oz
+    heightCm: 64.6, // 25.4 in
+    headCircumferenceCm: 42.0,
+    notes: '4-month wellness visit: Strong neck and rolling tummy to back.',
+    milestones: ['Rolls tummy to back', 'Reaches out and grasps toys'],
     isPediatricianVisit: true,
   },
   {
-    id: 'dhruv-15',
-    date: '2026-09-01',
-    ageMonths: 5.1, // 5m 4d
-    weightKg: 7.30, // 7.3 kg = 16 lb 1 oz (37th %)
-    notes: '5 months old check-in: 7.3 kg.',
+    id: 'sample-11',
+    date: '2026-08-25',
+    ageMonths: 4.9,
+    weightKg: 7.50, // 16 lb 8 oz
+    notes: 'Gaining smoothly (~0.5 kg every 3 weeks).',
   },
   {
-    id: 'dhruv-16',
-    date: '2026-09-21',
-    ageMonths: 5.8, // 5m 3w 3d
-    weightKg: 7.80, // 7.8 kg = 17 lb 3 oz (47th %)
-    notes: 'Almost 6 months: Gaining strong at 7.8 kg!',
-    milestones: ['First taste of solid foods / puree', 'Babbles chains (ba-ba, da-da, ma-ma)'],
+    id: 'sample-12',
+    date: '2026-09-15',
+    ageMonths: 5.6,
+    weightKg: 7.80, // 17 lb 3 oz
+    heightCm: 67.2, // 26.5 in
+    notes: 'Almost 6 months: Sitting with light tripod hand support.',
+    milestones: ['First taste of puree', 'Babbles chains (ba-ba, da-da)'],
   },
   {
-    id: 'dhruv-17',
-    date: '2026-10-14',
-    ageMonths: 6.5, // 6m 2w 2d (~7m)
-    weightKg: 7.88, // 17 lb 6 oz (38th %)
-    heightCm: 71.1, // 28.0 in (89th % - Long boy!)
-    headCircumferenceCm: 44.5, // 44.5 cm (74th %)
-    notes: '6.5 month checkup: Height 28 inches (89th percentile!), Head 44.5 cm (74th percentile), Weight 17 lb 6 oz. Sitting up steadily!',
+    id: 'sample-13',
+    date: '2026-10-12',
+    ageMonths: 6.5,
+    weightKg: 8.15, // 17 lb 15 oz (~18 lbs)
+    heightCm: 69.5, // 27.4 in
+    headCircumferenceCm: 43.8,
+    notes: '6-month checkup: Sitting steadily without hand support, passing toys hand-to-hand!',
     milestones: ['Sits steadily without hand support', 'Transfers toys from one hand to the other'],
     isPediatricianVisit: true,
   },
