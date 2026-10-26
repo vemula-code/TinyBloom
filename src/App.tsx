@@ -15,7 +15,6 @@ import { NextStepsGuide } from './components/NextStepsGuide';
 import { QuickLogModal } from './components/QuickLogModal';
 import { PrintDoctorReport } from './components/PrintDoctorReport';
 import { SettingsModal } from './components/SettingsModal';
-import { PWAInstallButton } from './components/PWAInstallButton';
 import { ImportPastDataModal } from './components/ImportPastDataModal';
 import { TinyBloomLogo } from './components/TinyBloomLogo';
 import { BabyAvatar } from './components/BabyAvatar';
@@ -384,49 +383,17 @@ export default function App() {
             <TinyBloomLogo size={36} showText={true} />
           </button>
 
-          {/* Streamlined Right Header: Baby Story, Download Option & Day/Night Theme */}
-          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
-            {/* Baby Identity, Age, and Developmental Story Stage Badge */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('story')}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer group"
-              title="View Baby Growth Story & Developmental Milestones"
-            >
-              <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-              <span className="font-bold">{profile.name}</span>
-              <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
-              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] font-medium pl-1.5 border-l border-[var(--color-primary,#91A98B)]/30">
-                <BookOpen className="w-3 h-3 text-[var(--color-primary,#91A98B)] shrink-0" />
-                <span>{getBabyStageStorySummary(currentAge.months)}</span>
-              </span>
-            </button>
-
-            {/* Install / Download App on Phone & Desktop (Android & iPhone PWA) */}
-            <PWAInstallButton />
-
-            {/* Day / Night Slumber Mode Quick Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                if (paletteTheme === 'midnight' || themeMode === 'dark') {
-                  setThemeMode('light');
-                  setPaletteTheme('sage');
-                } else {
-                  setThemeMode('dark');
-                  setPaletteTheme('midnight');
-                }
-              }}
-              title={paletteTheme === 'midnight' || themeMode === 'dark' ? 'Switch to Daylight' : 'Switch to Midnight Slumber (2 AM Low-Light Feedings)'}
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-card-border,#E2E9E0)] cursor-pointer"
-            >
-              {paletteTheme === 'midnight' || themeMode === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-indigo-400" />
-              )}
-            </button>
-          </div>
+          {/* Minimal Right Header: Baby Name & Age (Tap to open Profile & Settings) */}
+          <button
+            type="button"
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
+            title="Tap to manage baby profile and settings"
+          >
+            <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
+            <span className="font-bold truncate max-w-[120px]">{profile.name}</span>
+            <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
+          </button>
         </div>
       </header>
 
