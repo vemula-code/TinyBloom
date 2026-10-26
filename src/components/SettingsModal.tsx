@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BabyProfile, Gender, GrowthEntry, MetricUnit, ThemeMode, PaletteTheme } from '../types/growth';
 import { TinyBloomLogo } from './TinyBloomLogo';
 import { BabyAvatar } from './BabyAvatar';
+import { PWAInstallButton } from './PWAInstallButton';
 import { PRESET_AVATARS, DEFAULT_AVATAR } from '../data/defaultData';
 import { kgToLbsOz, cmToInches } from '../data/whoGrowthStandards';
 import { generateSyncUrl } from '../utils/syncPayload';
@@ -439,6 +440,25 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   );
                 })}
               </div>
+            </div>
+          </div>
+
+          {/* Install TinyBloom on Mobile / Desktop */}
+          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                <span>Install TinyBloom App (Home Screen PWA)</span>
+              </h3>
+              <span className="text-[10px] bg-[var(--color-primary,#91A98B)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] px-2 py-0.5 rounded-full font-bold">
+                Works Offline
+              </span>
+            </div>
+            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+              Install TinyBloom directly to your iPhone or Android home screen for full offline access, instant 1-tap launching during pediatrician visits, and full private data storage.
+            </p>
+            <div className="pt-1">
+              <PWAInstallButton />
             </div>
           </div>
 

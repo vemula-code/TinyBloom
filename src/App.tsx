@@ -342,154 +342,17 @@ export default function App() {
             <TinyBloomLogo size={36} showText={true} />
           </button>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden md:flex items-center gap-6 text-xs font-semibold text-[var(--color-text-muted,#6E7B6C)]">
-            <button
-              type="button"
-              onClick={() => setActiveTab('home')}
-              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
-                activeTab === 'home'
-                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
-                  : ''
-              }`}
-            >
-              Home
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('growth')}
-              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
-                activeTab === 'growth'
-                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
-                  : ''
-              }`}
-            >
-              WHO Charts
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('story')}
-              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
-                activeTab === 'story'
-                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
-                  : ''
-              }`}
-            >
-              Growth Story
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('history')}
-              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
-                activeTab === 'history'
-                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
-                  : ''
-              }`}
-            >
-              History ({entries.length})
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveTab('nextsteps')}
-              className={`hover:text-[var(--color-text-main,#303832)] transition-colors ${
-                activeTab === 'nextsteps'
-                  ? 'text-[var(--color-text-main,#303832)] font-bold underline underline-offset-8 decoration-[var(--color-primary,#91A98B)] decoration-2'
-                  : ''
-              }`}
-            >
-              Next Steps
-            </button>
-          </nav>
-
-          {/* Desktop Action Buttons */}
-          <div className="hidden md:flex items-center gap-2 shrink-0">
-            {/* Day / Night Mode Toggle */}
-            <button
-              type="button"
-              onClick={() => {
-                if (paletteTheme === 'midnight' || themeMode === 'dark') {
-                  setThemeMode('light');
-                  setPaletteTheme('sage');
-                } else {
-                  setThemeMode('dark');
-                  setPaletteTheme('midnight');
-                }
-              }}
-              title={paletteTheme === 'midnight' || themeMode === 'dark' ? 'Switch to Warm Daylight (Sage)' : 'Switch to Midnight Slumber (2 AM Feedings)'}
-              className="p-2 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-primary)]/10 rounded-xl transition-colors border border-[var(--color-card-border,#E2E9E0)] cursor-pointer"
-            >
-              {paletteTheme === 'midnight' || themeMode === 'dark' ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-indigo-500" />
-              )}
-            </button>
-
-            {/* A Letter to Parents / Our Story */}
-            <button
-              type="button"
-              onClick={() => setIsHeartModalOpen(true)}
-              title="A Letter to Parents · Why TinyBloom Exists"
-              className="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/40 rounded-xl transition-colors border border-rose-200 dark:border-rose-900/40 cursor-pointer"
-            >
-              <Heart className="w-4 h-4 fill-rose-500" />
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setIsReportOpen(true)}
-              title="Doctor Visit Brief"
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30 cursor-pointer"
-            >
-              <Printer className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-            </button>
-
+          {/* Streamlined Right Header: Clean Baby Profile & Settings Link */}
+          <div className="flex items-center gap-2 shrink-0">
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              title="Settings & Themes"
-              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-primary,#91A98B)]/30 cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-bold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer"
+              title="Baby Profile & Settings"
             >
-              <Settings className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-            </button>
-
-            <PWAInstallButton />
-
-            <button
-              type="button"
-              onClick={() => {
-                setEditingEntry(null);
-                setIsLogModalOpen(true);
-              }}
-              className="flex items-center gap-1.5 px-3.5 py-2 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Log Growth</span>
-            </button>
-          </div>
-
-          {/* Clean Mobile Header Action (Uncluttered & Ergonomic) */}
-          <div className="flex md:hidden items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs font-bold text-[var(--color-text-main)] active:scale-95 transition-all"
-              title="Baby Profile"
-            >
-              <Baby className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
-              <span className="max-w-[70px] truncate">{profile.name}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => {
-                setEditingEntry(null);
-                setIsLogModalOpen(true);
-              }}
-              className="flex items-center gap-1 px-3 py-1.5 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-2xs active:scale-95 whitespace-nowrap cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Log</span>
+              <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
+              <span className="truncate max-w-[120px]">{profile.name}</span>
+              <span className="text-[11px] font-normal text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
             </button>
           </div>
         </div>
@@ -909,17 +772,17 @@ export default function App() {
       </main>
 
       {/* ========================================================
-          MOBILE BOTTOM NAVIGATION BAR (iOS / Android Ergonomic)
+          BOTTOM NAVIGATION BAR (Universal & Responsive Dock)
          ======================================================== */}
       <nav
-        aria-label="Mobile Navigation"
-        className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[#1A221D]/95 backdrop-blur-md border-t border-[var(--color-card-border,#E2E9E0)] px-2 py-1.5 flex items-center justify-around shadow-lg"
+        aria-label="Navigation"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-xl sm:rounded-2xl z-40 bg-white/95 dark:bg-[#1A221D]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border,#E2E9E0)] px-2 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
       >
         {/* 1. Home */}
         <button
           type="button"
           onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
             activeTab === 'home'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
@@ -933,7 +796,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setActiveTab('growth')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
             activeTab === 'growth'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
@@ -952,6 +815,7 @@ export default function App() {
           }}
           className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary,#91A98B)] hover:opacity-95 text-white shadow-md active:scale-95 transition-transform cursor-pointer"
           aria-label="Log Measurement"
+          title="Log Measurement"
         >
           <Plus className="w-6 h-6" />
         </button>
@@ -960,21 +824,35 @@ export default function App() {
         <button
           type="button"
           onClick={() => setActiveTab('story')}
-          className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition-all ${
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
             activeTab === 'story' || activeTab === 'nextsteps'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
           }`}
         >
           <BookOpen className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Milestones</span>
+          <span className="text-[10px] tracking-tight">Story</span>
         </button>
 
-        {/* 5. Settings & Tools (Themes, App Download, PDF Report, Sync) */}
+        {/* 5. History */}
+        <button
+          type="button"
+          onClick={() => setActiveTab('history')}
+          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+            activeTab === 'history'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
+          }`}
+        >
+          <Layers className="w-5 h-5 mb-0.5" />
+          <span className="text-[10px] tracking-tight">History ({entries.length})</span>
+        </button>
+
+        {/* 6. Settings & Tools (Themes, App Download, PDF Report, Sync) */}
         <button
           type="button"
           onClick={() => setIsSettingsOpen(true)}
-          className="flex flex-col items-center justify-center py-1 px-2.5 rounded-xl text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] transition-all cursor-pointer"
+          className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] transition-all cursor-pointer"
         >
           <Settings className="w-5 h-5 mb-0.5" />
           <span className="text-[10px] tracking-tight">Settings</span>
