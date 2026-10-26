@@ -65,26 +65,28 @@ export const PWAInstallButton: React.FC = () => {
         <button
           type="button"
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-[#303832] bg-white hover:bg-[#FFF9F0] rounded-xl transition-all border border-[#91A98B]/30 whitespace-nowrap shrink-0 shadow-2xs"
+          className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 rounded-xl transition-all border border-[var(--color-primary,#91A98B)]/30 whitespace-nowrap shrink-0 shadow-2xs active:scale-95 cursor-pointer"
+          title="Install TinyBloom on Mobile (Android & iPhone)"
         >
-          <Smartphone className="w-3.5 h-3.5 text-[#5D7C57]" />
-          <span>Install on Phone</span>
+          <Smartphone className="w-3.5 h-3.5 shrink-0" />
+          <span className="hidden sm:inline">Install App</span>
+          <span className="sm:hidden">Install</span>
         </button>
       )}
 
       {/* Installation Guide Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-          <div className="bg-[#FFF9F0] rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-lg overflow-hidden my-4 sm:my-6">
+          <div className="bg-[#FFF9F0] dark:bg-[#1B2420] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-lg overflow-hidden my-4 sm:my-6">
             {/* Modal Header */}
-            <div className="px-6 py-4 border-b border-[#91A98B]/20 flex items-center justify-between bg-white/70">
+            <div className="px-6 py-4 border-b border-[#91A98B]/20 flex items-center justify-between bg-white/70 dark:bg-[#141C18]/90">
               <div className="flex items-center gap-3">
                 <TinyBloomLogo size={36} />
                 <div>
-                  <h2 className="text-base font-bold font-heading text-[#303832]">
+                  <h2 className="text-base font-bold font-heading text-[var(--color-text-main)]">
                     Install TinyBloom on Mobile
                   </h2>
-                  <p className="text-xs text-[#6E7B6C]">
+                  <p className="text-xs text-[var(--color-text-muted)]">
                     Native Standalone PWA · Offline First · Android & iPhone
                   </p>
                 </div>
@@ -93,14 +95,14 @@ export const PWAInstallButton: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+                className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <div className="p-6 space-y-5 bg-[#FFF9F0]">
+            <div className="p-6 space-y-5 bg-[#FFF9F0] dark:bg-[#1B2420]">
               {/* Native Prompt button if browser allows it */}
               {isInstallable && (
                 <div className="p-4 bg-[#91A98B]/15 border border-[#91A98B]/30 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-3">

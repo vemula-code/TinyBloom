@@ -24,16 +24,40 @@
     --color-text-muted: #6B6258;
   }
 
-  /* Theme 3: Midnight Slumber (2 AM Low-Light Feedings) */
+  /* Theme 3: Midnight Slumber (Comfortable 2 AM Eye-Care Night Mode) */
   [data-theme="midnight"], .dark {
-    --color-primary: #7FA87A;
-    --color-primary-dark: #A4CCA0;
-    --color-primary-light: rgba(127, 168, 122, 0.2);
-    --color-canvas: #121714;
-    --color-card: #1A221D;
-    --color-card-border: rgba(127, 168, 122, 0.22);
-    --color-text-main: #F1F6F2;
-    --color-text-muted: #9BB0A0;
+    --color-primary: #86B880;
+    --color-primary-dark: #AEE2A8;
+    --color-primary-light: rgba(134, 184, 128, 0.22);
+    --color-canvas: #121815;
+    --color-card: #1B2420;
+    --color-card-border: rgba(174, 226, 168, 0.22);
+    --color-text-main: #F4FAF5;
+    --color-text-muted: #A8BCAC;
+  }
+
+  .dark {
+    color-scheme: dark;
+  }
+
+  /* High contrast font and container adaptability in dark / night mode */
+  .dark .bg-white {
+    background-color: #1B2420 !important;
+  }
+  .dark .bg-\[\#FFF9F0\], .dark .bg-\[\#FFF9F0\]\/60 {
+    background-color: #141C18 !important;
+  }
+  .dark .text-\[\#303832\] {
+    color: #F4FAF5 !important;
+  }
+  .dark .text-\[\#6E7B6C\] {
+    color: #A8BCAC !important;
+  }
+  .dark .border-\[\#91A98B\]\/20,
+  .dark .border-\[\#91A98B\]\/25,
+  .dark .border-\[\#91A98B\]\/30,
+  .dark .border-stone-200 {
+    border-color: rgba(174, 226, 168, 0.22) !important;
   }
 
   body {

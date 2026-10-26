@@ -210,17 +210,17 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           <div className="flex items-center gap-2">
             <h3 className="text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight">
               {chartType === 'weight'
-                ? 'WHO Weight-for-Age'
+                ? 'WHO Weight-for-Age Standards'
                 : chartType === 'height'
-                ? 'WHO Length / Height'
-                : 'WHO Head Circumference'} · {gender === 'boy' ? 'Boys' : 'Girls'}
+                ? 'WHO Length / Height Standards'
+                : 'WHO Head Circumference Standards'} · {gender === 'boy' ? 'Boys' : 'Girls'}
             </h3>
             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] uppercase">
-              WHO Reference
+              Official WHO
             </span>
           </div>
           <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-            Statistical percentiles (P3 to P97) compared against {babyName}’s curve
+            Official World Health Organization reference curves (P3 to P97) · Individual tracking for {babyName}
           </p>
         </div>
 
@@ -261,6 +261,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <span>+ Log Data</span>
             </button>
           )}
+        </div>
+      </div>
+
+      {/* WHO Educational Context & Zero-Comparison Note */}
+      <div className="my-3 px-3.5 py-2.5 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs flex items-start gap-2.5">
+        <span className="text-sm shrink-0 mt-0.5">🌱</span>
+        <div className="space-y-0.5">
+          <span className="font-bold text-[var(--color-text-main)] block">
+            Official WHO Standards · No two babies are the same
+          </span>
+          <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+            All percentile bands come directly from the <strong>World Health Organization Child Growth Standards</strong>. Percentiles are statistical population guides, not grades or contests. A baby tracking along the 15th percentile is just as healthy as one at the 85th—every child's growth trajectory is completely individual.
+          </p>
         </div>
       </div>
 

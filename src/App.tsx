@@ -47,6 +47,19 @@ import {
   Home as HomeIcon
 } from 'lucide-react';
 
+// Helper: concise developmental stage summary for top header
+function getBabyStageStorySummary(ageMonths: number): string {
+  if (ageMonths < 1) return 'Newborn Cuddles';
+  if (ageMonths < 2) return 'Social Smiles & Tracking';
+  if (ageMonths < 4) return 'Chuckles & Head Steady';
+  if (ageMonths < 6) return 'Rolling & Grasping';
+  if (ageMonths < 9) return 'Sitting & First Tastes';
+  if (ageMonths < 12) return 'Crawling & Waving';
+  if (ageMonths < 18) return 'First Steps & Stacking';
+  if (ageMonths < 24) return 'Running & Talking';
+  return 'Stories & Curious Play';
+}
+
 export default function App() {
   // Local storage initialization with automatic migration from previous version
   const [profile, setProfile] = useState<BabyProfile>(() => {
@@ -55,6 +68,13 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.birthDate) {
+          // Auto-migrate any legacy cached demo profile name to generic Baby
+          if (parsed.name === 'Dhruv') {
+            parsed.name = 'Baby';
+          }
+          if (parsed.id === 'baby-dhruv') {
+            parsed.id = 'baby-main';
+          }
           return parsed;
         }
       }
@@ -70,7 +90,11 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          // Auto-sanitize any notes referencing legacy name
+          return parsed.map((e) => ({
+            ...e,
+            notes: e.notes ? e.notes.replace(/Dhruv/g, 'Baby') : e.notes,
+          }));
         }
       }
       return DEFAULT_GROWTH_ENTRIES;
@@ -342,17 +366,47 @@ export default function App() {
             <TinyBloomLogo size={36} showText={true} />
           </button>
 
-          {/* Streamlined Right Header: Clean Baby Profile & Settings Link */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Streamlined Right Header: Baby Story, Download Option & Day/Night Theme */}
+          <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
+            {/* Baby Identity, Age, and Developmental Story Stage Badge */}
             <button
               type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-bold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer"
-              title="Baby Profile & Settings"
+              onClick={() => setActiveTab('story')}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer group"
+              title="View Baby Growth Story & Developmental Milestones"
             >
               <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-              <span className="truncate max-w-[120px]">{profile.name}</span>
-              <span className="text-[11px] font-normal text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
+              <span className="font-bold">{profile.name}</span>
+              <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
+              <span className="hidden sm:inline-flex items-center gap-1 text-[11px] text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] font-medium pl-1.5 border-l border-[var(--color-primary,#91A98B)]/30">
+                <BookOpen className="w-3 h-3 text-[var(--color-primary,#91A98B)] shrink-0" />
+                <span>{getBabyStageStorySummary(currentAge.months)}</span>
+              </span>
+            </button>
+
+            {/* Install / Download App on Phone & Desktop (Android & iPhone PWA) */}
+            <PWAInstallButton />
+
+            {/* Day / Night Slumber Mode Quick Toggle */}
+            <button
+              type="button"
+              onClick={() => {
+                if (paletteTheme === 'midnight' || themeMode === 'dark') {
+                  setThemeMode('light');
+                  setPaletteTheme('sage');
+                } else {
+                  setThemeMode('dark');
+                  setPaletteTheme('midnight');
+                }
+              }}
+              title={paletteTheme === 'midnight' || themeMode === 'dark' ? 'Switch to Daylight' : 'Switch to Midnight Slumber (2 AM Low-Light Feedings)'}
+              className="p-2 text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] hover:bg-[var(--color-primary,#91A98B)]/10 rounded-xl transition-colors border border-[var(--color-card-border,#E2E9E0)] cursor-pointer"
+            >
+              {paletteTheme === 'midnight' || themeMode === 'dark' ? (
+                <Sun className="w-4 h-4 text-amber-400" />
+              ) : (
+                <Moon className="w-4 h-4 text-indigo-400" />
+              )}
             </button>
           </div>
         </div>
