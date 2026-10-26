@@ -68,12 +68,17 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.birthDate) {
-          // Auto-migrate any legacy cached demo profile name to generic Baby
-          if (parsed.name === 'Dhruv') {
-            parsed.name = 'Baby';
-          }
-          if (parsed.id === 'baby-dhruv') {
-            parsed.id = 'baby-main';
+          // If this was an old demo session containing user's child dates or Dhruv, flush to synthetic sample
+          if (
+            parsed.id === 'baby-dhruv' ||
+            parsed.id === 'baby-main' ||
+            parsed.birthDate === '2026-03-28' ||
+            parsed.name === 'Dhruv' ||
+            parsed.name === 'Baby'
+          ) {
+            localStorage.setItem('tinybloom_profile', JSON.stringify(DEFAULT_PROFILE));
+            localStorage.setItem('tinybloom_entries', JSON.stringify(DEFAULT_GROWTH_ENTRIES));
+            return DEFAULT_PROFILE;
           }
           return parsed;
         }
@@ -86,15 +91,28 @@ export default function App() {
 
   const [entries, setEntries] = useState<GrowthEntry[]>(() => {
     try {
+      const savedProfile = localStorage.getItem('tinybloom_profile');
+      if (savedProfile) {
+        const parsedP = JSON.parse(savedProfile);
+        if (
+          parsedP.id === 'baby-dhruv' ||
+          parsedP.id === 'baby-main' ||
+          parsedP.birthDate === '2026-03-28' ||
+          parsedP.name === 'Dhruv' ||
+          parsedP.name === 'Baby'
+        ) {
+          return DEFAULT_GROWTH_ENTRIES;
+        }
+      }
       const saved = localStorage.getItem('tinybloom_entries') || localStorage.getItem('naragrowth_entries');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          // Auto-sanitize any notes referencing legacy name
-          return parsed.map((e) => ({
-            ...e,
-            notes: e.notes ? e.notes.replace(/Dhruv/g, 'Baby') : e.notes,
-          }));
+          // If records contain the old March 28 birthdate or Dhruv, replace with synthetic sample
+          if (parsed.some((e: any) => e.date === '2026-03-28' || (e.notes && e.notes.includes('Dhruv')))) {
+            return DEFAULT_GROWTH_ENTRIES;
+          }
+          return parsed;
         }
       }
       return DEFAULT_GROWTH_ENTRIES;
@@ -423,7 +441,7 @@ export default function App() {
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
         {/* Sample Demo Mode Banner */}
-        {profile.id === 'baby-main' && (
+        {(profile.id === 'demo-sample-baby' || profile.id === 'baby-main' || profile.name === 'Sample Baby') && (
           <div className="bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
             <div className="flex items-center gap-3 w-full sm:w-auto">
               <span className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 text-base shadow-2xs">
@@ -431,7 +449,7 @@ export default function App() {
               </span>
               <div>
                 <span className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-sm block">
-                  You are exploring sample demo records for Baby.
+                  You are exploring generic sample demo records.
                 </span>
                 <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
                   Ready to track your own baby? Set up a clean, private tracker anytime.
@@ -826,19 +844,19 @@ export default function App() {
       </main>
 
       {/* ========================================================
-          BOTTOM NAVIGATION BAR (Universal & Responsive Dock)
+          BOTTOM NAVIGATION BAR (2 on left, + in center, 2 on right)
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-xl sm:rounded-2xl z-40 bg-white/95 dark:bg-[#1A221D]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border,#E2E9E0)] px-2 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-white/95 dark:bg-[#1B2420]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border,#E2E9E0)] px-3 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
       >
-        {/* 1. Home */}
+        {/* Left 1: Home */}
         <button
           type="button"
           onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeTab === 'home'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
           }`}
         >
@@ -846,13 +864,13 @@ export default function App() {
           <span className="text-[10px] tracking-tight">Home</span>
         </button>
 
-        {/* 2. WHO Charts */}
+        {/* Left 2: WHO Charts */}
         <button
           type="button"
           onClick={() => setActiveTab('growth')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeTab === 'growth'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
           }`}
         >
@@ -860,7 +878,7 @@ export default function App() {
           <span className="text-[10px] tracking-tight">WHO</span>
         </button>
 
-        {/* 3. Center Elevated + Log Action */}
+        {/* Center: Elevated + Log Action */}
         <button
           type="button"
           onClick={() => {
@@ -874,13 +892,13 @@ export default function App() {
           <Plus className="w-6 h-6" />
         </button>
 
-        {/* 4. Milestones & Story */}
+        {/* Right 1: Milestones & Story */}
         <button
           type="button"
           onClick={() => setActiveTab('story')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeTab === 'story' || activeTab === 'nextsteps'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
           }`}
         >
@@ -888,25 +906,15 @@ export default function App() {
           <span className="text-[10px] tracking-tight">Story</span>
         </button>
 
-        {/* 5. History */}
-        <button
-          type="button"
-          onClick={() => setActiveTab('history')}
-          className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
-            activeTab === 'history'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold'
-              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-          }`}
-        >
-          <Layers className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">History ({entries.length})</span>
-        </button>
-
-        {/* 6. Settings & Tools (Themes, App Download, PDF Report, Sync) */}
+        {/* Right 2: Settings & Tools (Measurement History, Themes, App Download, PDF Report) */}
         <button
           type="button"
           onClick={() => setIsSettingsOpen(true)}
-          className="flex flex-col items-center justify-center py-1 px-2 rounded-xl text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] transition-all cursor-pointer"
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+            isSettingsOpen
+              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
+              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
+          }`}
         >
           <Settings className="w-5 h-5 mb-0.5" />
           <span className="text-[10px] tracking-tight">Settings</span>
@@ -953,6 +961,7 @@ export default function App() {
         onChangePaletteTheme={setPaletteTheme}
         onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
         onOpenOnboardingModal={() => setIsOnboardingOpen(true)}
+        onNavigateToHistory={() => setActiveTab('history')}
       />
 
       <HeartfeltModal

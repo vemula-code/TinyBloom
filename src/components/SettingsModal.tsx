@@ -26,7 +26,8 @@ import {
   Camera,
   Sparkles,
   Share2,
-  Copy
+  Copy,
+  Layers
 } from 'lucide-react';
 
 interface SettingsModalProps {
@@ -46,6 +47,7 @@ interface SettingsModalProps {
   onChangePaletteTheme: (palette: PaletteTheme) => void;
   onOpenHeartfeltModal?: () => void;
   onOpenOnboardingModal?: () => void;
+  onNavigateToHistory?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -65,6 +67,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onChangePaletteTheme,
   onOpenHeartfeltModal,
   onOpenOnboardingModal,
+  onNavigateToHistory,
 }) => {
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
@@ -460,6 +463,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="pt-1">
               <PWAInstallButton />
             </div>
+          </div>
+
+          {/* Measurement History Section (Moved from Bottom Nav to Settings) */}
+          <div className="bg-white dark:bg-[#1B2420] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] flex items-center gap-1.5">
+                <Layers className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                <span>Measurement History ({entries.length} Records)</span>
+              </h3>
+              <span className="text-[10px] bg-[var(--color-primary,#91A98B)]/15 text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] px-2 py-0.5 rounded-full font-bold">
+                {entries.length} Logs
+              </span>
+            </div>
+            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+              Search, filter, view details, edit dates or notes, and manage every growth measurement recorded for {profile.name}.
+            </p>
+            {onNavigateToHistory && (
+              <button
+                type="button"
+                onClick={() => {
+                  onClose();
+                  onNavigateToHistory();
+                }}
+                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[var(--color-primary,#91A98B)] hover:opacity-90 text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5" />
+                <span>Open Full Measurement Table ({entries.length})</span>
+              </button>
+            )}
           </div>
 
           {/* Baby Profile Details & Avatar Selector */}

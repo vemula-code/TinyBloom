@@ -13,140 +13,88 @@ export const PRESET_AVATARS = [
   { id: 'chick-badge', label: 'Sunny Chick', url: 'chick' },
 ];
 
+/**
+ * Generic Synthetic Demo Profile
+ * Standard WHO 50th percentile benchmark figures (completely generic sample data).
+ */
 export const DEFAULT_PROFILE: BabyProfile = {
-  id: 'baby-main',
-  name: 'Baby',
+  id: 'demo-sample-baby',
+  name: 'Sample Baby',
   gender: 'boy',
-  birthDate: '2026-03-28',
-  birthWeightKg: 3.40, // 7 lb 8 oz
-  birthHeightCm: 50.8, // 20 in
-  birthHeadCircumferenceCm: 35.0, // 13.78 in
+  birthDate: '2026-04-15',
+  birthWeightKg: 3.30, // WHO 50th percentile at birth (7 lb 4 oz)
+  birthHeightCm: 50.0, // WHO 50th percentile length at birth (19.7 in)
+  birthHeadCircumferenceCm: 34.5, // WHO 50th percentile head circumference
   avatarUrl: DEFAULT_AVATAR,
-  notes: 'Born on March 28, 2026. Happy and thriving, exploring sitting, babbling, and first purees.',
+  notes: 'Sample demo records following standard WHO 50th percentile trajectory.',
 };
 
+/**
+ * Generic Synthetic Demo Growth Entries
+ * 6 textbook clinical checkups matching standard WHO 50th percentile curves.
+ */
 export const DEFAULT_GROWTH_ENTRIES: GrowthEntry[] = [
   {
     id: 'sample-0',
-    date: '2026-03-28',
+    date: '2026-04-15',
     ageMonths: 0,
-    weightKg: 3.40, // 7 lb 8 oz (50th %)
-    heightCm: 50.8, // 20.0 in (55th %)
-    headCircumferenceCm: 35.0,
-    notes: 'Birth Day! Welcome to the world. 7 lb 8 oz, 20 inches.',
+    weightKg: 3.30,
+    heightCm: 50.0,
+    headCircumferenceCm: 34.5,
+    notes: 'Sample birth measurement · Standard WHO 50th percentile baseline',
     milestones: ['Birth Day'],
     isPediatricianVisit: true,
   },
   {
     id: 'sample-1',
-    date: '2026-04-04',
-    ageMonths: 0.25, // 1 week
-    weightKg: 3.32, // 7 lb 5 oz
-    notes: '1 week check-in: Feeding well, regaining birth weight.',
+    date: '2026-04-29',
+    ageMonths: 0.5,
+    weightKg: 3.55,
+    notes: 'Sample 2-week checkup · Healthy feeding and weight progression',
+    isPediatricianVisit: true,
   },
   {
     id: 'sample-2',
-    date: '2026-04-11',
-    ageMonths: 0.5, // 2 weeks
-    weightKg: 3.55, // 7 lb 13 oz
-    notes: '2-week checkup: Fully surpassed birth weight!',
+    date: '2026-05-15',
+    ageMonths: 1.0,
+    weightKg: 4.50,
+    heightCm: 54.7,
+    headCircumferenceCm: 37.3,
+    notes: 'Sample 1-month pediatric visit · Social smiles & eye contact',
+    milestones: ['First social smiles'],
     isPediatricianVisit: true,
   },
   {
     id: 'sample-3',
-    date: '2026-04-25',
-    ageMonths: 0.9, // ~4 weeks
-    weightKg: 3.95, // 8 lb 11 oz
-    notes: 'Steady weekly gain (~0.4 kg every 2 weeks).',
+    date: '2026-06-15',
+    ageMonths: 2.0,
+    weightKg: 5.60,
+    heightCm: 58.4,
+    headCircumferenceCm: 39.1,
+    notes: 'Sample 2-month wellness checkup · Holds head steady during tummy time',
+    milestones: ['Holds head steady during tummy time', 'Tracks faces and objects'],
+    isPediatricianVisit: true,
   },
   {
     id: 'sample-4',
-    date: '2026-05-02',
-    ageMonths: 1.15, // 1 month
-    weightKg: 4.40, // 9 lb 11 oz
-    heightCm: 54.8, // 21.6 in
-    headCircumferenceCm: 37.2,
-    notes: '1 month milestone! Beautiful social smiles appearing.',
-    milestones: ['First social smile'],
+    date: '2026-08-15',
+    ageMonths: 4.0,
+    weightKg: 7.00,
+    heightCm: 63.9,
+    headCircumferenceCm: 41.6,
+    notes: 'Sample 4-month checkup · Rolling tummy to back and grasping toys',
+    milestones: ['Rolls tummy to back', 'Reaches for and grasps toys'],
     isPediatricianVisit: true,
   },
   {
     id: 'sample-5',
-    date: '2026-05-18',
-    ageMonths: 1.7, // ~7 weeks
-    weightKg: 4.90, // 10 lb 13 oz
-    notes: 'Steady steady growth, tracking along the healthy curve.',
-  },
-  {
-    id: 'sample-6',
-    date: '2026-06-01',
-    ageMonths: 2.1, // 2 months
-    weightKg: 5.45, // 12 lb 0 oz
-    heightCm: 58.4, // 23.0 in
-    headCircumferenceCm: 39.1,
-    notes: '2-month checkup: Brave with vaccines! Lifting head 45 degrees in tummy time.',
-    milestones: ['Holds head steady during tummy time', 'Tracks faces and objects with eyes'],
-    isPediatricianVisit: true,
-  },
-  {
-    id: 'sample-7',
-    date: '2026-06-18',
-    ageMonths: 2.7,
-    weightKg: 5.95, // 13 lb 2 oz
-    notes: '13-pound milestone reached!',
-  },
-  {
-    id: 'sample-8',
-    date: '2026-07-02',
-    ageMonths: 3.2,
-    weightKg: 6.40, // 14 lb 2 oz
-    heightCm: 61.8, // 24.3 in
-    notes: '3 months: Chuckling out loud and discovering little hands.',
-    milestones: ['Laughs and chuckles out loud'],
-  },
-  {
-    id: 'sample-9',
-    date: '2026-07-22',
-    ageMonths: 3.8,
-    weightKg: 6.80, // 15 lb 0 oz
-    notes: '15 pounds! Reaching for dangling toys.',
-  },
-  {
-    id: 'sample-10',
-    date: '2026-08-05',
-    ageMonths: 4.3, // 4 months
-    weightKg: 7.15, // 15 lb 12 oz
-    heightCm: 64.6, // 25.4 in
-    headCircumferenceCm: 42.0,
-    notes: '4-month wellness visit: Strong neck and rolling tummy to back.',
-    milestones: ['Rolls tummy to back', 'Reaches out and grasps toys'],
-    isPediatricianVisit: true,
-  },
-  {
-    id: 'sample-11',
-    date: '2026-08-25',
-    ageMonths: 4.9,
-    weightKg: 7.50, // 16 lb 8 oz
-    notes: 'Gaining smoothly (~0.5 kg every 3 weeks).',
-  },
-  {
-    id: 'sample-12',
-    date: '2026-09-15',
-    ageMonths: 5.6,
-    weightKg: 7.80, // 17 lb 3 oz
-    heightCm: 67.2, // 26.5 in
-    notes: 'Almost 6 months: Sitting with light tripod hand support.',
-    milestones: ['First taste of puree', 'Babbles chains (ba-ba, da-da)'],
-  },
-  {
-    id: 'sample-13',
-    date: '2026-10-12',
-    ageMonths: 6.5,
-    weightKg: 8.15, // 17 lb 15 oz (~18 lbs)
-    heightCm: 69.5, // 27.4 in
-    headCircumferenceCm: 43.8,
-    notes: '6-month checkup: Sitting steadily without hand support, passing toys hand-to-hand!',
-    milestones: ['Sits steadily without hand support', 'Transfers toys from one hand to the other'],
+    date: '2026-10-15',
+    ageMonths: 6.0,
+    weightKg: 7.90,
+    heightCm: 67.6,
+    headCircumferenceCm: 43.3,
+    notes: 'Sample 6-month checkup · Sitting with support, babbling sounds',
+    milestones: ['Sits with support', 'Babbling chains and playful laughs'],
     isPediatricianVisit: true,
   },
 ];
