@@ -63,6 +63,7 @@ export default function App() {
   // Local storage initialization with automatic migration from previous version
   const [profile, setProfile] = useState<BabyProfile>(() => {
     try {
+      const isWiped = localStorage.getItem('tinybloom_wiped') === 'true';
       const saved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
       if (saved) {
         const parsed = JSON.parse(saved);
@@ -72,8 +73,7 @@ export default function App() {
             parsed.id === 'baby-dhruv' ||
             parsed.id === 'baby-main' ||
             parsed.birthDate === '2026-03-28' ||
-            parsed.name === 'Dhruv' ||
-            parsed.name === 'Baby'
+            parsed.name === 'Dhruv'
           ) {
             localStorage.setItem('tinybloom_profile', JSON.stringify(DEFAULT_PROFILE));
             localStorage.setItem('tinybloom_entries', JSON.stringify(DEFAULT_GROWTH_ENTRIES));
@@ -81,6 +81,16 @@ export default function App() {
           }
           return parsed;
         }
+      }
+      if (isWiped) {
+        return {
+          id: `baby-fresh`,
+          name: 'My Baby',
+          gender: 'boy',
+          birthDate: new Date().toISOString().split('T')[0],
+          avatarUrl: DEFAULT_AVATAR,
+          notes: 'Private local baby tracker',
+        };
       }
       return DEFAULT_PROFILE;
     } catch {
@@ -90,23 +100,11 @@ export default function App() {
 
   const [entries, setEntries] = useState<GrowthEntry[]>(() => {
     try {
-      const savedProfile = localStorage.getItem('tinybloom_profile');
-      if (savedProfile) {
-        const parsedP = JSON.parse(savedProfile);
-        if (
-          parsedP.id === 'baby-dhruv' ||
-          parsedP.id === 'baby-main' ||
-          parsedP.birthDate === '2026-03-28' ||
-          parsedP.name === 'Dhruv' ||
-          parsedP.name === 'Baby'
-        ) {
-          return DEFAULT_GROWTH_ENTRIES;
-        }
-      }
+      const isWiped = localStorage.getItem('tinybloom_wiped') === 'true';
       const saved = localStorage.getItem('tinybloom_entries') || localStorage.getItem('naragrowth_entries');
-      if (saved) {
+      if (saved !== null) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed)) {
           // If records contain the old March 28 birthdate or Dhruv, replace with synthetic sample
           if (parsed.some((e: any) => e.date === '2026-03-28' || (e.notes && e.notes.includes('Dhruv')))) {
             return DEFAULT_GROWTH_ENTRIES;
@@ -114,9 +112,12 @@ export default function App() {
           return parsed;
         }
       }
+      if (isWiped) {
+        return [];
+      }
       return DEFAULT_GROWTH_ENTRIES;
     } catch {
-      return DEFAULT_GROWTH_ENTRIES;
+      return [];
     }
   });
 
@@ -339,8 +340,42 @@ export default function App() {
   };
 
   const handleResetData = () => {
+    localStorage.removeItem('tinybloom_wiped');
     setProfile(DEFAULT_PROFILE);
     setEntries(DEFAULT_GROWTH_ENTRIES);
+  };
+
+  const handleDeleteAll = () => {
+    try {
+      localStorage.removeItem('tinybloom_profile');
+      localStorage.removeItem('tinybloom_entries');
+      localStorage.removeItem('tinybloom_completed_milestones');
+      localStorage.removeItem('tinybloom_onboarded');
+      localStorage.removeItem('naragrowth_profile');
+      localStorage.removeItem('naragrowth_entries');
+      localStorage.removeItem('naragrowth_completed_milestones');
+      localStorage.setItem('tinybloom_entries', JSON.stringify([]));
+      localStorage.setItem('tinybloom_wiped', 'true');
+    } catch (e) {
+      console.error(e);
+    }
+    const freshProfile: BabyProfile = {
+      id: `baby-${Date.now()}`,
+      name: 'My Baby',
+      gender: 'boy',
+      birthDate: new Date().toISOString().split('T')[0],
+      avatarUrl: DEFAULT_AVATAR,
+      notes: 'Private baby growth tracker',
+    };
+    try {
+      localStorage.setItem('tinybloom_profile', JSON.stringify(freshProfile));
+    } catch (e) {
+      console.error(e);
+    }
+    setProfile(freshProfile);
+    setEntries([]);
+    setToastMessage('🧹 All baby records wiped from device. Starting fresh!');
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const handleImportData = (newProfile: BabyProfile, newEntries: GrowthEntry[]) => {
@@ -919,6 +954,7 @@ export default function App() {
         entries={entries}
         onImportData={handleImportData}
         onResetData={handleResetData}
+        onDeleteAll={handleDeleteAll}
         onOpenImportPastData={() => setIsImportModalOpen(true)}
         unit={unit}
         onToggleUnit={setUnit}
@@ -929,6 +965,9 @@ export default function App() {
         onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
         onOpenOnboardingModal={() => setIsOnboardingOpen(true)}
         onNavigateToHistory={() => setActiveTab('history')}
+        onEditEntry={handleEditEntry}
+        onDeleteEntry={handleDeleteEntry}
+        onOpenAddModal={() => setIsLogModalOpen(true)}
       />
 
       <HeartfeltModal

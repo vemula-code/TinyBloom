@@ -266,13 +266,13 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
       {/* WHO Educational Context & Zero-Comparison Note */}
       <div className="my-3 px-3.5 py-2.5 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs flex items-start gap-2.5">
-        <span className="text-sm shrink-0 mt-0.5">🌱</span>
-        <div className="space-y-0.5">
-          <span className="font-bold text-[var(--color-text-main)] block">
+        <span className="text-base shrink-0 mt-0.5 select-none">🌱</span>
+        <div className="space-y-1">
+          <span className="font-bold text-[var(--color-text-main)] block text-xs">
             Official WHO Standards · No two babies are the same
           </span>
           <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-            All percentile bands come directly from the <strong>World Health Organization Child Growth Standards</strong>. Percentiles are statistical population guides, not grades or contests. A baby tracking along the 15th percentile is just as healthy as one at the 85th—every child's growth trajectory is completely individual.
+            Percentile bands are statistical population guides from the World Health Organization, not grades or contests. A baby growing along the 15th percentile is just as healthy as one at the 85th—every baby’s curve is completely unique.
           </p>
         </div>
       </div>

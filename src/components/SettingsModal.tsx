@@ -3,6 +3,7 @@ import { BabyProfile, Gender, GrowthEntry, MetricUnit, ThemeMode, PaletteTheme }
 import { TinyBloomLogo } from './TinyBloomLogo';
 import { BabyAvatar } from './BabyAvatar';
 import { PWAInstallButton } from './PWAInstallButton';
+import { MeasurementHistory } from './MeasurementHistory';
 import { PRESET_AVATARS, DEFAULT_AVATAR } from '../data/defaultData';
 import { kgToLbsOz, cmToInches } from '../data/whoGrowthStandards';
 import { generateSyncUrl } from '../utils/syncPayload';
@@ -10,7 +11,6 @@ import {
   X,
   Download,
   Upload,
-  RotateCcw,
   ShieldCheck,
   FileSpreadsheet,
   AlertTriangle,
@@ -18,17 +18,21 @@ import {
   Baby,
   Trash2,
   Lock,
-  Info,
   Sun,
   Moon,
   Palette,
   Heart,
   Camera,
-  Sparkles,
   Share2,
   Copy,
-  Layers
+  Layers,
+  Smartphone,
+  CheckCircle2,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
+
+export type SettingsDepartment = 'profile' | 'theme' | 'history' | 'download' | 'install';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,6 +42,7 @@ interface SettingsModalProps {
   entries: GrowthEntry[];
   onImportData: (profile: BabyProfile, entries: GrowthEntry[]) => void;
   onResetData: () => void;
+  onDeleteAll?: () => void;
   onOpenImportPastData?: () => void;
   unit: MetricUnit;
   onToggleUnit: (u: MetricUnit) => void;
@@ -48,6 +53,10 @@ interface SettingsModalProps {
   onOpenHeartfeltModal?: () => void;
   onOpenOnboardingModal?: () => void;
   onNavigateToHistory?: () => void;
+  onEditEntry?: (entry: GrowthEntry) => void;
+  onDeleteEntry?: (id: string) => void;
+  onOpenAddModal?: () => void;
+  initialDepartment?: SettingsDepartment;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -58,6 +67,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   entries,
   onImportData,
   onResetData,
+  onDeleteAll,
   onOpenImportPastData,
   unit,
   onToggleUnit,
@@ -68,7 +78,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onOpenHeartfeltModal,
   onOpenOnboardingModal,
   onNavigateToHistory,
+  onEditEntry,
+  onDeleteEntry,
+  onOpenAddModal,
+  initialDepartment = 'profile',
 }) => {
+  const [activeDepartment, setActiveDepartment] = useState<SettingsDepartment>(initialDepartment);
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
   const [birthDate, setBirthDate] = useState(profile.birthDate);
@@ -76,6 +91,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [statusMsg, setStatusMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Sync internal form when profile prop changes
+  React.useEffect(() => {
+    setName(profile.name);
+    setGender(profile.gender);
+    setBirthDate(profile.birthDate);
+    setAvatarUrl(profile.avatarUrl || DEFAULT_AVATAR);
+  }, [profile]);
 
   if (!isOpen) return null;
 
@@ -88,7 +111,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       birthDate,
       avatarUrl,
     });
-    setStatusMsg('Profile updated successfully!');
+    setStatusMsg('✨ Profile updated successfully!');
     setTimeout(() => setStatusMsg(''), 3000);
   };
 
@@ -107,7 +130,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         await navigator.clipboard.writeText(url);
         setStatusMsg('✨ Private sync link copied to clipboard! Send to your partner.');
       } else {
-        // Fallback for older browsers
         window.prompt('Copy this sync link to send to your partner:', url);
         setStatusMsg('Sync link generated!');
       }
@@ -132,7 +154,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       const dataUrl = uploadEvent.target?.result as string;
       if (dataUrl) {
         setAvatarUrl(dataUrl);
-        setStatusMsg('Photo loaded! Remember to click Save Profile Changes.');
+        setStatusMsg('Photo loaded! Remember to tap Save Profile.');
         setTimeout(() => setStatusMsg(''), 3500);
       }
     };
@@ -144,7 +166,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const handleExportJSON = () => {
     const backupData = {
       app: 'TinyBloom',
-      version: '2.1',
+      version: '2.2',
       exportedAt: new Date().toISOString(),
       profile: {
         ...profile,
@@ -162,22 +184,24 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tinybloom-${name.toLowerCase().replace(/\s+/g, '-')}-backup-${
+    a.download = `tinybloom-${(name || 'baby').toLowerCase().replace(/\s+/g, '-')}-backup-${
       new Date().toISOString().split('T')[0]
     }.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setStatusMsg('Backup downloaded to your device!');
+    setStatusMsg('Full JSON backup downloaded to your device!');
     setTimeout(() => setStatusMsg(''), 3500);
   };
 
-  // Export records as CSV
+  // Export CSV Spreadsheet
   const handleExportCSV = () => {
-    const sorted = [...entries].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    if (entries.length === 0) {
+      setErrorMsg('No entries to export yet.');
+      setTimeout(() => setErrorMsg(''), 3000);
+      return;
+    }
 
     const headers = [
       'Date',
@@ -190,12 +214,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       'Head Circumference (in)',
       'Pediatrician Visit',
       'Milestones',
-      'Notes',
+      'Doctor Notes',
     ];
 
-    const rows = sorted.map((e) => {
+    const rows = entries.map((e) => {
       const wLbs = e.weightKg ? kgToLbsOz(e.weightKg).displayStr : '';
-      const hIn = e.heightCm ? cmToInches(e.heightCm).toFixed(1) : '';
+      const hIn = e.heightCm ? cmToInches(e.heightCm).toFixed(2) : '';
       const headIn = e.headCircumferenceCm
         ? cmToInches(e.headCircumferenceCm).toFixed(2)
         : '';
@@ -220,14 +244,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tinybloom-${name.toLowerCase().replace(/\s+/g, '-')}-growth-${
+    a.download = `tinybloom-${(name || 'baby').toLowerCase().replace(/\s+/g, '-')}-growth-${
       new Date().toISOString().split('T')[0]
     }.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    setStatusMsg('Spreadsheet (CSV) downloaded!');
+    setStatusMsg('Clinical CSV spreadsheet downloaded!');
     setTimeout(() => setStatusMsg(''), 3500);
   };
 
@@ -262,11 +286,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
         const newProfile: BabyProfile = {
           id: parsed.profile?.id || profile.id,
-          name: parsed.profile?.name || profile.name,
-          gender: parsed.profile?.gender || profile.gender,
-          birthDate: parsed.profile?.birthDate || profile.birthDate,
-          avatarUrl: parsed.profile?.avatarUrl || profile.avatarUrl,
-          notes: parsed.profile?.notes || profile.notes,
+          name: parsed.profile?.name || 'My Baby',
+          gender: parsed.profile?.gender || 'boy',
+          birthDate: parsed.profile?.birthDate || new Date().toISOString().split('T')[0],
+          avatarUrl: parsed.profile?.avatarUrl || DEFAULT_AVATAR,
+          notes: parsed.profile?.notes || '',
         };
 
         if (
@@ -290,579 +314,705 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     e.target.value = '';
   };
 
-  const handleDeleteAll = () => {
-    onImportData(
-      {
+  // Complete wipe & start fresh
+  const handleConfirmDeleteAll = () => {
+    if (onDeleteAll) {
+      onDeleteAll();
+    } else {
+      try {
+        localStorage.removeItem('tinybloom_profile');
+        localStorage.removeItem('tinybloom_entries');
+        localStorage.removeItem('tinybloom_completed_milestones');
+        localStorage.removeItem('tinybloom_onboarded');
+        localStorage.removeItem('naragrowth_profile');
+        localStorage.removeItem('naragrowth_entries');
+        localStorage.removeItem('naragrowth_completed_milestones');
+        localStorage.setItem('tinybloom_entries', JSON.stringify([]));
+        localStorage.setItem('tinybloom_wiped', 'true');
+      } catch (e) {
+        console.error(e);
+      }
+      const fresh: BabyProfile = {
         id: `baby-${Date.now()}`,
         name: 'My Baby',
         gender: 'boy',
         birthDate: new Date().toISOString().split('T')[0],
-      },
-      []
-    );
+        avatarUrl: DEFAULT_AVATAR,
+        notes: 'Private baby growth tracker',
+      };
+      onImportData(fresh, []);
+    }
+
+    setName('My Baby');
+    setGender('boy');
+    setBirthDate(new Date().toISOString().split('T')[0]);
+    setAvatarUrl(DEFAULT_AVATAR);
     setShowDeleteConfirm(false);
-    setStatusMsg('All records have been completely wiped from this device.');
-    setTimeout(() => setStatusMsg(''), 3500);
+    setStatusMsg('🧹 All baby records have been completely erased from this device.');
+    setTimeout(() => {
+      setStatusMsg('');
+      onClose();
+    }, 2000);
   };
 
   const palettes: { id: PaletteTheme; label: string; desc: string; color: string; border: string }[] = [
     {
       id: 'sage',
       label: 'Warm Sage Meadow',
-      desc: 'Clean & natural Scandinavian styling (Default)',
+      desc: 'Fresh eucalyptus, calm botanical hues & cream (Default)',
       color: '#5D7C57',
       border: '#D9E3D6',
     },
     {
       id: 'linen',
       label: 'Warm Linen & Oatmeal',
-      desc: 'Soft cashmere tones, high contrast, zero glare',
+      desc: 'Cashmere earth tones, warm contrast, zero eye strain',
       color: '#8C6542',
       border: '#E8E2D8',
     },
     {
       id: 'midnight',
       label: 'Midnight Slumber',
-      desc: 'Deep low-light mode for 2 AM feedings',
+      desc: 'High contrast deep theme engineered for 2 AM feedings',
       color: '#1A221D',
       border: '#334237',
     },
   ];
 
+  const departments: { id: SettingsDepartment; label: string; icon: React.ReactNode; badge?: string }[] = [
+    { id: 'profile', label: 'Baby Profile', icon: <Baby className="w-4 h-4" /> },
+    { id: 'theme', label: 'Theme & Style', icon: <Palette className="w-4 h-4" /> },
+    { id: 'history', label: 'History', icon: <Layers className="w-4 h-4" />, badge: `${entries.length}` },
+    { id: 'download', label: 'Data & Backup', icon: <Download className="w-4 h-4" /> },
+    { id: 'install', label: 'Install App', icon: <Smartphone className="w-4 h-4" /> },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-[#1D241F] rounded-3xl shadow-2xl border border-[var(--color-primary,#91A98B)]/30 w-full max-w-xl overflow-hidden my-4 sm:my-6 max-h-[92vh] flex flex-col text-[var(--color-text-main,#303832)]">
-        {/* Header */}
-        <div className="px-6 py-4 border-b border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between bg-white/70 dark:bg-[#1D241F]/90 shrink-0">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white dark:bg-[#1D241F] rounded-3xl shadow-2xl border border-[var(--color-primary,#91A98B)]/30 w-full max-w-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col text-[var(--color-text-main,#303832)]">
+        
+        {/* Modal Header */}
+        <div className="px-5 py-3.5 border-b border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between bg-white dark:bg-[#1D241F] shrink-0">
           <div className="flex items-center gap-3">
-            <TinyBloomLogo size={36} />
+            <TinyBloomLogo size={34} />
             <div>
-              <h2 className="text-base font-bold font-heading text-[var(--color-text-main,#303832)]">
-                TinyBloom Settings & Customization
+              <h2 className="text-base font-bold font-heading text-[var(--color-text-main,#303832)] leading-tight">
+                Settings & Preferences
               </h2>
-              <p className="text-xs text-[var(--color-text-muted,#6E7B6C)]">
-                100% On-Device · Zero Cloud Tracking · Personal Themes
+              <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+                100% On-Device · Zero Cloud Tracking · Private
               </p>
             </div>
           </div>
-
           <button
             type="button"
             onClick={onClose}
             className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#2A342D] transition-colors"
+            aria-label="Close settings"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Content */}
-        <div className="p-6 space-y-6 overflow-y-auto flex-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18]">
-          {/* Status Message */}
-          {statusMsg && (
-            <div className="p-3 rounded-2xl bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/40 text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-medium flex items-center gap-2">
-              <Check className="w-4 h-4 shrink-0" />
-              <span>{statusMsg}</span>
-            </div>
-          )}
-
-          {errorMsg && (
-            <div className="p-3 rounded-2xl bg-red-100 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-200 font-medium flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-
-          {/* Theme & Palette Customization */}
-          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
-                <Palette className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                <span>Appearance & Color Palette</span>
-              </h3>
-            </div>
-
-            {/* Mode: Light vs Dark */}
-            <div className="flex items-center justify-between pt-1">
-              <span className="text-xs font-semibold">Mode</span>
-              <div className="flex items-center gap-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border border-[var(--color-primary,#91A98B)]/20 p-1 rounded-xl text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => onToggleThemeMode('light')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                    themeMode === 'light'
-                      ? 'bg-[var(--color-primary,#91A98B)] text-white font-bold shadow-2xs'
-                      : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                  }`}
-                >
-                  <Sun className="w-3.5 h-3.5" />
-                  <span>Daylight</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onToggleThemeMode('dark')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all ${
-                    themeMode === 'dark'
-                      ? 'bg-[var(--color-primary,#91A98B)] text-white font-bold shadow-2xs'
-                      : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                  }`}
-                >
-                  <Moon className="w-3.5 h-3.5" />
-                  <span>Night (2 AM Feedings)</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Top 3 App Themes */}
-            <div>
-              <span className="block text-xs font-semibold mb-2">App Color Theme (Top 3 Parenting App Styles)</span>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
-                {palettes.map((p) => {
-                  const isCurrent = paletteTheme === p.id;
-                  return (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => onChangePaletteTheme(p.id)}
-                      className={`p-3 rounded-2xl text-xs font-medium border transition-all text-left flex flex-col gap-1.5 ${
-                        isCurrent
-                          ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/15 font-bold shadow-xs ring-2 ring-[var(--color-primary)]/30'
-                          : 'border-stone-200 dark:border-stone-800 bg-stone-50/50 dark:bg-[#202722] hover:bg-stone-100 dark:hover:bg-[#252e27]'
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span
-                          className="w-4 h-4 rounded-full shrink-0 shadow-xs border border-white/40"
-                          style={{ backgroundColor: p.color }}
-                        />
-                        <span className="font-bold text-xs truncate">{p.label}</span>
-                      </div>
-                      <span className="text-[10px] text-[var(--color-text-muted)] line-clamp-2 leading-tight">
-                        {p.desc}
-                      </span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
-
-          {/* Install TinyBloom on Mobile / Desktop */}
-          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
-                <Sparkles className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                <span>Install TinyBloom App (Home Screen PWA)</span>
-              </h3>
-              <span className="text-[10px] bg-[var(--color-primary,#91A98B)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] px-2 py-0.5 rounded-full font-bold">
-                Works Offline
-              </span>
-            </div>
-            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-              Install TinyBloom directly to your iPhone or Android home screen for full offline access, instant 1-tap launching during pediatrician visits, and full private data storage.
-            </p>
-            <div className="pt-1">
-              <PWAInstallButton />
-            </div>
-          </div>
-
-          {/* Measurement History Section (Moved from Bottom Nav to Settings) */}
-          <div className="bg-white dark:bg-[#1B2420] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] flex items-center gap-1.5">
-                <Layers className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                <span>Measurement History ({entries.length} Records)</span>
-              </h3>
-              <span className="text-[10px] bg-[var(--color-primary,#91A98B)]/15 text-[var(--color-primary-dark,#3A5235)] dark:text-[var(--color-primary,#86B880)] px-2 py-0.5 rounded-full font-bold">
-                {entries.length} Logs
-              </span>
-            </div>
-            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-              Search, filter, view details, edit dates or notes, and manage every growth measurement recorded for {profile.name}.
-            </p>
-            {onNavigateToHistory && (
+        {/* Departments Navigation Bar (Horizontal scrolling tabs) */}
+        <div className="px-3 sm:px-5 py-2 border-b border-[var(--color-primary,#91A98B)]/15 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
+          {departments.map((dept) => {
+            const isActive = activeDepartment === dept.id;
+            return (
               <button
+                key={dept.id}
                 type="button"
                 onClick={() => {
-                  onClose();
-                  onNavigateToHistory();
+                  setActiveDepartment(dept.id);
+                  setShowDeleteConfirm(false);
                 }}
-                className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-[var(--color-primary,#91A98B)] hover:opacity-90 text-white text-xs font-bold shadow-2xs transition-all flex items-center justify-center gap-2 cursor-pointer"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
+                  isActive
+                    ? 'bg-[var(--color-primary,#5D7C57)] text-white shadow-xs'
+                    : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10 hover:text-[var(--color-text-main,#303832)]'
+                }`}
               >
-                <Layers className="w-3.5 h-3.5" />
-                <span>Open Full Measurement Table ({entries.length})</span>
+                {dept.icon}
+                <span>{dept.label}</span>
+                {dept.badge && (
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                      isActive
+                        ? 'bg-white/25 text-white'
+                        : 'bg-[var(--color-primary,#91A98B)]/20 text-[var(--color-text-main,#303832)]'
+                    }`}
+                  >
+                    {dept.badge}
+                  </span>
+                )}
               </button>
-            )}
+            );
+          })}
+        </div>
+
+        {/* Status & Error Toasts */}
+        {statusMsg && (
+          <div className="mx-4 mt-3 p-3 rounded-2xl bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-medium flex items-center gap-2">
+            <Check className="w-4 h-4 shrink-0" />
+            <span>{statusMsg}</span>
           </div>
+        )}
+        {errorMsg && (
+          <div className="mx-4 mt-3 p-3 rounded-2xl bg-red-100 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-200 font-medium flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
 
-          {/* Baby Profile Details & Avatar Selector */}
-          <form
-            onSubmit={handleSubmitProfile}
-            className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs"
-          >
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold font-heading text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] uppercase tracking-wider flex items-center gap-1.5">
-                <Baby className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                <span>Baby Profile & Avatar</span>
-              </h3>
-              <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] font-mono">
-                {entries.length} records
-              </span>
-            </div>
+        {/* Department Content Area */}
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18]">
+          
+          {/* ========================================================
+              DEPARTMENT 1: BABY PROFILE
+             ======================================================== */}
+          {activeDepartment === 'profile' && (
+            <div className="space-y-5 max-w-xl mx-auto">
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
+                    <Baby className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                    <span>Baby Information</span>
+                  </h3>
+                  <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">Stored only on this phone</span>
+                </div>
 
-            {/* Avatar Selection Area */}
-            <div className="p-3 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl border border-[var(--color-primary,#91A98B)]/20 flex flex-col sm:flex-row items-center gap-4">
-              <BabyAvatar
-                avatarUrl={avatarUrl}
-                name={name}
-                gender={gender}
-                size="lg"
-              />
+                <form onSubmit={handleSubmitProfile} className="space-y-4">
+                  {/* Avatar Picker & Photo Upload */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      Baby Photo / Avatar
+                    </label>
+                    <div className="flex items-center gap-3">
+                      <div className="relative">
+                        <BabyAvatar
+                          avatarUrl={avatarUrl}
+                          name={name}
+                          gender={gender}
+                          size="lg"
+                          className="border-2 border-[var(--color-primary,#91A98B)]/40 shadow-xs"
+                        />
+                        <label
+                          htmlFor="settings-photo-upload"
+                          className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full bg-[var(--color-primary,#5D7C57)] text-white flex items-center justify-center cursor-pointer shadow-xs hover:opacity-90"
+                          title="Upload baby photo"
+                        >
+                          <Camera className="w-3.5 h-3.5" />
+                        </label>
+                        <input
+                          id="settings-photo-upload"
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={handlePhotoUpload}
+                        />
+                      </div>
 
-              <div className="flex-1 space-y-2 text-center sm:text-left">
-                <span className="block text-xs font-bold text-[var(--color-text-main,#303832)]">
-                  Choose Avatar or Upload Baby Photo
-                </span>
-                
-                {/* Preset Avatars */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-1.5">
-                  {PRESET_AVATARS.map((av) => (
+                      <div className="flex-1">
+                        <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block mb-1.5">
+                          Tap camera icon to upload a photo, or select an illustration:
+                        </span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          {PRESET_AVATARS.map((av) => (
+                            <button
+                              key={av.id}
+                              type="button"
+                              onClick={() => setAvatarUrl(av.url)}
+                              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
+                                avatarUrl === av.url
+                                  ? 'bg-[var(--color-primary,#5D7C57)] text-white shadow-2xs font-bold'
+                                  : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] border border-[var(--color-primary,#91A98B)]/30 hover:border-[var(--color-primary,#91A98B)]'
+                              }`}
+                            >
+                              {av.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Name Input */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      Baby’s Name
+                    </label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Maya, Lucas, Baby"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      required
+                    />
+                  </div>
+
+                  {/* Gender Selector */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      Sex Assigned at Birth (for WHO Standards)
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setGender('boy')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                          gender === 'boy'
+                            ? 'bg-[#EBF3ED] text-[#2D5A38] border-[#2D5A38] shadow-xs'
+                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                        }`}
+                      >
+                        👦 Boy Curve
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setGender('girl')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                          gender === 'girl'
+                            ? 'bg-[#FDF2F0] text-[#9C5D47] border-[#9C5D47] shadow-xs'
+                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                        }`}
+                      >
+                        👧 Girl Curve
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Birth Date */}
+                  <div className="space-y-1">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      Date of Birth
+                    </label>
+                    <input
+                      type="date"
+                      value={birthDate}
+                      onChange={(e) => setBirthDate(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      required
+                    />
+                  </div>
+
+                  {/* Unit Preferences */}
+                  <div className="space-y-1 pt-1">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      Preferred Measurement Units
+                    </label>
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        type="button"
+                        onClick={() => onToggleUnit('metric')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                          unit === 'metric'
+                            ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                        }`}
+                      >
+                        Metric (kg, cm)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => onToggleUnit('imperial')}
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                          unit === 'imperial'
+                            ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                        }`}
+                      >
+                        Imperial (lbs/oz, in)
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="pt-2">
                     <button
-                      key={av.id}
+                      type="submit"
+                      className="w-full py-2.5 px-4 bg-[var(--color-primary,#5D7C57)] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-4 h-4" />
+                      <span>Save Profile Changes</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ========================================================
+              DEPARTMENT 2: THEME & COLOR PALETTE
+             ======================================================== */}
+          {activeDepartment === 'theme' && (
+            <div className="space-y-5 max-w-xl mx-auto">
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
+                    <Palette className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                    <span>Display Mode & Palette</span>
+                  </h3>
+                </div>
+
+                {/* Mode: Light vs Dark vs Midnight */}
+                <div className="space-y-2">
+                  <span className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                    Display Appearance
+                  </span>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
                       type="button"
-                      onClick={() => setAvatarUrl(av.url)}
-                      className={`px-2.5 py-1 rounded-xl text-xs font-medium border transition-all ${
-                        avatarUrl === av.url
-                          ? 'bg-[var(--color-primary,#91A98B)] text-white border-[var(--color-primary,#91A98B)] shadow-2xs font-bold'
-                          : 'bg-white dark:bg-[#202722] border-[var(--color-primary,#91A98B)]/20 hover:bg-[var(--color-primary,#91A98B)]/10 text-[var(--color-text-main,#303832)]'
+                      onClick={() => onToggleThemeMode('light')}
+                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border ${
+                        themeMode === 'light'
+                          ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                          : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                       }`}
                     >
-                      {av.label}
+                      <Sun className="w-4 h-4" />
+                      <span>Day / Light Mode</span>
                     </button>
-                  ))}
-
-                  {/* Upload button */}
-                  <label className="flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-medium border border-[var(--color-primary,#91A98B)]/30 bg-white dark:bg-[#202722] hover:bg-[var(--color-primary,#91A98B)]/10 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] cursor-pointer transition-colors shadow-2xs">
-                    <Camera className="w-3 h-3" />
-                    <span>Upload Photo</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handlePhotoUpload}
-                      className="hidden"
-                    />
-                  </label>
+                    <button
+                      type="button"
+                      onClick={() => onToggleThemeMode('dark')}
+                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border ${
+                        themeMode === 'dark'
+                          ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                          : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                      }`}
+                    >
+                      <Moon className="w-4 h-4" />
+                      <span>Night / Dark Mode</span>
+                    </button>
+                  </div>
                 </div>
-                <p className="text-[10px] text-[var(--color-text-muted,#6E7B6C)] italic">
-                  Photos stay 100% on this phone in private storage.
-                </p>
+
+                {/* Color Palette Choices */}
+                <div className="space-y-2.5 pt-2">
+                  <span className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                    Color Palettes (Engineered for high readability)
+                  </span>
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {palettes.map((p) => {
+                      const isSelected = paletteTheme === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => onChangePaletteTheme(p.id)}
+                          className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
+                            isSelected
+                              ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-2 ring-[var(--color-primary,#91A98B)]/40 shadow-xs'
+                              : 'border-stone-200 dark:border-stone-700 bg-white dark:bg-[#1D241F] hover:border-[var(--color-primary,#91A98B)]/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span
+                              className="w-6 h-6 rounded-full shrink-0 shadow-2xs border border-white dark:border-stone-800"
+                              style={{ backgroundColor: p.color }}
+                            />
+                            <div>
+                              <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                                {p.label}
+                              </span>
+                              <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
+                                {p.desc}
+                              </span>
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)] text-white flex items-center justify-center shrink-0">
+                              <Check className="w-3.5 h-3.5" />
+                            </div>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             </div>
+          )}
 
-            <div>
-              <label className="block text-xs font-semibold mb-1">
-                Baby's Name
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full px-3.5 py-2 text-sm bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border border-[var(--color-primary,#91A98B)]/30 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary,#91A98B)] text-[var(--color-text-main,#303832)] font-medium"
+          {/* ========================================================
+              DEPARTMENT 3: MEASUREMENT HISTORY
+             ======================================================== */}
+          {activeDepartment === 'history' && (
+            <div className="space-y-4">
+              <MeasurementHistory
+                profile={profile}
+                entries={entries}
+                unit={unit}
+                onEditEntry={(e) => {
+                  if (onEditEntry) {
+                    onEditEntry(e);
+                    onClose();
+                  }
+                }}
+                onDeleteEntry={(id) => {
+                  if (onDeleteEntry) {
+                    onDeleteEntry(id);
+                  }
+                }}
+                onOpenAddModal={() => {
+                  if (onOpenAddModal) {
+                    onOpenAddModal();
+                    onClose();
+                  }
+                }}
               />
             </div>
+          )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-semibold mb-1">
-                  Sex (For WHO curves)
-                </label>
-                <div className="grid grid-cols-2 p-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border border-[var(--color-primary,#91A98B)]/20 rounded-xl text-xs font-medium">
-                  <button
-                    type="button"
-                    onClick={() => setGender('boy')}
-                    className={`py-1.5 rounded-lg transition-all ${
-                      gender === 'boy'
-                        ? 'bg-[var(--color-primary,#91A98B)] text-white font-semibold shadow-2xs'
-                        : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                    }`}
-                  >
-                    Boy
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setGender('girl')}
-                    className={`py-1.5 rounded-lg transition-all ${
-                      gender === 'girl'
-                        ? 'bg-[var(--color-primary,#91A98B)] text-white font-semibold shadow-2xs'
-                        : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                    }`}
-                  >
-                    Girl
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold mb-1">
-                  Date of Birth
-                </label>
-                <input
-                  type="date"
-                  required
-                  value={birthDate}
-                  onChange={(e) => setBirthDate(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border border-[var(--color-primary,#91A98B)]/30 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary,#91A98B)] font-medium text-[var(--color-text-main,#303832)]"
-                />
-              </div>
-            </div>
-
-            {/* Units Toggle */}
-            <div className="pt-2 flex items-center justify-between border-t border-[var(--color-primary,#91A98B)]/15">
-              <span className="text-xs font-semibold">Preferred Measurement Units</span>
-              <div className="flex items-center gap-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border border-[var(--color-primary,#91A98B)]/20 p-1 rounded-xl text-xs font-medium">
-                <button
-                  type="button"
-                  onClick={() => onToggleUnit('metric')}
-                  className={`px-2.5 py-1 rounded-lg ${
-                    unit === 'metric'
-                      ? 'bg-[var(--color-primary,#91A98B)] text-white font-bold'
-                      : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                  }`}
-                >
-                  kg / cm
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onToggleUnit('imperial')}
-                  className={`px-2.5 py-1 rounded-lg ${
-                    unit === 'imperial'
-                      ? 'bg-[var(--color-primary,#91A98B)] text-white font-bold'
-                      : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-                  }`}
-                >
-                  lb·oz / in
-                </button>
-              </div>
-            </div>
-
-            <div className="pt-2 flex justify-end">
-              <button
-                type="submit"
-                className="px-4 py-2 text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 rounded-xl transition-all shadow-xs"
-              >
-                Save Profile Changes
-              </button>
-            </div>
-          </form>
-
-          {/* TinyBloom Philosophy Link Card */}
-          {onOpenHeartfeltModal && (
-            <div className="bg-gradient-to-r from-[var(--color-primary,#91A98B)]/20 via-[#F3C9B8]/25 to-[#AFCDE0]/20 p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white dark:bg-[#202722] shadow-2xs flex items-center justify-center shrink-0 border border-[var(--color-primary,#91A98B)]/20">
-                  <Heart className="w-5 h-5 text-rose-500 fill-rose-500" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] bg-white/70 dark:bg-[#202722] px-2 py-0.5 rounded-md">
-                      About Our Mission
-                    </span>
-                  </div>
-                  <h4 className="text-sm font-bold text-[var(--color-text-main,#303832)] mt-1 font-heading">
-                    TinyBloom Philosophy & Private Storage
-                  </h4>
-                  <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-relaxed">
-                    Explore why TinyBloom was created, why 100% on-device private storage is essential for your child's data, and our heartfelt letter for parents.
+          {/* ========================================================
+              DEPARTMENT 4: DATA BACKUP & PRIVACY
+             ======================================================== */}
+          {activeDepartment === 'download' && (
+            <div className="space-y-5 max-w-xl mx-auto">
+              {/* Privacy Guarantee */}
+              <div className="bg-white dark:bg-[#1D241F] p-4 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 flex items-start gap-3 shadow-2xs">
+                <ShieldCheck className="w-5 h-5 text-[var(--color-primary,#5D7C57)] shrink-0 mt-0.5" />
+                <div className="text-xs space-y-0.5">
+                  <span className="font-bold text-[var(--color-text-main,#303832)] block">
+                    Zero Cloud Tracking Guarantee
+                  </span>
+                  <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+                    TinyBloom stores your baby’s measurements exclusively on this device. We do not transmit or sell personal health records. You own 100% of your data.
                   </p>
                 </div>
               </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenHeartfeltModal();
-                }}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-[var(--color-primary,#91A98B)] text-white hover:opacity-90 shadow-2xs transition-all shrink-0 self-start sm:self-auto flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Read Philosophy</span>
-              </button>
+
+              {/* Download & Export Options */}
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3.5 shadow-2xs">
+                <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
+                  <Download className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+                  <span>Download & Export Records</span>
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* CSV Spreadsheet */}
+                  <button
+                    type="button"
+                    onClick={handleExportCSV}
+                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                  >
+                    <div>
+                      <FileSpreadsheet className="w-5 h-5 text-emerald-600 mb-1.5" />
+                      <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                        Spreadsheet (CSV)
+                      </span>
+                      <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
+                        Open in Excel or print for your pediatrician
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] mt-3 flex items-center gap-1">
+                      <Download className="w-3.5 h-3.5" /> Download CSV
+                    </span>
+                  </button>
+
+                  {/* Full JSON Backup */}
+                  <button
+                    type="button"
+                    onClick={handleExportJSON}
+                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                  >
+                    <div>
+                      <Download className="w-5 h-5 text-blue-600 mb-1.5" />
+                      <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                        JSON Data Archive
+                      </span>
+                      <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
+                        Complete raw backup of profile & entries
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
+                      <Download className="w-3.5 h-3.5" /> Download Backup
+                    </span>
+                  </button>
+                </div>
+
+                {/* Restore Backup */}
+                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15">
+                  <label
+                    htmlFor="settings-json-restore"
+                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-primary,#91A98B)]/40 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-xs font-semibold text-[var(--color-text-main,#303832)] hover:border-[var(--color-primary,#91A98B)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                  >
+                    <Upload className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
+                    <span>Restore from JSON Backup File</span>
+                  </label>
+                  <input
+                    id="settings-json-restore"
+                    type="file"
+                    accept=".json"
+                    className="hidden"
+                    onChange={handleImportJSON}
+                  />
+                </div>
+              </div>
+
+              {/* Co-Parent Partner Sync Link */}
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
+                <div className="flex items-center gap-2">
+                  <Share2 className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
+                  <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
+                    Sync with Spouse or Partner
+                  </h3>
+                </div>
+                <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+                  Generate a private, self-contained sync link containing your baby’s measurements. When your partner opens the link on their phone, the data merges instantly.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleCopySyncLink}
+                  className="w-full py-2.5 px-4 rounded-xl bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-[var(--color-primary,#91A98B)]/30"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Private Partner Sync Link</span>
+                </button>
+              </div>
+
+              {/* Danger Zone: Delete All Data & Start Fresh */}
+              <div className="bg-red-50/70 dark:bg-red-950/20 p-5 rounded-2xl border border-red-200 dark:border-red-900/50 space-y-3">
+                <div className="flex items-center gap-2 text-red-700 dark:text-red-400">
+                  <Trash2 className="w-4 h-4" />
+                  <h4 className="text-xs font-bold font-heading uppercase tracking-wider">
+                    Delete All Data & Start Fresh
+                  </h4>
+                </div>
+                <p className="text-[11px] text-red-600/90 dark:text-red-300/80 leading-relaxed">
+                  Permanently erase all baby details, growth measurements, and local history from this device to start fresh.
+                </p>
+
+                {!showDeleteConfirm ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowDeleteConfirm(true)}
+                    className="py-2 px-3.5 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-colors shadow-2xs flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Delete All Data & Start Fresh</span>
+                  </button>
+                ) : (
+                  <div className="p-3 bg-white dark:bg-[#1D241F] rounded-xl border border-red-300 dark:border-red-800 space-y-2.5">
+                    <span className="text-xs font-bold text-red-700 dark:text-red-400 block">
+                      ⚠️ Are you completely sure? This will wipe all {entries.length} records immediately.
+                    </span>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={handleConfirmDeleteAll}
+                        className="py-2 px-4 bg-red-600 text-white rounded-xl text-xs font-bold hover:bg-red-700 transition-colors shadow-xs"
+                      >
+                        Yes, Erase Everything
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setShowDeleteConfirm(false)}
+                        className="py-2 px-3 bg-stone-100 dark:bg-[#2A342D] text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold hover:bg-stone-200"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Share & Sync with Partner / Wife */}
-          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
-                <Share2 className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                <span>Share & Sync with Partner / Wife</span>
-              </h3>
-              <span className="text-[10px] bg-emerald-100 text-emerald-800 dark:bg-emerald-950 dark:text-emerald-200 px-2 py-0.5 rounded-full font-bold">
-                100% Private · Zero Cloud
-              </span>
+          {/* ========================================================
+              DEPARTMENT 5: INSTALL APP ON PHONE
+             ======================================================== */}
+          {activeDepartment === 'install' && (
+            <div className="space-y-5 max-w-xl mx-auto">
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-[#F8F4E8] border border-[var(--color-primary,#91A98B)]/30 p-1 flex items-center justify-center shrink-0">
+                    <img
+                      src="/assets/images/tinybloom-emblem.png"
+                      alt="TinyBloom Icon"
+                      className="w-full h-full object-cover rounded-xl"
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold font-heading text-[var(--color-text-main,#303832)]">
+                      Install TinyBloom on your Phone
+                    </h3>
+                    <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+                      Instant launch from your home screen · Works 100% offline
+                    </p>
+                  </div>
+                </div>
+
+                {/* 1-Tap PWA Install Button */}
+                <div className="p-3 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-xl border border-[var(--color-primary,#91A98B)]/20">
+                  <span className="text-[11px] font-semibold text-[var(--color-text-main,#303832)] block mb-2">
+                    Android & Chrome 1-Tap Install:
+                  </span>
+                  <PWAInstallButton className="w-full justify-center" />
+                </div>
+
+                {/* Step by step iPhone / Apple Safari instructions */}
+                <div className="space-y-2 pt-2 border-t border-[var(--color-primary,#91A98B)]/15">
+                  <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block flex items-center gap-1.5">
+                    <Smartphone className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
+                    <span>iPhone / iOS Safari Instructions</span>
+                  </span>
+                  <ol className="space-y-2 text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold flex items-center justify-center text-[11px] shrink-0">
+                        1
+                      </span>
+                      <span>
+                        Open this page in <strong>Safari</strong> on your iPhone.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold flex items-center justify-center text-[11px] shrink-0">
+                        2
+                      </span>
+                      <span>
+                        Tap the <strong>Share</strong> button at the bottom of the screen (the square icon with the arrow pointing up: ⎋).
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold flex items-center justify-center text-[11px] shrink-0">
+                        3
+                      </span>
+                      <span>
+                        Scroll down and tap <strong>Add to Home Screen ⊞</strong>.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)]/15 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold flex items-center justify-center text-[11px] shrink-0">
+                        4
+                      </span>
+                      <span>
+                        Tap <strong>Add</strong> in the top right. TinyBloom with the beautiful sprout and baby icon is now on your home screen!
+                      </span>
+                    </li>
+                  </ol>
+                </div>
+              </div>
             </div>
-            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-              Want your partner or wife to have {name}’s latest records on her phone too? Tap <strong>Copy Sync Link</strong> and send it to her on WhatsApp or Messages. When she taps the link, all {entries.length} measurements load right into her phone!
-            </p>
+          )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={handleCopySyncLink}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-all shadow-2xs"
-              >
-                <Copy className="w-3.5 h-3.5" />
-                <span>Copy Sync Link for Partner</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportJSON}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:opacity-90 text-[var(--color-text-main,#303832)] text-xs font-semibold transition-colors shadow-2xs"
-              >
-                <Download className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
-                <span>Send File via WhatsApp (JSON)</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Backup, Export & Restore */}
-          <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
-            <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
-              <Download className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-              <span>Local Data Backup & Freedom</span>
-            </h3>
-            <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-              Export your records to keep on your computer or share with a co-parent. You can restore your data onto any phone or tablet anytime.
-            </p>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-              <button
-                type="button"
-                onClick={handleExportJSON}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:opacity-90 text-[var(--color-text-main,#303832)] text-xs font-semibold transition-colors shadow-2xs"
-              >
-                <Download className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
-                <span>Export Backup (JSON)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={handleExportCSV}
-                className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:opacity-90 text-[var(--color-text-main,#303832)] text-xs font-semibold transition-colors shadow-2xs"
-              >
-                <FileSpreadsheet className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
-                <span>Export Spreadsheet (CSV)</span>
-              </button>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              <label className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-white dark:bg-[#202722] hover:bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] text-xs font-semibold cursor-pointer transition-colors shadow-2xs">
-                <Upload className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
-                <span>Restore Backup (JSON)</span>
-                <input
-                  type="file"
-                  accept=".json,application/json"
-                  onChange={handleImportJSON}
-                  className="hidden"
-                />
-              </label>
-
-              {onOpenImportPastData && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenImportPastData();
-                  }}
-                  className="flex items-center justify-center gap-2 p-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:opacity-90 text-[var(--color-text-main,#303832)] text-xs font-semibold transition-colors shadow-2xs"
-                >
-                  <Upload className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)]" />
-                  <span>Import Past Rows (Nara / Text)</span>
-                </button>
-              )}
-            </div>
-          </div>
-
-          {/* Reset / Setup New Baby / Clear Data */}
-          <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-            <div className="flex items-center gap-3">
-              {onOpenOnboardingModal && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    onClose();
-                    onOpenOnboardingModal();
-                  }}
-                  className="text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] hover:underline font-bold flex items-center gap-1.5 transition-colors"
-                >
-                  <Baby className="w-3.5 h-3.5" />
-                  <span>Set Up a New Baby</span>
-                </button>
-              )}
-
-              <button
-                type="button"
-                onClick={() => {
-                  if (window.confirm('Restore authentic sample records for Baby?')) {
-                    onResetData();
-                    setStatusMsg("Restored sample demo records for Baby!");
-                    setTimeout(() => setStatusMsg(''), 3000);
-                  }
-                }}
-                className="text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)] font-semibold flex items-center gap-1.5 transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restore Sample Profile (Baby)</span>
-              </button>
-            </div>
-
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              className="text-red-500 hover:text-red-700 font-semibold flex items-center gap-1.5 transition-colors"
-            >
-              <Trash2 className="w-3.5 h-3.5" />
-              <span>Delete All Data & Start Fresh</span>
-            </button>
-          </div>
         </div>
+
+        {/* Modal Footer */}
+        <div className="px-5 py-3 border-t border-[var(--color-primary,#91A98B)]/20 bg-white dark:bg-[#1D241F] flex items-center justify-between text-xs shrink-0">
+          <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+            TinyBloom v2.2 · WHO 2006 Standards
+          </span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="px-4 py-1.5 rounded-xl bg-stone-100 dark:bg-[#2A342D] hover:bg-stone-200 dark:hover:bg-[#344238] font-bold text-[var(--color-text-main,#303832)] transition-colors"
+          >
+            Close
+          </button>
+        </div>
+
       </div>
-
-      {/* Wipe Confirmation Modal */}
-      {showDeleteConfirm && (
-        <div className="fixed inset-0 z-60 flex items-center justify-center p-4 bg-black/70 backdrop-blur-xs">
-          <div className="bg-white dark:bg-[#1D241F] rounded-3xl p-6 border border-red-200 dark:border-red-900 max-w-sm w-full shadow-2xl space-y-4 text-[var(--color-text-main,#303832)]">
-            <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950 text-red-600 flex items-center justify-center">
-              <AlertTriangle className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold font-heading">
-                Permanently delete all baby data?
-              </h3>
-              <p className="text-xs text-[var(--color-text-muted,#6E7B6C)] mt-1 leading-relaxed">
-                This will wipe all {entries.length} measurements and the profile from this device. Please ensure you have downloaded a backup if you need your records.
-              </p>
-            </div>
-            <div className="flex items-center justify-end gap-2 pt-2">
-              <button
-                type="button"
-                onClick={() => setShowDeleteConfirm(false)}
-                className="px-4 py-2 text-xs font-semibold bg-stone-100 dark:bg-[#202722] rounded-xl hover:bg-stone-200"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleDeleteAll}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs"
-              >
-                Wipe Everything
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

@@ -159,6 +159,33 @@ export const GrowthStory: React.FC<GrowthStoryProps> = ({
 On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'girls'}, this places ${profile.name} at the ${latestPercentile?.displayStr}. Children grow along their own unique percentile curves, and steady progress over time is what pediatricians watch for. Remember that percentiles are statistical reference points rather than a diagnosis of health.`;
   };
 
+  if (entries.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white dark:bg-[#1D241F] rounded-3xl p-8 sm:p-10 border border-[var(--color-primary,#91A98B)]/30 text-center space-y-4 shadow-2xs">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-primary,#5D7C57)] flex items-center justify-center mx-auto shadow-2xs border border-[var(--color-primary,#91A98B)]/20">
+            <Sparkles className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl sm:text-2xl font-bold font-heading text-[var(--color-text-main,#303832)]">
+            Start {profile.name}’s Growth Story
+          </h2>
+          <p className="text-xs sm:text-sm text-[var(--color-text-muted,#6E7B6C)] max-w-md mx-auto leading-relaxed">
+            No measurements recorded yet. Log your baby’s first weight, length, or head circumference to view percentile curves, weekly growth velocity, and personalized developmental milestones.
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={onOpenAddModal}
+              className="px-6 py-3 bg-[var(--color-primary,#5D7C57)] text-white rounded-2xl text-xs font-bold hover:opacity-90 transition-all shadow-xs inline-flex items-center gap-2"
+            >
+              <span>+ Record First Measurement</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Intro Card */}

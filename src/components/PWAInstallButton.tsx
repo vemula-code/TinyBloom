@@ -3,7 +3,11 @@ import { usePWAInstall } from '../hooks/usePWAInstall';
 import { TinyBloomLogo } from './TinyBloomLogo';
 import { Smartphone, Download, Check, X, Copy, ExternalLink, Share2 } from 'lucide-react';
 
-export const PWAInstallButton: React.FC = () => {
+interface PWAInstallButtonProps {
+  className?: string;
+}
+
+export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ className = '' }) => {
   const { isInstallable, isInstalled, install } = usePWAInstall();
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
