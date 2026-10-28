@@ -9,6 +9,7 @@ interface GrowthChartProps {
   gender: Gender;
   unit: MetricUnit;
   babyName: string;
+  babyAgeMonths?: number;
   onOpenAddModal?: () => void;
 }
 
@@ -18,9 +19,29 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   gender,
   unit,
   babyName,
+  babyAgeMonths,
   onOpenAddModal,
 }) => {
-  const [rangeMonths, setRangeMonths] = useState<12 | 24>(12);
+  // Smart default age range based on baby's current age or measurements
+  const defaultRange = useMemo<6 | 12 | 18 | 24>(() => {
+    let age = babyAgeMonths;
+    if (age === undefined || age === null) {
+      const validAges = entries.map((e) => e.ageMonths).filter((a) => a !== undefined && a !== null);
+      age = validAges.length > 0 ? Math.max(...validAges) : 2;
+    }
+    if (age <= 5) return 6;
+    if (age <= 10) return 12;
+    if (age <= 16) return 18;
+    return 24;
+  }, [babyAgeMonths, entries]);
+
+  const [rangeMonths, setRangeMonths] = useState<6 | 12 | 18 | 24>(defaultRange);
+
+  // Sync range if baby profile changes significantly
+  React.useEffect(() => {
+    setRangeMonths(defaultRange);
+  }, [defaultRange]);
+
   const [hoveredPoint, setHoveredPoint] = useState<{
     entry: GrowthEntry;
     x: number;
@@ -31,7 +52,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
   const rawTable = useMemo(() => getWHOTable(chartType, gender), [chartType, gender]);
 
-  // Filter table by selected max age (12 or 24 months)
+  // Filter table by selected max age (6, 12, 18, or 24 months)
   const filteredTable = useMemo(() => {
     return rawTable.filter((row) => row.month <= rangeMonths);
   }, [rawTable, rangeMonths]);
@@ -180,7 +201,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   // X-axis month ticks
   const xTicks = useMemo(() => {
     const ticks: number[] = [];
-    const step = rangeMonths === 12 ? 1 : 2;
+    const step = rangeMonths <= 6 ? 1 : rangeMonths <= 12 ? 1 : 2;
     for (let m = 0; m <= rangeMonths; m += step) {
       ticks.push(m);
     }
@@ -203,77 +224,40 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   };
 
   return (
-    <div className="bg-white dark:bg-[#1A221D] rounded-3xl border border-[var(--color-card-border,#E2E9E0)] shadow-2xs p-4 sm:p-6 transition-all text-[var(--color-text-main)]">
-      {/* Chart Top Bar Controls */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-4 border-b border-[var(--color-card-border,#E2E9E0)]">
-        <div>
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight">
+    <div className="bg-white dark:bg-[#1A221D] rounded-3xl border border-[var(--color-card-border,#E2E9E0)] shadow-2xs p-3.5 sm:p-5 transition-all text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
+      {/* Chart Top Bar Controls - Clean and compact */}
+      <div className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-[var(--color-card-border,#E2E9E0)]">
+        <div className="truncate">
+          <div className="flex items-center gap-1.5 truncate">
+            <h3 className="text-sm sm:text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight truncate">
               {chartType === 'weight'
-                ? 'WHO Weight-for-Age Standards'
+                ? 'Weight'
                 : chartType === 'height'
-                ? 'WHO Length / Height Standards'
-                : 'WHO Head Circumference Standards'} · {gender === 'boy' ? 'Boys' : 'Girls'}
+                ? 'Length'
+                : 'Head Size'} · {gender === 'boy' ? 'Boys' : 'Girls'}
             </h3>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] uppercase">
-              Official WHO
+            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] uppercase shrink-0">
+              WHO
             </span>
           </div>
-          <p className="text-xs text-[var(--color-text-muted)] mt-0.5">
-            Official World Health Organization reference curves (P3 to P97) · Individual tracking for {babyName}
-          </p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-between sm:justify-end">
-          {/* Range Segmented Control */}
-          <div className="flex items-center gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-1 rounded-xl text-xs font-medium shrink-0">
+        {/* Dynamic Age-Range Segmented Pill (Auto-adjusted for baby's stage: 0-6m, 0-12m, 0-18m, 0-24m) */}
+        <div className="flex items-center gap-0.5 sm:gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-0.5 sm:p-1 rounded-xl text-xs font-medium shrink-0">
+          {([6, 12, 18, 24] as const).map((months) => (
             <button
+              key={months}
               type="button"
-              onClick={() => setRangeMonths(12)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                rangeMonths === 12
+              onClick={() => setRangeMonths(months)}
+              className={`px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-xs transition-all cursor-pointer ${
+                rangeMonths === months
                   ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
               }`}
             >
-              0–12m
+              0–{months}m
             </button>
-            <button
-              type="button"
-              onClick={() => setRangeMonths(24)}
-              className={`px-3 py-1 rounded-lg transition-all ${
-                rangeMonths === 24
-                  ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
-                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-              }`}
-            >
-              0–24m
-            </button>
-          </div>
-
-          {onOpenAddModal && (
-            <button
-              type="button"
-              onClick={onOpenAddModal}
-              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-bold shadow-2xs hover:opacity-90 active:scale-95 transition-all shrink-0 cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>+ Log Data</span>
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* WHO Educational Context & Zero-Comparison Note */}
-      <div className="my-3 px-3.5 py-2.5 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs flex items-start gap-2.5">
-        <span className="text-base shrink-0 mt-0.5 select-none">🌱</span>
-        <div className="space-y-1">
-          <span className="font-bold text-[var(--color-text-main)] block text-xs">
-            Official WHO Standards · No two babies are the same
-          </span>
-          <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-            Percentile bands are statistical population guides from the World Health Organization, not grades or contests. A baby growing along the 15th percentile is just as healthy as one at the 85th—every baby’s curve is completely unique.
-          </p>
+          ))}
         </div>
       </div>
 
@@ -519,30 +503,46 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         )}
       </div>
 
-      {/* Chart Footer Legend & Educational Context */}
-      <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex flex-wrap items-center justify-between gap-4 text-xs text-[#6E7B6C]">
-        <div className="flex flex-wrap items-center gap-4">
+      {/* Chart Footer Legend */}
+      <div className="mt-3.5 pt-3 border-t border-[var(--color-card-border,#E2E9E0)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+        <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-[#3D5939] rounded-full inline-block" />
-            <span className="font-bold text-[#303832]">{babyName}’s Growth</span>
+            <span className="w-3.5 h-1 bg-[#ea580c] rounded-full inline-block" />
+            <span className="font-bold text-[var(--color-text-main)]">{babyName}’s Growth</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-3.5 h-1 bg-[#5284A6] rounded-full inline-block" />
             <span>WHO 50th % (Median)</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-[#91A98B]/20 border border-[#91A98B]/40 rounded-xs inline-block" />
-            <span>15th – 85th % (Core Range)</span>
+            <span className="w-3 h-3 bg-[#0d9488]/15 border border-[#0d9488]/40 rounded-xs inline-block" />
+            <span>15th – 85th % (Core)</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-2 h-2 rounded-full bg-[#326180] inline-block" />
-            <span>Pediatrician Visit</span>
+            <span>Doctor Visit</span>
           </div>
         </div>
 
-        <span className="text-[#6E7B6C] text-[11px]">
-          Tap any data point to view notes
+        <span className="text-[11px] text-[var(--color-text-muted)] italic">
+          Tap data points to inspect
         </span>
+      </div>
+
+      {/* Official WHO Standards & Reassurance Guidance Card (Positioned directly below the graph) */}
+      <div className="mt-4 p-4 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs flex items-start gap-3">
+        <span className="text-xl shrink-0 mt-0.5 select-none">🌱</span>
+        <div className="space-y-1.5">
+          <div className="font-bold text-[var(--color-text-main)] text-xs sm:text-sm">
+            Official WHO Standards · No two babies are the same
+          </div>
+          <p className="text-xs text-[var(--color-text-main)] font-medium leading-relaxed">
+            <strong>Read this before you compare:</strong> As parents we naturally compare, but percentile bands are statistical population guides from the World Health Organization, not grades or contests. A baby growing along the 15th percentile is just as healthy as one at the 85th—every baby’s curve is completely unique.
+          </p>
+          <p className="text-[11px] text-[var(--color-text-muted)] italic">
+            What pediatricians look for is steady, consistent progression along their own individualized curve over time, rather than any single number.
+          </p>
+        </div>
       </div>
     </div>
   );

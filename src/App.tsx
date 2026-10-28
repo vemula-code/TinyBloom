@@ -442,29 +442,22 @@ export default function App() {
 
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
-        {/* Sample Demo Mode Banner */}
+        {/* Sample Demo Mode Banner - Sleek, slim, compact, and non-intrusive */}
         {(profile.id === 'demo-sample-baby' || profile.id === 'baby-main' || profile.name === 'Sample Baby') && (
-          <div className="bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 rounded-2xl p-3.5 sm:p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-2xs">
-            <div className="flex items-center gap-3 w-full sm:w-auto">
-              <span className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300 flex items-center justify-center shrink-0 text-base shadow-2xs">
-                🌱
-              </span>
-              <div>
-                <span className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-sm block">
-                  You are exploring generic sample demo records.
-                </span>
-                <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
-                  Ready to track your own baby? Set up a clean, private tracker anytime.
-                </p>
-              </div>
+          <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2.5 text-xs shadow-2xs">
+            <div className="flex items-center gap-2 min-w-0 truncate">
+              <span className="text-sm shrink-0 select-none">🌱</span>
+              <p className="text-xs text-[var(--color-text-main)] truncate">
+                Exploring <strong>sample demo records</strong>. Ready to track your baby?
+              </p>
             </div>
             <button
               type="button"
               onClick={() => setIsOnboardingOpen(true)}
-              className="w-full sm:w-auto justify-center px-4 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap flex items-center gap-1.5 cursor-pointer"
+              className="px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-1"
             >
               <Baby className="w-3.5 h-3.5" />
-              <span>Set Up My Baby</span>
+              <span>Set Up Baby</span>
             </button>
           </div>
         )}
@@ -473,75 +466,54 @@ export default function App() {
             TAB 1: HOME SCREEN
            ======================================================== */}
         {activeTab === 'home' && (
-          <div className="space-y-6">
-            {/* Baby Profile Hero Banner */}
-            <div className="bg-white dark:bg-[#1D241F] rounded-3xl border border-[var(--color-primary,#91A98B)]/30 p-5 sm:p-6 shadow-2xs relative overflow-hidden transition-colors">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5">
+          <div className="space-y-4 sm:space-y-6">
+            {/* Baby Profile Hero Banner - Compact on mobile, rich on desktop */}
+            <div className="bg-white dark:bg-[#1D241F] rounded-3xl border border-[var(--color-primary,#91A98B)]/30 p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
                 {/* Left: Avatar + Details */}
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-3">
                   <BabyAvatar
                     avatarUrl={profile.avatarUrl || DEFAULT_AVATAR}
                     name={profile.name}
                     gender={profile.gender}
-                    size="lg"
+                    size="md"
                     onClick={() => setIsSettingsOpen(true)}
                     showEditBadge={true}
                   />
 
-                  <div>
-                    <div className="flex items-center gap-2.5">
-                      <h1 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-[var(--color-text-main,#303832)]">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 truncate">
+                      <h1 className="text-lg sm:text-xl font-bold font-heading tracking-tight text-[var(--color-text-main,#303832)] truncate">
                         {profile.name}
                       </h1>
-                      <span className="text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-semibold capitalize bg-[var(--color-primary,#91A98B)]/15 px-2 py-0.5 rounded-full">
+                      <span className="text-[10px] sm:text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-semibold capitalize bg-[var(--color-primary,#91A98B)]/15 px-2 py-0.5 rounded-full shrink-0">
                         {profile.gender}
                       </span>
                     </div>
 
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted,#6E7B6C)]">
-                      <span className="font-bold text-[var(--color-text-main,#303832)]">{currentAge.displayStr} old</span>
+                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                      <span className="font-bold text-[var(--color-text-main,#303832)]">{currentAge.displayStr}</span>
                       <span aria-hidden="true">·</span>
-                      <span>Born {profile.birthDate}</span>
+                      <span className="font-mono">{entries.length} logs</span>
+                      <span aria-hidden="true">·</span>
                       <button
                         type="button"
                         onClick={() => setIsSettingsOpen(true)}
-                        className="text-[11px] font-semibold text-[var(--color-primary,#91A98B)] underline decoration-[var(--color-primary,#91A98B)]/60 hover:opacity-80 transition-colors ml-0.5"
+                        className="font-semibold text-[var(--color-primary,#91A98B)] underline hover:opacity-80 transition-colors"
                       >
-                        Edit
-                      </button>
-                      <span aria-hidden="true">·</span>
-                      <span className="font-mono">{entries.length} measurements</span>
-                    </div>
-
-                    <p className="mt-1 text-xs text-[var(--color-text-muted,#6E7B6C)] line-clamp-1 italic max-w-md">
-                      {profile.notes || 'Every little milestone matters.'}
-                    </p>
-
-                    <div className="mt-2.5 flex flex-wrap items-center gap-2">
-                      <div className="flex items-center gap-1.5 text-[11px] font-medium text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 px-2.5 py-1 rounded-xl w-fit">
-                        <ShieldCheck className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-                        <span>100% On-Device · Zero Cloud Tracking</span>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => setIsHeartModalOpen(true)}
-                        className="flex items-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/40 px-2.5 py-1 rounded-xl hover:bg-rose-100 dark:hover:bg-rose-900/60 transition-colors cursor-pointer"
-                      >
-                        <Heart className="w-3 h-3 fill-rose-500" />
-                        <span>Our Heartfelt Story</span>
+                        Profile
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Right: Quick Unit Switcher & Quick Actions */}
-                <div className="flex flex-wrap items-center gap-2 self-stretch sm:self-auto justify-end border-t sm:border-t-0 pt-3 sm:pt-0 border-[#91A98B]/15">
+                <div className="flex items-center justify-between sm:justify-end gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#91A98B]/15 shrink-0">
                   <div className="flex items-center gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-1 rounded-xl text-xs font-medium">
                     <button
                       type="button"
                       onClick={() => setUnit('metric')}
-                      className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
                         unit === 'metric'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -552,7 +524,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setUnit('imperial')}
-                      className={`px-2.5 py-1.5 rounded-lg transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
                         unit === 'imperial'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -568,7 +540,7 @@ export default function App() {
                       setEditingEntry(null);
                       setIsLogModalOpen(true);
                     }}
-                    className="flex items-center gap-1.5 px-3.5 py-2 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-2xs"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Log Growth</span>
@@ -593,6 +565,7 @@ export default function App() {
               gender={profile.gender}
               unit={unit}
               babyName={profile.name}
+              babyAgeMonths={currentAge.exactMonths}
               onOpenAddModal={() => {
                 setEditingEntry(null);
                 setIsLogModalOpen(true);
@@ -757,6 +730,7 @@ export default function App() {
               gender={profile.gender}
               unit={unit}
               babyName={profile.name}
+              babyAgeMonths={currentAge.exactMonths}
             />
           </div>
         )}
