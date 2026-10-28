@@ -588,14 +588,17 @@ export default function App() {
               </div>
 
               {/* Reassurance Guidance Banner: Official WHO Standards · No two babies are the same */}
-              <div className="mt-3.5 pt-3 border-t border-[var(--color-primary,#91A98B)]/15 flex items-start gap-2.5 text-xs bg-[var(--color-primary,#91A98B)]/8 dark:bg-white/5 p-2.5 sm:p-3 rounded-2xl">
-                <span className="text-base shrink-0 select-none">🌱</span>
-                <div className="min-w-0 space-y-0.5 leading-snug">
+              <div className="mt-3.5 pt-3 border-t border-[var(--color-primary,#91A98B)]/15 flex items-start gap-2.5 text-xs bg-[var(--color-primary,#91A98B)]/8 dark:bg-white/5 p-3 rounded-2xl">
+                <span className="text-lg shrink-0 select-none">🌱</span>
+                <div className="min-w-0 space-y-1">
                   <p className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-[13px]">
                     Official WHO Standards · No two babies are the same
                   </p>
-                  <p className="text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)]">
-                    Percentile bands are statistical population guides from the World Health Organization, not grades or contests. Every baby grows along their own unique and healthy curve.
+                  <p className="text-xs text-[var(--color-text-main,#303832)] leading-relaxed">
+                    <strong>How to read this chart:</strong> Higher numbers are not &ldquo;better&rdquo;, and lower numbers are not &ldquo;worse&rdquo;. A baby on the 15th percentile is just as healthy and thriving as one on the 85th.
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)] leading-snug">
+                    Never compare babies. All that matters is your child growing along their own steady, natural curve over time.
                   </p>
                 </div>
               </div>

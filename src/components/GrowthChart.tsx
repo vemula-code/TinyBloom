@@ -537,10 +537,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             Official WHO Standards · No two babies are the same
           </div>
           <p className="text-xs text-[var(--color-text-main)] font-medium leading-relaxed">
-            <strong>Read this before you compare:</strong> As parents we naturally compare, but percentile bands are statistical population guides from the World Health Organization, not grades or contests. A baby growing along the 15th percentile is just as healthy as one at the 85th—every baby’s curve is completely unique.
+            <strong>Simple rule for reading this chart:</strong> Higher numbers are not &ldquo;better&rdquo;, and lower numbers are not &ldquo;worse&rdquo;. A baby growing along the 15th percentile is just as healthy and thriving as one at the 85th—every baby’s curve is completely unique.
           </p>
-          <p className="text-[11px] text-[var(--color-text-muted)] italic">
-            What pediatricians look for is steady, consistent progression along their own individualized curve over time, rather than any single number.
+          <p className="text-[11px] text-[var(--color-text-muted)]">
+            Never compare with other babies. Pediatricians look only for steady, consistent progress along your child&apos;s own personal curve over time.
           </p>
         </div>
       </div>

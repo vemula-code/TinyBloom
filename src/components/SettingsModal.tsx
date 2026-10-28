@@ -388,8 +388,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white dark:bg-[#1D241F] rounded-3xl shadow-2xl border border-[var(--color-primary,#91A98B)]/30 w-full max-w-2xl overflow-hidden my-auto max-h-[94vh] flex flex-col text-[var(--color-text-main,#303832)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs">
+      <div className="bg-white dark:bg-[#1D241F] rounded-3xl shadow-2xl border border-[var(--color-primary,#91A98B)]/30 w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main,#303832)]">
         
         {/* Modal Header */}
         <div className="px-5 py-3.5 border-b border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between bg-white dark:bg-[#1D241F] shrink-0">
