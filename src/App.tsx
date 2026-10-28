@@ -467,23 +467,26 @@ export default function App() {
            ======================================================== */}
         {activeTab === 'home' && (
           <div className="space-y-4 sm:space-y-6">
-            {/* Baby Profile Hero Banner - Compact on mobile, rich on desktop */}
-            <div className="bg-white dark:bg-[#1D241F] rounded-3xl border border-[var(--color-primary,#91A98B)]/30 p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                {/* Left: Avatar + Details */}
-                <div className="flex items-center gap-3">
-                  <BabyAvatar
-                    avatarUrl={profile.avatarUrl || DEFAULT_AVATAR}
-                    name={profile.name}
-                    gender={profile.gender}
-                    size="md"
-                    onClick={() => setIsSettingsOpen(true)}
-                    showEditBadge={true}
-                  />
+            {/* Baby Profile Hero Banner - Kept intact on top of graph */}
+            <div className="bg-white dark:bg-[#1D241F] rounded-3xl border border-[var(--color-primary,#91A98B)]/30 p-4 sm:p-5 shadow-2xs relative overflow-hidden transition-colors">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+                {/* Left: Display Picture + Name + DOB + Age */}
+                <div className="flex items-center gap-3.5 min-w-0">
+                  <div className="relative shrink-0">
+                    <BabyAvatar
+                      avatarUrl={profile.avatarUrl || DEFAULT_AVATAR}
+                      name={profile.name}
+                      gender={profile.gender}
+                      size="lg"
+                      onClick={() => setIsSettingsOpen(true)}
+                      showEditBadge={true}
+                    />
+                  </div>
 
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 truncate">
-                      <h1 className="text-lg sm:text-xl font-bold font-heading tracking-tight text-[var(--color-text-main,#303832)] truncate">
+                  <div className="min-w-0 flex-1 space-y-1">
+                    {/* Baby Name & Gender */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h1 className="text-xl sm:text-2xl font-bold font-heading tracking-tight text-[var(--color-text-main,#303832)] truncate">
                         {profile.name}
                       </h1>
                       <span className="text-[10px] sm:text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-semibold capitalize bg-[var(--color-primary,#91A98B)]/15 px-2 py-0.5 rounded-full shrink-0">
@@ -491,29 +494,65 @@ export default function App() {
                       </span>
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-1.5 text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                    {/* Date of Birth & Age */}
+                    <div className="flex flex-wrap items-center gap-2 text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                      <span className="inline-flex items-center gap-1 font-medium">
+                        <Calendar className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
+                        <span>
+                          Born{' '}
+                          {(() => {
+                            try {
+                              const [y, m, d] = (profile.birthDate || '').split('-').map(Number);
+                              if (y && m && d) {
+                                return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                });
+                              }
+                              return profile.birthDate;
+                            } catch {
+                              return profile.birthDate;
+                            }
+                          })()}
+                        </span>
+                      </span>
+                      <span aria-hidden="true" className="text-gray-300 dark:text-gray-600">·</span>
                       <span className="font-bold text-[var(--color-text-main,#303832)]">{currentAge.displayStr}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="font-mono">{entries.length} logs</span>
-                      <span aria-hidden="true">·</span>
+                    </div>
+
+                    {/* Privacy & Our Story Badges */}
+                    <div className="flex flex-wrap items-center gap-2 pt-0.5">
+                      {/* 100% Private Badge */}
+                      <span
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 text-[11px] font-semibold select-none shadow-2xs"
+                        title="All measurements and baby photos are stored strictly on your device. Zero cloud sync."
+                      >
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                        <span>100% Private · On-Device</span>
+                      </span>
+
+                      {/* Our Story Button */}
                       <button
                         type="button"
-                        onClick={() => setIsSettingsOpen(true)}
-                        className="font-semibold text-[var(--color-primary,#91A98B)] underline hover:opacity-80 transition-colors"
+                        onClick={() => setActiveTab('story')}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-[11px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-2xs"
+                        title="View baby's developmental journey and growth story"
                       >
-                        Profile
+                        <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
+                        <span>Our Story: {getBabyStageStorySummary(currentAge.exactMonths)}</span>
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {/* Right: Quick Unit Switcher & Quick Actions */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-[#91A98B]/15 shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-2 border-t sm:border-t-0 pt-2.5 sm:pt-0 border-[#91A98B]/15 shrink-0">
                   <div className="flex items-center gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-1 rounded-xl text-xs font-medium">
                     <button
                       type="button"
                       onClick={() => setUnit('metric')}
-                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all cursor-pointer ${
                         unit === 'metric'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -524,7 +563,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setUnit('imperial')}
-                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all ${
+                      className={`px-2 py-1 rounded-lg text-[11px] sm:text-xs transition-all cursor-pointer ${
                         unit === 'imperial'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -540,7 +579,7 @@ export default function App() {
                       setEditingEntry(null);
                       setIsLogModalOpen(true);
                     }}
-                    className="flex items-center gap-1 px-3 py-1.5 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer"
+                    className="flex items-center gap-1 px-3 py-1.5 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95"
                   >
                     <Plus className="w-3.5 h-3.5" />
                     <span>Log Growth</span>
