@@ -586,6 +586,19 @@ export default function App() {
                   </button>
                 </div>
               </div>
+
+              {/* Reassurance Guidance Banner: Official WHO Standards · No two babies are the same */}
+              <div className="mt-3.5 pt-3 border-t border-[var(--color-primary,#91A98B)]/15 flex items-start gap-2.5 text-xs bg-[var(--color-primary,#91A98B)]/8 dark:bg-white/5 p-2.5 sm:p-3 rounded-2xl">
+                <span className="text-base shrink-0 select-none">🌱</span>
+                <div className="min-w-0 space-y-0.5 leading-snug">
+                  <p className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-[13px]">
+                    Official WHO Standards · No two babies are the same
+                  </p>
+                  <p className="text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)]">
+                    Percentile bands are statistical population guides from the World Health Organization, not grades or contests. Every baby grows along their own unique and healthy curve.
+                  </p>
+                </div>
+              </div>
             </div>
 
             {/* 1. Side-by-Side Metric Selector Cards (Weight, Length, Head) */}
