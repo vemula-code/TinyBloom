@@ -3,6 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <script>
+      // AI Studio iframe environment disables HMR WebSockets.
+      // Intercept vite-hmr WebSocket and console.error so HMR connection failures do not emit uncaught errors.
+      (function() {
+        if (typeof window !== 'undefined') {
+          // 1. Filter console.error for expected Vite HMR disconnect messages
+          try {
+            var origError = console.error;
+            console.error = function() {
+              for (var i = 0; i < arguments.length; i++) {
+                var arg = arguments[i];
+                if (arg) {
+                  var str = typeof arg === 'string' ? arg : (arg.message || String(arg));
+                  if (str.indexOf('WebSocket closed without opened') !== -1 ||
+                      str.indexOf('WebSocket') !== -1 && str.indexOf('closed') !== -1 ||
+                      str.indexOf('server connection lost') !== -1) {
+                    return;
+                  }
+                }
+              }
+              return origError.apply(console, arguments);
+            };
+          } catch (e) {}
+
+          // 2. Intercept unhandled error & rejection events
+          window.addEventListener('error', function(event) {
+            if (event && event.message && event.message.indexOf('WebSocket') !== -1) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+              return true;
+            }
+          }, true);
+          window.addEventListener('unhandledrejection', function(event) {
+            if (event && event.reason && String(event.reason).indexOf('WebSocket') !== -1) {
+              event.preventDefault();
+              event.stopImmediatePropagation();
+            }
+          }, true);
+
+          // 3. Stub window.WebSocket for Vite dev connections (vite-hmr, vite-ping)
+          try {
+            var OriginalWebSocket = window.WebSocket;
+            if (OriginalWebSocket) {
+              window.WebSocket = function(url, protocols) {
+                var isViteDev = true; // In this applet all WebSockets are Vite dev HMR/ping
+                var protoStr = Array.isArray(protocols) ? protocols.join(',') : String(protocols || '');
+
+                if (isViteDev) {
+                  var handlers = { open: [], message: [], close: [], error: [] };
+                  var fakeWs = {
+                    CONNECTING: 0,
+                    OPEN: 1,
+                    CLOSING: 2,
+                    CLOSED: 3,
+                    readyState: 1, // OPEN
+                    bufferedAmount: 0,
+                    extensions: '',
+                    protocol: protoStr,
+                    binaryType: 'blob',
+                    url: String(url || ''),
+                    send: function() {},
+                    close: function() {},
+                    addEventListener: function(evt, fn) {
+                      if (handlers[evt]) handlers[evt].push(fn);
+                      if (evt === 'open') {
+                        setTimeout(function() {
+                          try { fn.call(fakeWs, { type: 'open', target: fakeWs }); } catch(err) {}
+                        }, 0);
+                      }
+                    },
+                    removeEventListener: function(evt, fn) {
+                      if (handlers[evt]) {
+                        handlers[evt] = handlers[evt].filter(function(h) { return h !== fn; });
+                      }
+                    },
+                    dispatchEvent: function() { return false; },
+                    onopen: null,
+                    onclose: null,
+                    onerror: null,
+                    onmessage: null
+                  };
+                  setTimeout(function() {
+                    if (typeof fakeWs.onopen === 'function') {
+                      try { fakeWs.onopen.call(fakeWs, { type: 'open', target: fakeWs }); } catch(err) {}
+                    }
+                  }, 0);
+                  return fakeWs;
+                }
+                return new OriginalWebSocket(url, protocols);
+              };
+              window.WebSocket.prototype = OriginalWebSocket.prototype;
+              window.WebSocket.CONNECTING = 0;
+              window.WebSocket.OPEN = 1;
+              window.WebSocket.CLOSING = 2;
+              window.WebSocket.CLOSED = 3;
+            }
+          } catch (e) {}
+        }
+      })();
+    </script>
     <title>TinyBloom - Every Little Milestone Matters</title>
     <meta name="description" content="Private, offline-first baby growth tracker with official WHO percentiles, growth story insights, developmental milestones, and doctor visit briefs." />
     <meta property="og:title" content="TinyBloom - Every Little Milestone Matters" />
