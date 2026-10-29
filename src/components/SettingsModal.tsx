@@ -57,6 +57,8 @@ interface SettingsModalProps {
   onDeleteEntry?: (id: string) => void;
   onOpenAddModal?: () => void;
   initialDepartment?: SettingsDepartment;
+  chartTimelineRange?: 'auto' | 6 | 12 | 18 | 24;
+  onChangeChartTimelineRange?: (range: 'auto' | 6 | 12 | 18 | 24) => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -82,6 +84,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onDeleteEntry,
   onOpenAddModal,
   initialDepartment = 'profile',
+  chartTimelineRange = 'auto',
+  onChangeChartTimelineRange,
 }) => {
   const [activeDepartment, setActiveDepartment] = useState<SettingsDepartment>(initialDepartment);
   const [name, setName] = useState(profile.name);
@@ -626,6 +630,111 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       </button>
                     </div>
                   </div>
+
+                  {/* Growth Chart Timeline Range Preference */}
+                  {onChangeChartTimelineRange && (
+                    <div className="space-y-1.5 pt-2 border-t border-[var(--color-primary,#91A98B)]/20">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                          Growth Chart Timeline Range
+                        </label>
+                        <span className="text-[10px] text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-medium">
+                          Auto: by baby&apos;s age
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+                        Controls the time horizon on the WHO growth chart. By default, TinyBloom automatically adjusts: &lt;3m &rarr; 0–6m, 3–10m &rarr; 0–12m, &gt;10m &rarr; 0–24m.
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => onChangeChartTimelineRange('auto')}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col cursor-pointer ${
+                            chartTimelineRange === 'auto'
+                              ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          }`}
+                        >
+                          <span className="font-bold flex items-center gap-1">✨ Auto (by Age)</span>
+                          <span className="text-[9px] opacity-80 mt-0.5">Recommended</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onChangeChartTimelineRange(6)}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
+                            chartTimelineRange === 6
+                              ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          }`}
+                        >
+                          <span className="font-bold">0–6 Months</span>
+                          <span className="text-[9px] opacity-80 mt-0.5">Newborn &amp; Infant</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onChangeChartTimelineRange(12)}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
+                            chartTimelineRange === 12
+                              ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          }`}
+                        >
+                          <span className="font-bold">0–12 Months</span>
+                          <span className="text-[9px] opacity-80 mt-0.5">First Year Focus</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onChangeChartTimelineRange(18)}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
+                            chartTimelineRange === 18
+                              ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          }`}
+                        >
+                          <span className="font-bold">0–18 Months</span>
+                          <span className="text-[9px] opacity-80 mt-0.5">Early Toddler</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => onChangeChartTimelineRange(24)}
+                          className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
+                            chartTimelineRange === 24
+                              ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
+                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          }`}
+                        >
+                          <span className="font-bold">0–24 Months</span>
+                          <span className="text-[9px] opacity-80 mt-0.5">Full 2 Years</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Why We Built This App Shortcut */}
+                  {onOpenHeartfeltModal && (
+                    <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                          About TinyBloom
+                        </span>
+                        <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+                          Why we built this app (100% private, zero anxiety)
+                        </span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={onOpenHeartfeltModal}
+                        className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-xs font-bold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer flex items-center gap-1.5"
+                      >
+                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                        <span>Our Story</span>
+                      </button>
+                    </div>
+                  )}
 
                   <div className="pt-2">
                     <button

@@ -10,7 +10,9 @@ interface GrowthChartProps {
   unit: MetricUnit;
   babyName: string;
   babyAgeMonths?: number;
+  timelineRange?: 'auto' | 6 | 12 | 18 | 24;
   onOpenAddModal?: () => void;
+  onOpenSettings?: () => void;
 }
 
 export const GrowthChart: React.FC<GrowthChartProps> = ({
@@ -20,27 +22,28 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   unit,
   babyName,
   babyAgeMonths,
+  timelineRange = 'auto',
   onOpenAddModal,
+  onOpenSettings,
 }) => {
-  // Smart default age range based on baby's current age or measurements
-  const defaultRange = useMemo<6 | 12 | 18 | 24>(() => {
+  // Automatic age range according to user rule:
+  // - If baby under 3 months: 0–6m
+  // - Till 10 months: 0–12m
+  // - Later (> 10 months): 0–24m
+  // Can also be customized in Settings
+  const rangeMonths = useMemo<6 | 12 | 18 | 24>(() => {
+    if (timelineRange && timelineRange !== 'auto') {
+      return timelineRange;
+    }
     let age = babyAgeMonths;
     if (age === undefined || age === null) {
       const validAges = entries.map((e) => e.ageMonths).filter((a) => a !== undefined && a !== null);
       age = validAges.length > 0 ? Math.max(...validAges) : 2;
     }
-    if (age <= 5) return 6;
+    if (age < 3) return 6;
     if (age <= 10) return 12;
-    if (age <= 16) return 18;
     return 24;
-  }, [babyAgeMonths, entries]);
-
-  const [rangeMonths, setRangeMonths] = useState<6 | 12 | 18 | 24>(defaultRange);
-
-  // Sync range if baby profile changes significantly
-  React.useEffect(() => {
-    setRangeMonths(defaultRange);
-  }, [defaultRange]);
+  }, [timelineRange, babyAgeMonths, entries]);
 
   const [hoveredPoint, setHoveredPoint] = useState<{
     entry: GrowthEntry;
@@ -242,22 +245,16 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           </div>
         </div>
 
-        {/* Dynamic Age-Range Segmented Pill (Auto-adjusted for baby's stage: 0-6m, 0-12m, 0-18m, 0-24m) */}
-        <div className="flex items-center gap-0.5 sm:gap-1 bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] p-0.5 sm:p-1 rounded-xl text-xs font-medium shrink-0">
-          {([6, 12, 18, 24] as const).map((months) => (
-            <button
-              key={months}
-              type="button"
-              onClick={() => setRangeMonths(months)}
-              className={`px-2 sm:px-2.5 py-1 rounded-lg text-[10px] sm:text-xs transition-all cursor-pointer ${
-                rangeMonths === months
-                  ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
-                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-              }`}
-            >
-              0–{months}m
-            </button>
-          ))}
+        {/* Timeline Range Indicator (Auto-selected based on baby's age, adjustable in Settings) */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <button
+            type="button"
+            onClick={onOpenSettings}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/25 text-xs font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] transition-all cursor-pointer shadow-2xs"
+            title="Auto-adjusted based on baby's age. Tap to adjust timeline in Settings."
+          >
+            <span>Timeline: 0–{rangeMonths}m</span>
+          </button>
         </div>
       </div>
 

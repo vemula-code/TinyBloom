@@ -151,6 +151,26 @@ export default function App() {
     }
   });
 
+  // Chart Timeline Range preference ('auto' | 6 | 12 | 18 | 24)
+  const [chartTimelineRange, setChartTimelineRange] = useState<'auto' | 6 | 12 | 18 | 24>(() => {
+    try {
+      const saved = localStorage.getItem('tinybloom_chart_range');
+      if (saved === 'auto' || saved === '6' || saved === '12' || saved === '18' || saved === '24') {
+        return saved === 'auto' ? 'auto' : (Number(saved) as 6 | 12 | 18 | 24);
+      }
+      return 'auto';
+    } catch {
+      return 'auto';
+    }
+  });
+
+  const handleSetChartTimelineRange = (val: 'auto' | 6 | 12 | 18 | 24) => {
+    setChartTimelineRange(val);
+    try {
+      localStorage.setItem('tinybloom_chart_range', String(val));
+    } catch {}
+  };
+
   // Apply theme classes and attributes to root document
   useEffect(() => {
     const root = document.documentElement;
@@ -521,7 +541,7 @@ export default function App() {
                       <span className="font-bold text-[var(--color-text-main,#303832)]">{currentAge.displayStr}</span>
                     </div>
 
-                    {/* Privacy & Our Story Badges */}
+                    {/* Privacy, Baby Stage, & Our Story Badges */}
                     <div className="flex flex-wrap items-center gap-2 pt-0.5">
                       {/* 100% Private Badge */}
                       <span
@@ -532,15 +552,26 @@ export default function App() {
                         <span>100% Private · On-Device</span>
                       </span>
 
-                      {/* Our Story Button */}
+                      {/* Baby's Developmental Stage Badge */}
                       <button
                         type="button"
                         onClick={() => setActiveTab('story')}
-                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-[11px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-2xs"
-                        title="View baby's developmental journey and growth story"
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-200 border border-purple-200/80 dark:border-purple-800/50 text-[11px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer shadow-2xs"
+                        title="View baby's developmental milestones and journey"
                       >
-                        <BookOpen className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400 shrink-0" />
-                        <span>Our Story: {getBabyStageStorySummary(currentAge.exactMonths)}</span>
+                        <Sparkles className="w-3.5 h-3.5 text-purple-600 dark:text-purple-400 shrink-0" />
+                        <span>Stage: {getBabyStageStorySummary(currentAge.exactMonths)}</span>
+                      </button>
+
+                      {/* Our Story (Why We Built TinyBloom) Button */}
+                      <button
+                        type="button"
+                        onClick={() => setIsHeartModalOpen(true)}
+                        className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-[11px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-2xs"
+                        title="Read the heartfelt story of why we created TinyBloom (no ads, no competition, 100% private)"
+                      >
+                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20 shrink-0" />
+                        <span>Our Story (Why We Built This)</span>
                       </button>
                     </div>
                   </div>
@@ -621,10 +652,12 @@ export default function App() {
               unit={unit}
               babyName={profile.name}
               babyAgeMonths={currentAge.exactMonths}
+              timelineRange={chartTimelineRange}
               onOpenAddModal={() => {
                 setEditingEntry(null);
                 setIsLogModalOpen(true);
               }}
+              onOpenSettings={() => setIsSettingsOpen(true)}
             />
 
             {/* 3. Reassuring Progress & Growth Journey (Zero-Anxiety Parenting) */}
@@ -923,7 +956,7 @@ export default function App() {
           <Plus className="w-6 h-6" />
         </button>
 
-        {/* Right 1: Milestones & Story */}
+        {/* Right 1: Milestones & Development */}
         <button
           type="button"
           onClick={() => setActiveTab('story')}
@@ -934,7 +967,7 @@ export default function App() {
           }`}
         >
           <BookOpen className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Story</span>
+          <span className="text-[10px] tracking-tight">Milestones</span>
         </button>
 
         {/* Right 2: Settings & Tools (Measurement History, Themes, App Download, PDF Report) */}
@@ -997,6 +1030,8 @@ export default function App() {
         onEditEntry={handleEditEntry}
         onDeleteEntry={handleDeleteEntry}
         onOpenAddModal={() => setIsLogModalOpen(true)}
+        chartTimelineRange={chartTimelineRange}
+        onChangeChartTimelineRange={handleSetChartTimelineRange}
       />
 
       <HeartfeltModal
