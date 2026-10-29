@@ -362,24 +362,31 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const palettes: { id: PaletteTheme; label: string; desc: string; color: string; border: string }[] = [
     {
       id: 'sage',
-      label: 'Warm Sage Meadow',
-      desc: 'Fresh eucalyptus, calm botanical hues & cream (Default)',
-      color: '#5D7C57',
-      border: '#D9E3D6',
+      label: 'Botanical Sage (Nara Baby Style)',
+      desc: 'Fresh eucalyptus, calm botanical greens & warm cream',
+      color: '#4A7347',
+      border: '#D4E2D3',
     },
     {
       id: 'linen',
-      label: 'Warm Linen & Oatmeal',
-      desc: 'Cashmere earth tones, warm contrast, zero eye strain',
-      color: '#8C6542',
-      border: '#E8E2D8',
+      label: 'Warm Linen & Oatmeal (Hatch Style)',
+      desc: 'Cashmere earth tones, warm sand, and zero eye strain',
+      color: '#855835',
+      border: '#E8DED1',
+    },
+    {
+      id: 'sky',
+      label: 'Soft Mist Blue (Huckleberry Style)',
+      desc: 'Classic pediatric sky blue, soothing calm porcelain tone',
+      color: '#386C94',
+      border: '#CCE0EE',
     },
     {
       id: 'midnight',
-      label: 'Midnight Slumber',
-      desc: 'High contrast deep theme engineered for 2 AM feedings',
-      color: '#1A221D',
-      border: '#334237',
+      label: 'Nursery Night (2 AM High Contrast)',
+      desc: 'Deep soothing dark surfaces with crystal-clear white text',
+      color: '#76C476',
+      border: '#334839',
     },
   ];
 
@@ -768,30 +775,42 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <span className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
                     Display Appearance
                   </span>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => onToggleThemeMode('system')}
+                      className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
+                        themeMode === 'system'
+                          ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
+                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                      }`}
+                    >
+                      <Smartphone className="w-4 h-4" />
+                      <span>Phone System</span>
+                    </button>
                     <button
                       type="button"
                       onClick={() => onToggleThemeMode('light')}
-                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border ${
+                      className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         themeMode === 'light'
-                          ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                          : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
+                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
                     >
                       <Sun className="w-4 h-4" />
-                      <span>Day / Light Mode</span>
+                      <span>Day Light</span>
                     </button>
                     <button
                       type="button"
                       onClick={() => onToggleThemeMode('dark')}
-                      className={`flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl text-xs font-bold transition-all border ${
+                      className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         themeMode === 'dark'
-                          ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                          : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                          ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
+                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
                     >
                       <Moon className="w-4 h-4" />
-                      <span>Night / Dark Mode</span>
+                      <span>Nursery Dark</span>
                     </button>
                   </div>
                 </div>

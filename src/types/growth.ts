@@ -4,8 +4,8 @@ export type MetricUnit = 'metric' | 'imperial';
 
 export type ChartType = 'weight' | 'height' | 'head' | 'bmi';
 
-export type ThemeMode = 'light' | 'dark';
-export type PaletteTheme = 'sage' | 'linen' | 'midnight';
+export type ThemeMode = 'system' | 'light' | 'dark';
+export type PaletteTheme = 'sage' | 'linen' | 'sky' | 'midnight';
 
 export interface BabyProfile {
   id: string;

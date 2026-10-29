@@ -79,6 +79,9 @@ export default function App() {
             localStorage.setItem('tinybloom_entries', JSON.stringify(DEFAULT_GROWTH_ENTRIES));
             return DEFAULT_PROFILE;
           }
+          if (parsed.id === 'demo-sample-baby' && (!parsed.avatarUrl || parsed.avatarUrl.includes('baby_portrait'))) {
+            parsed.avatarUrl = DEFAULT_AVATAR;
+          }
           return parsed;
         }
       }
@@ -174,13 +177,33 @@ export default function App() {
   // Apply theme classes and attributes to root document
   useEffect(() => {
     const root = document.documentElement;
-    if (paletteTheme === 'midnight' || themeMode === 'dark') {
-      root.classList.add('dark');
-      root.setAttribute('data-theme', 'midnight');
-    } else {
-      root.classList.remove('dark');
-      root.setAttribute('data-theme', paletteTheme);
-    }
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const applyTheme = () => {
+      const isSystemDark = mediaQuery.matches;
+      const isDark =
+        themeMode === 'dark' ||
+        paletteTheme === 'midnight' ||
+        (themeMode === 'system' && isSystemDark);
+
+      if (isDark) {
+        root.classList.add('dark');
+        root.setAttribute('data-theme', 'midnight');
+      } else {
+        root.classList.remove('dark');
+        root.setAttribute('data-theme', paletteTheme);
+      }
+    };
+
+    applyTheme();
+
+    const handleSystemChange = () => {
+      if (themeMode === 'system') {
+        applyTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleSystemChange);
 
     try {
       localStorage.setItem('tinybloom_theme_mode', themeMode);
@@ -188,6 +211,8 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+
+    return () => mediaQuery.removeEventListener('change', handleSystemChange);
   }, [themeMode, paletteTheme]);
 
   // Modals
@@ -618,20 +643,20 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Reassurance Guidance Banner: Official WHO Standards · No two babies are the same */}
-              <div className="mt-3.5 pt-3 border-t border-[var(--color-primary,#91A98B)]/15 flex items-start gap-2.5 text-xs bg-[var(--color-primary,#91A98B)]/8 dark:bg-white/5 p-3 rounded-2xl">
-                <span className="text-lg shrink-0 select-none">🌱</span>
-                <div className="min-w-0 space-y-1">
-                  <p className="font-bold text-[var(--color-text-main,#303832)] text-xs sm:text-[13px]">
-                    Official WHO Standards · No two babies are the same
-                  </p>
-                  <p className="text-xs text-[var(--color-text-main,#303832)] leading-relaxed">
-                    <strong>How to read this chart:</strong> Higher numbers are not &ldquo;better&rdquo;, and lower numbers are not &ldquo;worse&rdquo;. A baby on the 15th percentile is just as healthy and thriving as one on the 85th.
-                  </p>
-                  <p className="text-[11px] sm:text-xs text-[var(--color-text-muted,#6E7B6C)] leading-snug">
-                    Never compare babies. All that matters is your child growing along their own steady, natural curve over time.
-                  </p>
+              {/* Minimized Pre-Chart Notice: Space-efficient on mobile */}
+              <div className="mt-2.5 pt-2 border-t border-[var(--color-primary,#91A98B)]/15 flex items-center justify-between gap-2 text-xs bg-[var(--color-primary,#91A98B)]/8 dark:bg-white/5 px-3 py-1.5 rounded-xl">
+                <div className="flex items-center gap-1.5 min-w-0 truncate">
+                  <span className="text-sm shrink-0 select-none">🌱</span>
+                  <span className="font-bold text-[var(--color-text-main,#303832)] text-[11px] sm:text-xs truncate">
+                    WHO Standards · No two babies are the same
+                  </span>
+                  <span className="text-[var(--color-text-muted,#6E7B6C)] text-[10px] sm:text-[11px] hidden xs:inline truncate">
+                    (15th% &amp; 85th% are equally healthy)
+                  </span>
                 </div>
+                <span className="text-[10px] text-[var(--color-text-muted,#6E7B6C)] shrink-0 font-medium whitespace-nowrap">
+                  Zero comparison
+                </span>
               </div>
             </div>
 

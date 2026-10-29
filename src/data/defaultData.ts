@@ -1,12 +1,13 @@
 import { BabyProfile, GrowthEntry } from '../types/growth';
 import defaultAvatarImg from '../assets/images/baby_portrait_gentle_1792885703662.jpg';
 
-// Bundled portrait asset with public fallback
-export const DEFAULT_AVATAR = defaultAvatarImg || '/assets/images/baby_portrait.jpg';
+// TinyBloom signature baby emblem as default avatar
+export const DEFAULT_AVATAR = '/assets/images/tinybloom-emblem.png';
 export const HERO_IMAGE = '/assets/images/baby_growth_hero_1792885704783.jpg';
 
 export const PRESET_AVATARS = [
-  { id: 'baby-portrait', label: 'Baby Portrait', url: DEFAULT_AVATAR },
+  { id: 'tinybloom-emblem', label: 'TinyBloom Emblem', url: '/assets/images/tinybloom-emblem.png' },
+  { id: 'baby-portrait', label: 'Gentle Portrait', url: defaultAvatarImg || '/assets/images/baby_portrait.jpg' },
   { id: 'sprout-badge', label: 'Sprout Baby', url: 'sprout' },
   { id: 'bear-badge', label: 'Cozy Bear', url: 'bear' },
   { id: 'lion-badge', label: 'Little Lion', url: 'lion' },

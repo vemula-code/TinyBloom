@@ -526,18 +526,47 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         </span>
       </div>
 
-      {/* Official WHO Standards & Reassurance Guidance Card (Positioned directly below the graph) */}
-      <div className="mt-4 p-4 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/20 text-xs flex items-start gap-3">
-        <span className="text-xl shrink-0 mt-0.5 select-none">🌱</span>
-        <div className="space-y-1.5">
-          <div className="font-bold text-[var(--color-text-main)] text-xs sm:text-sm">
-            Official WHO Standards · No two babies are the same
+      {/* Detailed Post-Chart WHO Guide & Reassurance */}
+      <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-[var(--color-primary)]/8 dark:bg-white/5 border border-[var(--color-primary)]/20 text-xs space-y-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xl select-none">🌱</span>
+          <h4 className="font-bold text-[var(--color-text-main)] text-xs sm:text-sm">
+            Official WHO Standards · Detailed Guide for Parents
+          </h4>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
+          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
+            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
+              1. Not a Test or Contest
+            </span>
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+              Higher is <strong>not better</strong>, and lower is <strong>not worse</strong>. A baby on the 15th percentile is just as healthy, happy, and thriving as one on the 85th.
+            </p>
           </div>
-          <p className="text-xs text-[var(--color-text-main)] font-medium leading-relaxed">
-            <strong>Simple rule for reading this chart:</strong> Higher numbers are not &ldquo;better&rdquo;, and lower numbers are not &ldquo;worse&rdquo;. A baby growing along the 15th percentile is just as healthy and thriving as one at the 85th—every baby’s curve is completely unique.
-          </p>
-          <p className="text-[11px] text-[var(--color-text-muted)]">
-            Never compare with other babies. Pediatricians look only for steady, consistent progress along your child&apos;s own personal curve over time.
+
+          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
+            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
+              2. Consistency Over Numbers
+            </span>
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+              Pediatricians look for <strong>steady progress</strong> along your child&apos;s own curve over time, rather than any single checkup number.
+            </p>
+          </div>
+
+          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
+            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
+              3. Genetics &amp; Uniqueness
+            </span>
+            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
+              Every baby inherits unique family genetics and natural body types. Never compare your child to siblings or peers.
+            </p>
+          </div>
+        </div>
+
+        <div className="pt-1 text-[11px] text-[var(--color-text-muted)] leading-relaxed border-t border-[var(--color-primary)]/15">
+          <p>
+            <strong>About the bands:</strong> The shaded green area represents the WHO 15th to 85th percentile core zone where 70% of healthy babies naturally track. The outer bounds (P3 to P97) represent the full clinical spectrum recognized worldwide by the World Health Organization.
           </p>
         </div>
       </div>
