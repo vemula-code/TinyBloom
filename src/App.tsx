@@ -20,6 +20,8 @@ import { TinyBloomLogo } from './components/TinyBloomLogo';
 import { BabyAvatar } from './components/BabyAvatar';
 import { HeartfeltModal } from './components/HeartfeltModal';
 import { OnboardingModal } from './components/OnboardingModal';
+import { PrivateGuaranteeModal } from './components/PrivateGuaranteeModal';
+import { ScreenshotImportModal } from './components/ScreenshotImportModal';
 import { decodeSyncUrl } from './utils/syncPayload';
 import {
   Plus,
@@ -43,7 +45,9 @@ import {
   Sun,
   Moon,
   Palette,
-  Home as HomeIcon
+  Home as HomeIcon,
+  Camera,
+  Edit3
 } from 'lucide-react';
 
 // Helper: concise developmental stage summary for top header
@@ -222,6 +226,8 @@ export default function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isHeartModalOpen, setIsHeartModalOpen] = useState(false);
+  const [isPrivateGuaranteeOpen, setIsPrivateGuaranteeOpen] = useState(false);
+  const [isScreenshotImportOpen, setIsScreenshotImportOpen] = useState(false);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
     try {
       const hasSaved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
@@ -453,27 +459,54 @@ export default function App() {
           STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
          ======================================================== */}
       <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#1D241F]/95 backdrop-blur-md border-b border-[var(--color-primary,#91A98B)]/20 w-full max-w-full overflow-x-hidden">
-        <div className="max-w-6xl mx-auto px-3.5 sm:px-6 h-16 flex items-center justify-between gap-3">
-          {/* Brand Identity with Sprout Motif */}
-          <button
-            type="button"
-            onClick={() => setActiveTab('home')}
-            className="flex items-center text-left transition-opacity hover:opacity-90 shrink-0"
-          >
-            <TinyBloomLogo size={36} showText={true} />
-          </button>
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
+          {/* Brand Identity + Heart "Our Story" right beside app name */}
+          <div className="flex items-center gap-2 min-w-0">
+            <button
+              type="button"
+              onClick={() => setActiveTab('home')}
+              className="flex items-center text-left transition-opacity hover:opacity-90 shrink-0"
+            >
+              <TinyBloomLogo size={34} showText={true} />
+            </button>
 
-          {/* Minimal Right Header: Baby Name & Age (Tap to open Profile & Settings) */}
-          <button
-            type="button"
-            onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
-            title="Tap to manage baby profile and settings"
-          >
-            <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-            <span className="font-bold truncate max-w-[120px]">{profile.name}</span>
-            <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">· {currentAge.displayStr}</span>
-          </button>
+            {/* Our Story Button directly beside app name */}
+            <button
+              type="button"
+              onClick={() => setIsHeartModalOpen(true)}
+              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/50 text-[11px] font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-2xs cursor-pointer shrink-0"
+              title="Why We Built TinyBloom (From first-time parents)"
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/30 shrink-0" />
+              <span>Our Story</span>
+            </button>
+          </div>
+
+          {/* Right Header: 100% Private Shield (Clickable) + Baby Settings/Setup */}
+          <div className="flex items-center gap-1.5 shrink-0">
+            {/* Clickable Private Badge opens Privacy Guarantee modal */}
+            <button
+              type="button"
+              onClick={() => setIsPrivateGuaranteeOpen(true)}
+              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200/80 dark:border-emerald-800/50 text-xs font-semibold text-emerald-800 dark:text-emerald-300 transition-all cursor-pointer shadow-2xs"
+              title="100% On-Device & Private (Tap to learn more)"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="hidden sm:inline">100% Private</span>
+              <span className="sm:hidden font-bold">Local</span>
+            </button>
+
+            {/* Quick Profile & Settings */}
+            <button
+              type="button"
+              onClick={() => setIsSettingsOpen(true)}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
+              title="Manage baby profile, themes, export, and settings"
+            >
+              <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
+              <span className="font-bold truncate max-w-[85px] sm:max-w-[120px]">{profile.name}</span>
+            </button>
+          </div>
         </div>
       </header>
 
@@ -513,9 +546,10 @@ export default function App() {
         {activeTab === 'home' && (
           <div className="space-y-4 sm:space-y-6">
             {/* Baby Profile Hero Card - Mobile-Optimized Native Layout */}
-            <div className="bg-white dark:bg-[#1B231F] rounded-3xl border border-[var(--color-card-border,#E2E8DF)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors">
-              {/* Profile Top Row: Avatar + Info + Unit Switcher */}
-              <div className="flex items-center justify-between gap-3">
+            <div className="bg-white dark:bg-[#1B231F] rounded-3xl border border-[var(--color-card-border,#E2E8DF)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors space-y-3.5">
+              
+              {/* Row 1: Avatar + Neat Name & Age + Unit Switcher */}
+              <div className="flex items-center justify-between gap-2.5">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative shrink-0">
                     <BabyAvatar
@@ -529,6 +563,7 @@ export default function App() {
                   </div>
 
                   <div className="min-w-0">
+                    {/* Name + Gender Pill + Edit Setup icon */}
                     <div className="flex items-center gap-1.5">
                       <h1 className="text-base sm:text-xl font-bold font-heading tracking-tight text-[var(--color-text-main)] truncate">
                         {profile.name}
@@ -536,29 +571,39 @@ export default function App() {
                       <span className="text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] shrink-0">
                         {profile.gender}
                       </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsSettingsOpen(true)}
+                        className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        title="Edit baby profile & setup"
+                      >
+                        <Edit3 className="w-3 h-3" />
+                      </button>
                     </div>
 
-                    <div className="flex items-center gap-1.5 text-xs text-[var(--color-text-muted)] mt-0.5">
-                      <Calendar className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
-                      <span className="truncate">
-                        Born{' '}
-                        {(() => {
+                    {/* Neatly Aligned Age & Birthdate */}
+                    <div className="flex flex-wrap items-center gap-1.5 text-xs mt-0.5">
+                      <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded-lg text-[11px]">
+                        {currentAge.displayStr} old
+                      </span>
+                      <span className="text-[var(--color-text-muted)] text-[11px] flex items-center gap-1">
+                        <Calendar className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
+                        <span>Born {(() => {
                           try {
                             const [y, m, d] = (profile.birthDate || '').split('-').map(Number);
                             if (y && m && d) {
                               return new Date(y, m - 1, d).toLocaleDateString(undefined, {
                                 month: 'short',
                                 day: 'numeric',
+                                year: 'numeric',
                               });
                             }
                             return profile.birthDate;
                           } catch {
                             return profile.birthDate;
                           }
-                        })()}
+                        })()}</span>
                       </span>
-                      <span>·</span>
-                      <span className="font-bold text-[var(--color-text-main)]">{currentAge.displayStr}</span>
                     </div>
                   </div>
                 </div>
@@ -590,65 +635,76 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Action & Badges Row */}
-              <div className="mt-3 pt-3 border-t border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2">
-                {/* Badges */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span
-                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/50 text-[10px] font-semibold select-none shadow-2xs"
-                    title="100% Private: All measurements and photos stored on your device only"
-                  >
-                    <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
-                    <span>Private</span>
-                  </span>
-
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('story')}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-purple-50 dark:bg-purple-950/40 text-purple-800 dark:text-purple-200 border border-purple-200/80 dark:border-purple-800/50 text-[10px] font-semibold hover:bg-purple-100 dark:hover:bg-purple-900/50 transition-colors cursor-pointer shadow-2xs"
-                    title="View baby's developmental milestones and journey"
-                  >
-                    <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400 shrink-0" />
-                    <span>{getBabyStageStorySummary(currentAge.exactMonths)}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setIsHeartModalOpen(true)}
-                    className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-[10px] font-semibold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer shadow-2xs"
-                    title="Why We Built TinyBloom (From first-time parents)"
-                  >
-                    <Heart className="w-3 h-3 text-rose-500 fill-rose-500/20 shrink-0" />
-                    <span>Our Story</span>
-                  </button>
+              {/* Row 2: Milestone Stage Card (Rearranged cleanly, not cramped) */}
+              <div
+                onClick={() => setActiveTab('story')}
+                className="p-2.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-[var(--color-primary)]/10 to-transparent border border-purple-200/60 dark:border-purple-800/40 flex items-center justify-between gap-2 text-xs cursor-pointer hover:opacity-90 transition-opacity"
+                title="Tap to view developmental milestones & tips"
+              >
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
+                    <Sparkles className="w-3.5 h-3.5" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
+                      Developmental Stage
+                    </div>
+                    <div className="font-bold text-[var(--color-text-main)] text-xs truncate">
+                      {getBabyStageStorySummary(currentAge.exactMonths)}
+                    </div>
+                  </div>
                 </div>
 
-                {/* + Log Growth Button */}
+                <div className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 shrink-0">
+                  <span>Milestones</span>
+                  <ArrowRight className="w-3 h-3" />
+                </div>
+              </div>
+
+              {/* Row 3: Action Buttons (Mobile Native 2-Column Grid - perfectly aligned, no dropping down!) */}
+              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
+                {/* 1. Manual Log Button */}
                 <button
                   type="button"
                   onClick={() => {
                     setEditingEntry(null);
                     setIsLogModalOpen(true);
                   }}
-                  className="flex items-center gap-1 px-3 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-2xs cursor-pointer active:scale-95 shrink-0"
+                  className="w-full py-2.5 px-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-1.5"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-4 h-4" />
                   <span>Log Growth</span>
+                </button>
+
+                {/* 2. Upload Screenshot from Other Apps Button */}
+                <button
+                  type="button"
+                  onClick={() => setIsScreenshotImportOpen(true)}
+                  className="w-full py-2.5 px-3 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-900 dark:text-amber-200 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-1.5"
+                  title="Import from Huckleberry, Sprout, Hatch, or Doctor checkup papers"
+                >
+                  <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                  <span className="truncate">Scan Screenshot</span>
                 </button>
               </div>
 
-              {/* WHO Standards Notice: 100% visible on mobile with zero truncation */}
-              <div className="mt-2.5 pt-2 border-t border-[var(--color-card-border)] flex items-start gap-2 bg-[var(--color-primary)]/8 dark:bg-white/5 p-2.5 rounded-2xl">
+              {/* Row 4: WHO Standards Notice: 100% visible on mobile with zero truncation */}
+              <div
+                onClick={() => setIsHeartModalOpen(true)}
+                className="pt-2 border-t border-[var(--color-card-border)] flex items-start gap-2 bg-[var(--color-primary)]/8 dark:bg-white/5 p-2.5 rounded-2xl cursor-pointer hover:bg-[var(--color-primary)]/12 transition-colors"
+              >
                 <span className="text-base shrink-0 select-none mt-0.5">🌱</span>
                 <div className="min-w-0 flex-1 leading-snug">
-                  <div className="font-bold text-[var(--color-text-main)] text-xs">
-                    WHO Standards · No two babies are the same
+                  <div className="font-bold text-[var(--color-text-main)] text-xs flex items-center justify-between gap-1">
+                    <span>WHO Standards · No two babies are the same</span>
+                    <Heart className="w-3 h-3 text-rose-500/70 shrink-0" />
                   </div>
                   <div className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
                     Both 15th% &amp; 85th% are equally healthy. Zero comparison.
                   </div>
                 </div>
               </div>
+
             </div>
 
             {/* 1. Side-by-Side Metric Selector Cards (Weight, Length, Head) */}
@@ -1013,6 +1069,24 @@ export default function App() {
         birthDate={profile.birthDate}
         gender={profile.gender}
         defaultUnit={unit}
+        onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
+      />
+
+      <PrivateGuaranteeModal
+        isOpen={isPrivateGuaranteeOpen}
+        onClose={() => setIsPrivateGuaranteeOpen(false)}
+        entries={entries}
+        profile={profile}
+      />
+
+      <ScreenshotImportModal
+        isOpen={isScreenshotImportOpen}
+        onClose={() => setIsScreenshotImportOpen(false)}
+        birthDate={profile.birthDate}
+        profile={profile}
+        existingEntries={entries}
+        defaultUnit={unit}
+        onImport={handleImportPastEntries}
       />
 
       {isReportOpen && (
@@ -1048,6 +1122,7 @@ export default function App() {
         onOpenAddModal={() => setIsLogModalOpen(true)}
         chartTimelineRange={chartTimelineRange}
         onChangeChartTimelineRange={handleSetChartTimelineRange}
+        onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
       />
 
       <HeartfeltModal

@@ -59,6 +59,7 @@ interface SettingsModalProps {
   initialDepartment?: SettingsDepartment;
   chartTimelineRange?: 'auto' | 6 | 12 | 18 | 24;
   onChangeChartTimelineRange?: (range: 'auto' | 6 | 12 | 18 | 24) => void;
+  onOpenScreenshotImport?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -86,6 +87,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   initialDepartment = 'profile',
   chartTimelineRange = 'auto',
   onChangeChartTimelineRange,
+  onOpenScreenshotImport,
 }) => {
   const [activeDepartment, setActiveDepartment] = useState<SettingsDepartment>(initialDepartment);
   const [name, setName] = useState(profile.name);
@@ -960,7 +962,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Restore Backup */}
-                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15">
+                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15 space-y-2">
                   <label
                     htmlFor="settings-json-restore"
                     className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-primary,#91A98B)]/40 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-xs font-semibold text-[var(--color-text-main,#303832)] hover:border-[var(--color-primary,#91A98B)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
@@ -975,6 +977,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="hidden"
                     onChange={handleImportJSON}
                   />
+
+                  {/* Upload Screenshot from Other App */}
+                  {onOpenScreenshotImport && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onClose();
+                        onOpenScreenshotImport();
+                      }}
+                      className="w-full py-2.5 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-900 dark:text-amber-200 text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                      <span>📸 Import from Other App (Upload Screenshot)</span>
+                    </button>
+                  )}
                 </div>
               </div>
 
