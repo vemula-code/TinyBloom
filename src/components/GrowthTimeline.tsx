@@ -78,22 +78,22 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
         return (
           <div
             key={entry.id}
-            className="bg-white rounded-2xl border border-stone-200/90 p-5 shadow-xs transition-all hover:border-stone-300 relative"
+            className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-2xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs transition-all relative"
           >
             {/* Top row: Age, Date, Doctor checkup, Actions */}
-            <div className="flex flex-wrap items-center justify-between gap-2 pb-3 border-b border-stone-100">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-bold text-stone-900">
+            <div className="flex flex-wrap items-center justify-between gap-2 pb-2.5 border-b border-[var(--color-card-border)]/60">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="text-xs sm:text-sm font-bold text-[var(--color-text-main)]">
                   {entry.ageMonths === 0 ? 'Birth / Newborn' : `${entry.ageMonths} Months`}
                 </span>
-                <span className="text-xs text-stone-400">·</span>
-                <span className="text-xs text-stone-500 font-mono">{entry.date}</span>
+                <span className="text-xs text-[var(--color-text-muted)]">·</span>
+                <span className="text-[11px] sm:text-xs text-[var(--color-text-muted)] font-mono">{entry.date}</span>
                 {entry.isPediatricianVisit && (
                   <>
-                    <span className="text-xs text-stone-400">·</span>
-                    <span className="inline-flex items-center gap-1 text-[11px] text-blue-700 font-medium bg-blue-50 px-2 py-0.5 rounded-md">
-                      <Stethoscope className="w-3 h-3" />
-                      Pediatrician Visit
+                    <span className="text-xs text-[var(--color-text-muted)]">·</span>
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-blue-700 dark:text-blue-300 font-medium bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/50">
+                      <Stethoscope className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+                      Pediatrician
                     </span>
                   </>
                 )}
@@ -105,7 +105,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                   type="button"
                   onClick={() => onEdit(entry)}
                   aria-label="Edit record"
-                  className="p-1.5 text-stone-400 hover:text-stone-700 hover:bg-stone-100 rounded-lg transition-colors"
+                  className="p-1.5 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-primary)]/10 rounded-lg transition-colors cursor-pointer"
                 >
                   <Edit2 className="w-3.5 h-3.5" />
                 </button>
@@ -113,55 +113,55 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                   type="button"
                   onClick={() => onDelete(entry.id)}
                   aria-label="Delete record"
-                  className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
               </div>
             </div>
 
-            {/* Middle row: 3 Metric blocks */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 py-3 border-b border-stone-100">
+            {/* Middle row: 3 Metric blocks ALWAYS Side-by-Side in 3 columns */}
+            <div className="grid grid-cols-3 gap-1.5 sm:gap-3 py-2.5 border-b border-[var(--color-card-border)]/60 text-left">
               {/* Weight */}
-              <div>
-                <span className="text-[11px] font-semibold text-stone-500 block uppercase tracking-wider">
+              <div className="p-1.5 sm:p-2 rounded-xl bg-[var(--color-canvas)]/60 border border-[var(--color-card-border)]/50">
+                <span className="text-[9px] sm:text-[11px] font-semibold text-[var(--color-text-muted)] block uppercase tracking-wider truncate">
                   Weight
                 </span>
-                <div className="text-base font-bold text-stone-900 font-mono tabular-nums">
+                <div className="text-xs sm:text-base font-bold font-mono tabular-nums text-[var(--color-text-main)] truncate">
                   {weightStr || '—'}
                 </div>
                 {weightP && (
-                  <span className="text-[11px] text-teal-700 font-medium">
+                  <span className="text-[9px] sm:text-[11px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate block">
                     {weightP.displayStr}
                   </span>
                 )}
               </div>
 
               {/* Height */}
-              <div>
-                <span className="text-[11px] font-semibold text-stone-500 block uppercase tracking-wider">
-                  Length / Height
+              <div className="p-1.5 sm:p-2 rounded-xl bg-[var(--color-canvas)]/60 border border-[var(--color-card-border)]/50">
+                <span className="text-[9px] sm:text-[11px] font-semibold text-[var(--color-text-muted)] block uppercase tracking-wider truncate">
+                  Length
                 </span>
-                <div className="text-base font-bold text-stone-900 font-mono tabular-nums">
+                <div className="text-xs sm:text-base font-bold font-mono tabular-nums text-[var(--color-text-main)] truncate">
                   {heightStr || '—'}
                 </div>
                 {heightP && (
-                  <span className="text-[11px] text-teal-700 font-medium">
+                  <span className="text-[9px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-semibold truncate block">
                     {heightP.displayStr}
                   </span>
                 )}
               </div>
 
               {/* Head Circumference */}
-              <div>
-                <span className="text-[11px] font-semibold text-stone-500 block uppercase tracking-wider">
-                  Head Circumference
+              <div className="p-1.5 sm:p-2 rounded-xl bg-[var(--color-canvas)]/60 border border-[var(--color-card-border)]/50">
+                <span className="text-[9px] sm:text-[11px] font-semibold text-[var(--color-text-muted)] block uppercase tracking-wider truncate">
+                  Head
                 </span>
-                <div className="text-base font-bold text-stone-900 font-mono tabular-nums">
+                <div className="text-xs sm:text-base font-bold font-mono tabular-nums text-[var(--color-text-main)] truncate">
                   {headStr || '—'}
                 </div>
                 {headP && (
-                  <span className="text-[11px] text-teal-700 font-medium">
+                  <span className="text-[9px] sm:text-[11px] text-sky-700 dark:text-sky-400 font-semibold truncate block">
                     {headP.displayStr}
                   </span>
                 )}

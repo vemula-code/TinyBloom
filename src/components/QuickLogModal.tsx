@@ -250,33 +250,35 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-200">
-      <div className="bg-[#FFF9F0] rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-2xl overflow-hidden my-4 sm:my-6">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs overflow-hidden animate-in fade-in duration-200">
+      <div className="bg-[var(--color-card,#FFF9F0)] text-[var(--color-text-main,#303832)] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[var(--color-card-border,#91A98B)] w-full max-w-2xl overflow-hidden max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-6 transition-colors">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-[#91A98B]/20 flex items-center justify-between bg-white/70">
+        <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[var(--color-card-border,#91A98B)]/30 flex items-center justify-between bg-[var(--color-card)] shrink-0">
           <div>
             <div className="flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#91A98B] inline-block" />
-              <h2 className="text-base font-bold font-heading text-[#303832] tracking-tight">
+              <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-primary)] inline-block" />
+              <h2 className="text-sm sm:text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight">
                 {initialEntry ? 'Edit Growth Record' : 'Log New Growth Measurement'}
               </h2>
             </div>
-            <p className="text-xs text-[#6E7B6C] mt-0.5">
-              Age on date: <span className="font-semibold text-[#303832]">{ageInfo.displayStr}</span> ({gender === 'boy' ? 'Boy' : 'Girl'})
+            <p className="text-[11px] sm:text-xs text-[var(--color-text-muted)] mt-0.5">
+              Age on date: <span className="font-semibold text-[var(--color-text-main)]">{ageInfo.displayStr}</span> ({gender === 'boy' ? 'Boy' : 'Girl'})
             </p>
           </div>
 
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-primary)]/10 transition-colors cursor-pointer"
+            aria-label="Close"
           >
             <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        {/* Form Body with scrollable content and sticky footer */}
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
           {/* Date & Unit Segmented Switch */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
@@ -581,18 +583,20 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
             )}
           </div>
 
-          {/* Action Buttons */}
-          <div className="pt-4 border-t border-[#91A98B]/20 flex items-center justify-end gap-3">
+          </div>
+
+          {/* Sticky Action Footer - Always visible on mobile while scrolling */}
+          <div className="p-3.5 sm:p-4 border-t border-[var(--color-card-border,#91A98B)]/30 flex items-center justify-end gap-2.5 bg-[var(--color-card)] shrink-0">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs font-semibold text-[#303832] hover:bg-[#91A98B]/10 bg-white border border-[#91A98B]/30 rounded-xl transition-colors"
+              className="px-4 py-2 text-xs font-semibold text-[var(--color-text-main)] hover:bg-[var(--color-primary)]/10 bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-xl transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-5 py-2 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-xs"
+              className="px-5 py-2 text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-90 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
             >
               {initialEntry ? 'Update Record' : 'Save Growth Record'}
             </button>

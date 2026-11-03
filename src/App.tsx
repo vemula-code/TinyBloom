@@ -461,7 +461,7 @@ export default function App() {
   const currentAge = calculateAge(profile.birthDate);
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-24 transition-colors duration-250">
+    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24 transition-colors duration-250">
       {/* ========================================================
           STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
          ======================================================== */}
@@ -974,7 +974,7 @@ export default function App() {
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-lg sm:shadow-2xl"
       >
         {/* Left 1: Home */}
         <button
