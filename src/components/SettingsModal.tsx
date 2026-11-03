@@ -33,6 +33,7 @@ import {
 } from 'lucide-react';
 
 export type SettingsDepartment = 'profile' | 'theme' | 'history' | 'download' | 'install';
+export type PhotoPermissionMode = 'disabled' | 'limited' | 'full';
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -97,6 +98,36 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [statusMsg, setStatusMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  // Photo & Document access permission mode (disabled by default for strict mobile privacy)
+  const [photoPermission, setPhotoPermission] = useState<PhotoPermissionMode>(() => {
+    try {
+      const saved = localStorage.getItem('tinybloom_photo_permission');
+      if (saved === 'limited' || saved === 'full' || saved === 'disabled') {
+        return saved as PhotoPermissionMode;
+      }
+    } catch {
+      // fallback
+    }
+    return 'disabled';
+  });
+
+  const handleUpdatePhotoPermission = (mode: PhotoPermissionMode) => {
+    setPhotoPermission(mode);
+    try {
+      localStorage.setItem('tinybloom_photo_permission', mode);
+    } catch {
+      // fallback
+    }
+    setStatusMsg(
+      mode === 'disabled'
+        ? 'Photo & Document scanner disabled (Zero device media access)'
+        : mode === 'limited'
+        ? 'Limited access enabled (Single screenshots read in-memory and discarded)'
+        : 'Full photo access enabled for fast multi-screenshot imports'
+    );
+    setTimeout(() => setStatusMsg(''), 4000);
+  };
 
   // Sync internal form when profile prop changes
   React.useEffect(() => {
@@ -396,7 +427,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     { id: 'profile', label: 'Baby Profile', icon: <Baby className="w-4 h-4" /> },
     { id: 'theme', label: 'Theme & Style', icon: <Palette className="w-4 h-4" /> },
     { id: 'history', label: 'History', icon: <Layers className="w-4 h-4" />, badge: `${entries.length}` },
-    { id: 'download', label: 'Data & Backup', icon: <Download className="w-4 h-4" /> },
+    { id: 'download', label: 'Data & Privacy', icon: <ShieldCheck className="w-4 h-4" /> },
     { id: 'install', label: 'Install App', icon: <Smartphone className="w-4 h-4" /> },
   ];
 
@@ -792,9 +823,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onToggleThemeMode('light')}
+                      onClick={() => {
+                        onToggleThemeMode('light');
+                        if (paletteTheme === 'midnight') {
+                          onChangePaletteTheme('sage');
+                        }
+                      }}
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        themeMode === 'light'
+                        themeMode === 'light' && paletteTheme !== 'midnight'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
                           : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
@@ -804,9 +840,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onToggleThemeMode('dark')}
+                      onClick={() => {
+                        onToggleThemeMode('dark');
+                        onChangePaletteTheme('midnight');
+                      }}
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        themeMode === 'dark'
+                        themeMode === 'dark' || paletteTheme === 'midnight'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
                           : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
@@ -824,12 +863,22 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </span>
                   <div className="grid grid-cols-1 gap-2.5">
                     {palettes.map((p) => {
-                      const isSelected = paletteTheme === p.id;
+                      const isSelected =
+                        themeMode === 'dark' || paletteTheme === 'midnight'
+                          ? p.id === 'midnight'
+                          : paletteTheme === p.id;
                       return (
                         <button
                           key={p.id}
                           type="button"
-                          onClick={() => onChangePaletteTheme(p.id)}
+                          onClick={() => {
+                            onChangePaletteTheme(p.id);
+                            if (p.id === 'midnight') {
+                              onToggleThemeMode('dark');
+                            } else if (themeMode === 'dark') {
+                              onToggleThemeMode('light');
+                            }
+                          }}
                           className={`flex items-center justify-between p-3.5 rounded-xl border text-left transition-all ${
                             isSelected
                               ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-2 ring-[var(--color-primary,#91A98B)]/40 shadow-xs'
@@ -912,11 +961,181 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
               </div>
 
+              {/* Photo & Document Scanner Permission Card (Mobile Permission Control - Disabled by Default) */}
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Camera className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
+                      <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
+                        Photo &amp; Document Scanner Permission
+                      </h3>
+                    </div>
+                    <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+                      To protect your privacy on mobile, scanner access is <strong>disabled by default</strong>. Choose your preferred access level before importing records.
+                    </p>
+                  </div>
+
+                  {/* Current Status Badge */}
+                  <div className="shrink-0">
+                    {photoPermission === 'disabled' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-[10px] font-bold text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
+                        <Lock className="w-3 h-3 text-stone-500" />
+                        Disabled
+                      </span>
+                    )}
+                    {photoPermission === 'limited' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-amber-50 dark:bg-amber-950/40 text-[10px] font-bold text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                        <ShieldCheck className="w-3 h-3 text-amber-600" />
+                        Limited Access
+                      </span>
+                    )}
+                    {photoPermission === 'full' && (
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-[10px] font-bold text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                        Access Allowed
+                      </span>
+                    )}
+                  </div>
+                </div>
+
+                {/* Granular Permission Options (Mobile App Style) */}
+                <div className="space-y-2">
+                  <span className="text-[11px] font-bold text-[var(--color-text-main,#303832)] block">
+                    Permission Access Level:
+                  </span>
+
+                  {/* 1. Disabled (Default) */}
+                  <label
+                    onClick={() => handleUpdatePhotoPermission('disabled')}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      photoPermission === 'disabled'
+                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
+                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="photo-permission-opt"
+                      checked={photoPermission === 'disabled'}
+                      onChange={() => handleUpdatePhotoPermission('disabled')}
+                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                    />
+                    <div className="text-xs flex-1">
+                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                        <span>Disabled (Zero photo or camera access)</span>
+                        <span className="text-[10px] text-stone-500 font-semibold">Default</span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                        Scanner is locked. TinyBloom cannot request, open, or view photos or documents from your device.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* 2. Limited Access */}
+                  <label
+                    onClick={() => handleUpdatePhotoPermission('limited')}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      photoPermission === 'limited'
+                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
+                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="photo-permission-opt"
+                      checked={photoPermission === 'limited'}
+                      onChange={() => handleUpdatePhotoPermission('limited')}
+                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                    />
+                    <div className="text-xs flex-1">
+                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                        <span>Limited Access (Selected Photos Only)</span>
+                        <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">In-Memory Read</span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                        Allows you to pick individual screenshots or clinic checkup sheets. Images are processed in temporary memory to read numbers and immediately erased.
+                      </p>
+                    </div>
+                  </label>
+
+                  {/* 3. Allow Access */}
+                  <label
+                    onClick={() => handleUpdatePhotoPermission('full')}
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                      photoPermission === 'full'
+                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
+                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="photo-permission-opt"
+                      checked={photoPermission === 'full'}
+                      onChange={() => handleUpdatePhotoPermission('full')}
+                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                    />
+                    <div className="text-xs flex-1">
+                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                        <span>Allow Photo &amp; Document Access</span>
+                        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Full Access</span>
+                      </div>
+                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                        Permit fast imports from other baby apps (Huckleberry, Sprout, Hatch, clinic visits) anytime.
+                      </p>
+                    </div>
+                  </label>
+                </div>
+
+                {/* Scanner Launch Button / Locked Banner */}
+                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15">
+                  {photoPermission === 'disabled' ? (
+                    <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+                      <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
+                        <Lock className="w-4 h-4 shrink-0 text-stone-400" />
+                        <span>Scanner is disabled to guarantee mobile data privacy.</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => handleUpdatePhotoPermission('limited')}
+                        className="text-[11px] font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] hover:underline shrink-0 cursor-pointer"
+                      >
+                        Enable Limited Access →
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onClose();
+                          if (onOpenScreenshotImport) onOpenScreenshotImport();
+                        }}
+                        className="w-full py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+                      >
+                        <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <span>📸 Launch Screenshot &amp; Document Scanner</span>
+                      </button>
+                      <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted,#6E7B6C)] px-1">
+                        <span>Status: {photoPermission === 'limited' ? 'Limited (Selected Photos Only)' : 'Photo Access Granted'}</span>
+                        <button
+                          type="button"
+                          onClick={() => handleUpdatePhotoPermission('disabled')}
+                          className="text-red-600 dark:text-red-400 hover:underline font-semibold cursor-pointer"
+                        >
+                          Revoke Permission
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               {/* Download & Export Options */}
               <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3.5 shadow-2xs">
                 <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                   <Download className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
-                  <span>Download & Export Records</span>
+                  <span>Download &amp; Export Records</span>
                 </h3>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -952,7 +1171,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         JSON Data Archive
                       </span>
                       <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
-                        Complete raw backup of profile & entries
+                        Complete raw backup of profile &amp; entries
                       </span>
                     </div>
                     <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
@@ -977,21 +1196,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     className="hidden"
                     onChange={handleImportJSON}
                   />
-
-                  {/* Upload Screenshot from Other App */}
-                  {onOpenScreenshotImport && (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onClose();
-                        onOpenScreenshotImport();
-                      }}
-                      className="w-full py-2.5 px-4 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-900 dark:text-amber-200 text-xs font-bold transition-colors flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                      <span>📸 Import from Other App (Upload Screenshot)</span>
-                    </button>
-                  )}
                 </div>
               </div>
 

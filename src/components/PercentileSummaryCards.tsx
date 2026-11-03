@@ -142,7 +142,7 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
           className={`flex flex-col justify-between p-2 sm:p-3.5 rounded-2xl text-left transition-all border relative cursor-pointer select-none active:scale-98 ${
             selectedMetric === 'weight'
               ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/50 bg-[var(--color-primary)]/10 shadow-xs'
-              : 'border-[var(--color-card-border,#E2E9E0)] bg-white dark:bg-[#1A221D] hover:border-[var(--color-primary)]/40 shadow-2xs'
+              : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}
@@ -187,7 +187,7 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
           className={`flex flex-col justify-between p-2 sm:p-3.5 rounded-2xl text-left transition-all border relative cursor-pointer select-none active:scale-98 ${
             selectedMetric === 'height'
               ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/50 bg-[var(--color-primary)]/10 shadow-xs'
-              : 'border-[var(--color-card-border,#E2E9E0)] bg-white dark:bg-[#1A221D] hover:border-[var(--color-primary)]/40 shadow-2xs'
+              : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}
@@ -232,7 +232,7 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
           className={`flex flex-col justify-between p-2 sm:p-3.5 rounded-2xl text-left transition-all border relative cursor-pointer select-none active:scale-98 ${
             selectedMetric === 'head'
               ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/50 bg-[var(--color-primary)]/10 shadow-xs'
-              : 'border-[var(--color-card-border,#E2E9E0)] bg-white dark:bg-[#1A221D] hover:border-[var(--color-primary)]/40 shadow-2xs'
+              : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}

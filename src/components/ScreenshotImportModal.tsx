@@ -357,6 +357,15 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 </span>
               ))}
             </div>
+
+            {/* Transparent on-device storage privacy explanation */}
+            <div className="mt-2 p-2.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 flex items-start gap-2 text-xs text-emerald-900 dark:text-emerald-200">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+              <div className="leading-snug">
+                <span className="font-bold">100% On-Device &amp; Read-Only: </span>
+                TinyBloom only opens the photo in device memory to parse the digits. Your images are never stored in any database, never uploaded to external servers, and never shared.
+              </div>
+            </div>
           </div>
 
           {/* Upload / Drop Area */}

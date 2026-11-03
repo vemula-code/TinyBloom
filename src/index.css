@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root, [data-theme="sage"] {
     --color-primary: #4A7347;
@@ -37,42 +39,61 @@
   }
 
   /* Theme 4 & Dark Mode: High-Contrast Nursery Night (Engineered for 2 AM Feedings) */
-  [data-theme="midnight"], .dark {
+  [data-theme="midnight"], .dark, html.dark {
     color-scheme: dark;
     --color-primary: #76C476;
     --color-primary-dark: #9CE09C;
-    --color-primary-light: rgba(118, 196, 118, 0.18);
+    --color-primary-light: rgba(118, 196, 118, 0.22);
     --color-canvas: #121714;
     --color-card: #1B231F;
-    --color-card-border: rgba(255, 255, 255, 0.12);
+    --color-card-border: rgba(255, 255, 255, 0.14);
     --color-text-main: #F7FAF7;
     --color-text-muted: #A3B5A5;
   }
 
   /* High contrast font and container adaptability in dark / night mode */
-  .dark .bg-white {
+  .dark .bg-white, [data-theme="midnight"] .bg-white {
     background-color: #1B231F !important;
   }
-  .dark .bg-\[\#FFF9F0\], .dark .bg-\[\#FFF9F0\]\/60 {
+  .dark .bg-white\/95, [data-theme="midnight"] .bg-white\/95 {
+    background-color: rgba(27, 35, 31, 0.95) !important;
+  }
+  .dark .bg-white\/90, [data-theme="midnight"] .bg-white\/90 {
+    background-color: rgba(27, 35, 31, 0.90) !important;
+  }
+  .dark .bg-\[\#FFF9F0\], .dark .bg-\[\#FFF9F0\]\/60,
+  [data-theme="midnight"] .bg-\[\#FFF9F0\], [data-theme="midnight"] .bg-\[\#FFF9F0\]\/60 {
     background-color: #141B17 !important;
   }
-  .dark .text-\[\#303832\], .dark .text-\[\#1D251F\], .dark .text-\[\#1B241C\] {
+  .dark .text-\[\#303832\], .dark .text-\[\#1D251F\], .dark .text-\[\#1B241C\],
+  [data-theme="midnight"] .text-\[\#303832\], [data-theme="midnight"] .text-\[\#1D251F\], [data-theme="midnight"] .text-\[\#1B241C\] {
     color: #F7FAF7 !important;
   }
-  .dark .text-\[\#6E7B6C\], .dark .text-\[\#58695A\], .dark .text-\[\#596B5B\] {
+  .dark .text-\[\#6E7B6C\], .dark .text-\[\#58695A\], .dark .text-\[\#596B5B\],
+  [data-theme="midnight"] .text-\[\#6E7B6C\], [data-theme="midnight"] .text-\[\#58695A\], [data-theme="midnight"] .text-\[\#596B5B\] {
     color: #A3B5A5 !important;
+  }
+  .dark .text-\[\#3D5939\], .dark .text-\[\#2F4F2D\],
+  [data-theme="midnight"] .text-\[\#3D5939\], [data-theme="midnight"] .text-\[\#2F4F2D\] {
+    color: #9CE09C !important;
   }
   .dark .border-\[\#91A98B\]\/20,
   .dark .border-\[\#91A98B\]\/25,
   .dark .border-\[\#91A98B\]\/30,
   .dark .border-stone-200,
-  .dark .border-\[\#E2E9E0\] {
-    border-color: rgba(255, 255, 255, 0.12) !important;
+  .dark .border-\[\#E2E9E0\],
+  [data-theme="midnight"] .border-\[\#91A98B\]\/20,
+  [data-theme="midnight"] .border-\[\#91A98B\]\/25,
+  [data-theme="midnight"] .border-\[\#91A98B\]\/30,
+  [data-theme="midnight"] .border-stone-200,
+  [data-theme="midnight"] .border-\[\#E2E9E0\] {
+    border-color: rgba(255, 255, 255, 0.14) !important;
   }
-  .dark input, .dark select, .dark textarea {
+  .dark input, .dark select, .dark textarea,
+  [data-theme="midnight"] input, [data-theme="midnight"] select, [data-theme="midnight"] textarea {
     background-color: #141A16 !important;
     color: #F7FAF7 !important;
-    border-color: rgba(255, 255, 255, 0.18) !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
   }
 
   html, body, #root {

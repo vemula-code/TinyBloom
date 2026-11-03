@@ -277,30 +277,6 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
 
         {/* Form Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 max-h-[80vh] overflow-y-auto">
-          {/* Screenshot from other app banner */}
-          {onOpenScreenshotImport && !initialEntry && (
-            <div className="bg-[#91A98B]/15 border border-[#91A98B]/30 rounded-2xl p-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="text-lg shrink-0">📸</span>
-                <div>
-                  <div className="font-bold text-[#303832]">Have data in Huckleberry, Sprout, or clinic paper?</div>
-                  <div className="text-[11px] text-[#6E7B6C]">Skip manual typing — upload screenshots to read &amp; import numbers.</div>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  onOpenScreenshotImport();
-                }}
-                className="w-full sm:w-auto px-3 py-1.5 rounded-xl bg-[#5D7C57] text-white text-xs font-bold shadow-2xs hover:opacity-90 shrink-0 cursor-pointer flex items-center justify-center gap-1.5"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Upload Screenshot</span>
-              </button>
-            </div>
-          )}
-
           {/* Date & Unit Segmented Switch */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>

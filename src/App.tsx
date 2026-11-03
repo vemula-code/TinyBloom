@@ -192,10 +192,17 @@ export default function App() {
 
       if (isDark) {
         root.classList.add('dark');
+        document.body.classList.add('dark');
         root.setAttribute('data-theme', 'midnight');
       } else {
         root.classList.remove('dark');
+        document.body.classList.remove('dark');
         root.setAttribute('data-theme', paletteTheme);
+      }
+
+      const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+      if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', isDark ? '#121714' : '#4A6E43');
       }
     };
 
@@ -458,7 +465,7 @@ export default function App() {
       {/* ========================================================
           STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-white/95 dark:bg-[#1D241F]/95 backdrop-blur-md border-b border-[var(--color-primary,#91A98B)]/20 w-full max-w-full overflow-x-hidden">
+      <header className="sticky top-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
           <div className="flex items-center gap-2 min-w-0">
@@ -482,20 +489,8 @@ export default function App() {
             </button>
           </div>
 
-          {/* Right Header: 100% Private Shield (Clickable) + Baby Settings/Setup */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            {/* Clickable Private Badge opens Privacy Guarantee modal */}
-            <button
-              type="button"
-              onClick={() => setIsPrivateGuaranteeOpen(true)}
-              className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200/80 dark:border-emerald-800/50 text-xs font-semibold text-emerald-800 dark:text-emerald-300 transition-all cursor-pointer shadow-2xs"
-              title="100% On-Device & Private (Tap to learn more)"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
-              <span className="hidden sm:inline">100% Private</span>
-              <span className="sm:hidden font-bold">Local</span>
-            </button>
-
+          {/* Right Header: Baby Details / Settings */}
+          <div className="flex items-center gap-2 shrink-0">
             {/* Quick Profile & Settings */}
             <button
               type="button"
@@ -504,7 +499,7 @@ export default function App() {
               title="Manage baby profile, themes, export, and settings"
             >
               <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-              <span className="font-bold truncate max-w-[85px] sm:max-w-[120px]">{profile.name}</span>
+              <span className="font-bold truncate max-w-[110px] sm:max-w-[160px]">{profile.name}</span>
             </button>
           </div>
         </div>
@@ -546,10 +541,10 @@ export default function App() {
         {activeTab === 'home' && (
           <div className="space-y-4 sm:space-y-6">
             {/* Baby Profile Hero Card - Mobile-Optimized Native Layout */}
-            <div className="bg-white dark:bg-[#1B231F] rounded-3xl border border-[var(--color-card-border,#E2E8DF)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors space-y-3.5">
+            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors space-y-3.5">
               
-              {/* Row 1: Avatar + Neat Name & Age + Unit Switcher */}
-              <div className="flex items-center justify-between gap-2.5">
+              {/* Avatar + Name & Age + Unit Switcher & Log Growth Button */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative shrink-0">
                     <BabyAvatar
@@ -608,103 +603,97 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Top-Right Unit Switcher */}
-                <div className="flex items-center bg-[var(--color-canvas)] border border-[var(--color-card-border)] p-0.5 rounded-xl text-[11px] font-medium shrink-0">
+                {/* Right / Bottom on mobile: Unit Switcher beside Log Growth Button */}
+                <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-[var(--color-card-border)]/40 shrink-0">
+                  {/* Unit Switcher */}
+                  <div className="flex items-center bg-[var(--color-canvas)] border border-[var(--color-card-border)] p-0.5 rounded-xl text-[11px] font-medium shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => setUnit('metric')}
+                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                        unit === 'metric'
+                          ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                      }`}
+                    >
+                      kg/cm
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setUnit('imperial')}
+                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                        unit === 'imperial'
+                          ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
+                          : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                      }`}
+                    >
+                      lb/in
+                    </button>
+                  </div>
+
+                  {/* Log Growth Button */}
                   <button
                     type="button"
-                    onClick={() => setUnit('metric')}
-                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                      unit === 'metric'
-                        ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
-                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-                    }`}
+                    onClick={() => {
+                      setEditingEntry(null);
+                      setIsLogModalOpen(true);
+                    }}
+                    className="px-3 sm:px-3.5 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
+                    title="Log new measurement"
                   >
-                    kg/cm
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUnit('imperial')}
-                    className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
-                      unit === 'imperial'
-                        ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
-                        : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-                    }`}
-                  >
-                    lb/in
+                    <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
+                    <span>Log Growth</span>
                   </button>
                 </div>
               </div>
 
-              {/* Row 2: Milestone Stage Card (Rearranged cleanly, not cramped) */}
-              <div
-                onClick={() => setActiveTab('story')}
-                className="p-2.5 rounded-2xl bg-gradient-to-r from-purple-500/10 via-[var(--color-primary)]/10 to-transparent border border-purple-200/60 dark:border-purple-800/40 flex items-center justify-between gap-2 text-xs cursor-pointer hover:opacity-90 transition-opacity"
-                title="Tap to view developmental milestones & tips"
-              >
-                <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-6 h-6 rounded-lg bg-purple-100 dark:bg-purple-950 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0">
-                    <Sparkles className="w-3.5 h-3.5" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-[10px] uppercase tracking-wider font-bold text-purple-700 dark:text-purple-300">
-                      Developmental Stage
-                    </div>
-                    <div className="font-bold text-[var(--color-text-main)] text-xs truncate">
-                      {getBabyStageStorySummary(currentAge.exactMonths)}
-                    </div>
-                  </div>
-                </div>
+            </div>
 
-                <div className="flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 shrink-0">
-                  <span>Milestones</span>
-                  <ArrowRight className="w-3 h-3" />
-                </div>
-              </div>
-
-              {/* Row 3: Action Buttons (Mobile Native 2-Column Grid - perfectly aligned, no dropping down!) */}
-              <div className="grid grid-cols-2 gap-2.5 pt-0.5">
-                {/* 1. Manual Log Button */}
+            {/* Minimized All-in-1 Baby Stage, Privacy & WHO Standards Strip */}
+            <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] p-2.5 sm:p-3 shadow-2xs text-xs space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                {/* Developmental Stage */}
                 <button
                   type="button"
-                  onClick={() => {
-                    setEditingEntry(null);
-                    setIsLogModalOpen(true);
-                  }}
-                  className="w-full py-2.5 px-3 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-1.5"
+                  onClick={() => setActiveTab('story')}
+                  className="flex items-center gap-1.5 text-left min-w-0 hover:opacity-85 transition-opacity cursor-pointer group"
+                  title="View developmental milestones"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>Log Growth</span>
+                  <span className="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 text-xs shadow-2xs">
+                    <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" />
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 shrink-0 hidden sm:inline">
+                    Stage:
+                  </span>
+                  <span className="font-bold text-[var(--color-text-main)] truncate text-[11px] sm:text-xs">
+                    {getBabyStageStorySummary(currentAge.exactMonths)}
+                  </span>
+                  <span className="text-[10px] text-purple-700 dark:text-purple-400 font-bold shrink-0 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                    <span>Milestones</span>
+                    <ArrowRight className="w-2.5 h-2.5" />
+                  </span>
                 </button>
 
-                {/* 2. Upload Screenshot from Other Apps Button */}
+                {/* 100% Private Badge */}
                 <button
                   type="button"
-                  onClick={() => setIsScreenshotImportOpen(true)}
-                  className="w-full py-2.5 px-3 bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/35 text-amber-900 dark:text-amber-200 rounded-2xl text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer active:scale-98 flex items-center justify-center gap-1.5"
-                  title="Import from Huckleberry, Sprout, Hatch, or Doctor checkup papers"
+                  onClick={() => setIsPrivateGuaranteeOpen(true)}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 text-[10px] sm:text-[11px] font-bold shrink-0 transition-colors cursor-pointer"
+                  title="100% Local & On-Device (Tap to verify)"
                 >
-                  <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
-                  <span className="truncate">Scan Screenshot</span>
+                  <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <span>100% Private</span>
                 </button>
               </div>
 
-              {/* Row 4: WHO Standards Notice: 100% visible on mobile with zero truncation */}
+              {/* WHO Standards Reassurance micro-line */}
               <div
-                onClick={() => setIsHeartModalOpen(true)}
-                className="pt-2 border-t border-[var(--color-card-border)] flex items-start gap-2 bg-[var(--color-primary)]/8 dark:bg-white/5 p-2.5 rounded-2xl cursor-pointer hover:bg-[var(--color-primary)]/12 transition-colors"
+                className="flex items-center gap-1.5 pt-1.5 border-t border-[var(--color-card-border)]/60 text-[11px] text-[var(--color-text-muted)]"
               >
-                <span className="text-base shrink-0 select-none mt-0.5">🌱</span>
-                <div className="min-w-0 flex-1 leading-snug">
-                  <div className="font-bold text-[var(--color-text-main)] text-xs flex items-center justify-between gap-1">
-                    <span>WHO Standards · No two babies are the same</span>
-                    <Heart className="w-3 h-3 text-rose-500/70 shrink-0" />
-                  </div>
-                  <div className="text-[11px] text-[var(--color-text-muted)] mt-0.5">
-                    Both 15th% &amp; 85th% are equally healthy. Zero comparison.
-                  </div>
-                </div>
+                <span className="shrink-0 text-xs select-none">🌱</span>
+                <span className="font-bold text-[var(--color-text-main)] shrink-0">WHO Standards:</span>
+                <span className="truncate">Both 15th% &amp; 85th% are equally healthy. Zero comparison.</span>
               </div>
-
             </div>
 
             {/* 1. Side-by-Side Metric Selector Cards (Weight, Length, Head) */}
@@ -984,7 +973,7 @@ export default function App() {
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-white/95 dark:bg-[#1B2420]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border,#E2E9E0)] px-3 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 py-1.5 flex items-center justify-around shadow-lg sm:shadow-2xl"
       >
         {/* Left 1: Home */}
         <button
