@@ -477,15 +477,16 @@ export default function App() {
               <TinyBloomLogo size={34} showText={true} />
             </button>
 
-            {/* Our Story Button directly beside app name */}
+            {/* Our Story Button: Simple heart symbol on mobile, expandable on sm+ */}
             <button
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/50 text-[11px] font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-2xs cursor-pointer shrink-0"
-              title="Why We Built TinyBloom (From first-time parents)"
+              className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/50 text-[11px] font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-2xs cursor-pointer shrink-0"
+              title="Our Story: Why we built TinyBloom (From first-time parents)"
+              aria-label="Our Story"
             >
-              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/30 shrink-0" />
-              <span>Our Story</span>
+              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />
+              <span className="hidden sm:inline">Our Story</span>
             </button>
           </div>
 
@@ -495,11 +496,11 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
               title="Manage baby profile, themes, export, and settings"
             >
               <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-              <span className="font-bold truncate max-w-[110px] sm:max-w-[160px]">{profile.name}</span>
+              <span className="font-bold truncate max-w-[85px] xs:max-w-[120px] sm:max-w-[160px]">{profile.name}</span>
             </button>
           </div>
         </div>
@@ -686,13 +687,13 @@ export default function App() {
                 </button>
               </div>
 
-              {/* WHO Standards Reassurance micro-line */}
-              <div
-                className="flex items-center gap-1.5 pt-1.5 border-t border-[var(--color-card-border)]/60 text-[11px] text-[var(--color-text-muted)]"
-              >
-                <span className="shrink-0 text-xs select-none">🌱</span>
-                <span className="font-bold text-[var(--color-text-main)] shrink-0">WHO Standards:</span>
-                <span className="truncate">Both 15th% &amp; 85th% are equally healthy. Zero comparison.</span>
+              {/* WHO Standards Reassurance micro-line - completely visible without truncation */}
+              <div className="flex items-start sm:items-center gap-1.5 pt-1.5 border-t border-[var(--color-card-border)]/60 text-[11px] leading-snug text-[var(--color-text-muted)]">
+                <span className="shrink-0 text-xs select-none mt-0.5 sm:mt-0">🌱</span>
+                <p className="flex-1 min-w-0">
+                  <span className="font-bold text-[var(--color-text-main)] mr-1">WHO Standards:</span>
+                  <span>Both 15th% &amp; 85th% are equally healthy. Zero comparison.</span>
+                </p>
               </div>
             </div>
 

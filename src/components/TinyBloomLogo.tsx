@@ -39,7 +39,7 @@ export const TinyBloomLogo: React.FC<TinyBloomLogoProps> = ({
           <span className="font-heading font-extrabold text-base tracking-tight text-[var(--color-text-main)]">
             Tiny<span className="text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">Bloom</span>
           </span>
-          <span className="text-[10px] text-[var(--color-text-muted)] font-medium tracking-normal">
+          <span className="text-[10px] text-[var(--color-text-muted)] font-medium tracking-normal hidden sm:block">
             Every little milestone matters.
           </span>
         </div>
