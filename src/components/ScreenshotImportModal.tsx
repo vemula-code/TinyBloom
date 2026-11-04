@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   ArrowRight,
   Stethoscope,
+  Baby,
 } from 'lucide-react';
 import { GrowthEntry, MetricUnit, BabyProfile } from '../types/growth';
 import { kgToLbsOz, lbsOzToKg, cmToInches, inchesToCm, calculateAge } from '../data/whoGrowthStandards';
@@ -38,7 +39,11 @@ interface ScreenshotImportModalProps {
   profile: BabyProfile;
   existingEntries: GrowthEntry[];
   defaultUnit: MetricUnit;
-  onImport: (newEntries: GrowthEntry[], mode: 'merge' | 'replace') => void;
+  onImport: (
+    newEntries: GrowthEntry[],
+    mode: 'merge' | 'replace',
+    detectedProfile?: Partial<BabyProfile>
+  ) => void;
 }
 
 export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
@@ -59,6 +64,9 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [importMode, setImportMode] = useState<'merge' | 'replace'>('merge');
   const [activeUnit, setActiveUnit] = useState<MetricUnit>(defaultUnit);
+  const [detectedBabyName, setDetectedBabyName] = useState<string>('');
+  const [detectedBirthDate, setDetectedBirthDate] = useState<string>('');
+  const [applyDetectedProfile, setApplyDetectedProfile] = useState<boolean>(true);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -147,6 +155,12 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             }
             if (data.summary) {
               summaryText = data.summary;
+            }
+            if (data.detectedBabyName && !detectedBabyName) {
+              setDetectedBabyName(data.detectedBabyName);
+            }
+            if (data.detectedBirthDate && !detectedBirthDate) {
+              setDetectedBirthDate(data.detectedBirthDate);
             }
 
             if (Array.isArray(data.entries)) {
@@ -288,7 +302,15 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       };
     });
 
-    onImport(formattedEntries, importMode);
+    const detectedProf: Partial<BabyProfile> | undefined =
+      applyDetectedProfile && (detectedBabyName || detectedBirthDate)
+        ? {
+            ...(detectedBabyName ? { name: detectedBabyName } : {}),
+            ...(detectedBirthDate ? { birthDate: detectedBirthDate } : {}),
+          }
+        : undefined;
+
+    onImport(formattedEntries, importMode, detectedProf);
     onClose();
   };
 
@@ -522,25 +544,57 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 </div>
               </div>
 
+              {/* Detected Baby Profile Banner */}
+              {(detectedBabyName || detectedBirthDate) && (
+                <div className="p-3.5 rounded-2xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/90 dark:border-amber-800/60 text-xs text-amber-900 dark:text-amber-200 flex items-start gap-2.5 shadow-2xs">
+                  <Baby className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                  <div className="flex-1 space-y-1">
+                    <div className="font-bold flex items-center justify-between">
+                      <span>Detected Baby in Screenshot</span>
+                      <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-200/80 dark:bg-amber-900 text-amber-800 dark:text-amber-200">
+                        Auto-Detected
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-amber-800 dark:text-amber-300">
+                      {detectedBabyName && <span>Name: <strong>{detectedBabyName}</strong> </span>}
+                      {detectedBirthDate && <span>&middot; Birth Date: <strong>{detectedBirthDate}</strong></span>}
+                    </div>
+                    <label className="flex items-center gap-2 cursor-pointer font-bold text-[11px] pt-1 text-amber-950 dark:text-amber-100">
+                      <input
+                        type="checkbox"
+                        checked={applyDetectedProfile}
+                        onChange={(e) => setApplyDetectedProfile(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded text-[var(--color-primary)] accent-[var(--color-primary)] cursor-pointer"
+                      />
+                      <span>Set baby name &amp; birth date to match screenshot</span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {/* Items Card List */}
               <div className="space-y-2.5 max-h-[46vh] overflow-y-auto pr-1">
                 {extractedItems.map((item) => {
                   const displayWeight = item.weightKg !== undefined
                     ? activeUnit === 'metric'
                       ? `${item.weightKg}`
-                      : `${kgToLbsOz(item.weightKg).lbs}`
+                      : `${Math.round(item.weightKg * 2.20462262 * 10) / 10}`
                     : '';
+
+                  const lbsOzBreakdown = item.weightKg !== undefined
+                    ? kgToLbsOz(item.weightKg)
+                    : null;
 
                   const displayHeight = item.heightCm !== undefined
                     ? activeUnit === 'metric'
                       ? `${item.heightCm}`
-                      : `${cmToInches(item.heightCm)}`
+                      : `${Math.round((item.heightCm / 2.54) * 10) / 10}`
                     : '';
 
                   const displayHead = item.headCircumferenceCm !== undefined
                     ? activeUnit === 'metric'
                       ? `${item.headCircumferenceCm}`
-                      : `${cmToInches(item.headCircumferenceCm)}`
+                      : `${Math.round((item.headCircumferenceCm / 2.54) * 10) / 10}`
                     : '';
 
                   return (
@@ -596,13 +650,19 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                             Weight ({activeUnit === 'metric' ? 'kg' : 'lbs'})
                           </label>
                           <input
+                            key={`${item.id}-${activeUnit}-weight`}
                             type="number"
                             step="0.01"
-                            placeholder="e.g. 7.4"
+                            placeholder={activeUnit === 'metric' ? 'e.g. 7.4' : 'e.g. 16.3'}
                             defaultValue={displayWeight}
                             onChange={(e) => handleWeightChange(item.id, e.target.value)}
                             className="w-full text-xs font-semibold px-2 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-stone-50 dark:bg-stone-800 text-[var(--color-text-main)]"
                           />
+                          {activeUnit === 'imperial' && lbsOzBreakdown && (
+                            <span className="text-[10px] text-[var(--color-primary)] font-bold block mt-0.5">
+                              {lbsOzBreakdown.lbs} lb {lbsOzBreakdown.oz} oz
+                            </span>
+                          )}
                         </div>
 
                         {/* Height */}
@@ -611,9 +671,10 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                             Length ({activeUnit === 'metric' ? 'cm' : 'in'})
                           </label>
                           <input
+                            key={`${item.id}-${activeUnit}-height`}
                             type="number"
                             step="0.1"
-                            placeholder="e.g. 65"
+                            placeholder={activeUnit === 'metric' ? 'e.g. 65' : 'e.g. 25.5'}
                             defaultValue={displayHeight}
                             onChange={(e) => handleHeightChange(item.id, e.target.value)}
                             className="w-full text-xs font-semibold px-2 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-stone-50 dark:bg-stone-800 text-[var(--color-text-main)]"
@@ -626,9 +687,10 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                             Head ({activeUnit === 'metric' ? 'cm' : 'in'})
                           </label>
                           <input
+                            key={`${item.id}-${activeUnit}-head`}
                             type="number"
                             step="0.1"
-                            placeholder="e.g. 42"
+                            placeholder={activeUnit === 'metric' ? 'e.g. 42' : 'e.g. 16.5'}
                             defaultValue={displayHead}
                             onChange={(e) => handleHeadChange(item.id, e.target.value)}
                             className="w-full text-xs font-semibold px-2 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-stone-50 dark:bg-stone-800 text-[var(--color-text-main)]"

@@ -141,14 +141,28 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   const handleSubmitProfile = (e: React.FormEvent) => {
     e.preventDefault();
-    onSaveProfile({
+    const cleanId = (!profile.id || profile.id === 'demo-sample-baby' || profile.id === 'baby-main')
+      ? `baby-${Date.now()}`
+      : profile.id;
+
+    const newProfile: BabyProfile = {
       ...profile,
+      id: cleanId,
       name: name.trim() || 'My Baby',
       gender,
       birthDate,
       avatarUrl,
-    });
-    setStatusMsg('✨ Profile updated successfully!');
+    };
+
+    onSaveProfile(newProfile);
+    try {
+      localStorage.setItem('tinybloom_profile', JSON.stringify(newProfile));
+      localStorage.setItem('tinybloom_onboarded', 'true');
+      localStorage.removeItem('tinybloom_wiped');
+    } catch (err) {
+      console.error(err);
+    }
+    setStatusMsg(`✨ ${newProfile.name}’s profile saved to your device!`);
     setTimeout(() => setStatusMsg(''), 3000);
   };
 

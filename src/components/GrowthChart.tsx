@@ -259,7 +259,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       </div>
 
       {/* SVG Interactive Canvas - 100% vector responsive with zero horizontal overflow */}
-      <div className="relative w-full overflow-hidden pt-2">
+      <div className="relative w-full pt-2">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full h-auto block select-none touch-manipulation"
@@ -459,46 +459,100 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           })}
         </svg>
 
-        {/* Hover / Click Floating Tooltip */}
-        {hoveredPoint && (
-          <div
-            className="absolute z-20 pointer-events-none bg-[#303832] text-white rounded-2xl px-3.5 py-2.5 shadow-xl text-xs border border-[#91A98B]/30 min-w-[170px]"
-            style={{
-              left: `${Math.min(Math.max(10, (hoveredPoint.x / svgWidth) * 100), 75)}%`,
-              top: `${Math.max(10, (hoveredPoint.y / svgHeight) * 100 - 18)}%`,
-              transform: 'translate(-50%, -100%)',
-            }}
-          >
-            <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-1.5 mb-1.5">
-              <span className="font-semibold text-stone-200">
-                {hoveredPoint.entry.ageMonths === 0 ? 'Birth' : `${hoveredPoint.entry.ageMonths.toFixed(1)} mo`}
-              </span>
-              <span className="text-[10px] text-stone-300 font-mono">
-                {hoveredPoint.entry.date}
-              </span>
-            </div>
-            <div className="flex items-baseline justify-between gap-3">
-              <span className="text-sm font-bold text-[#F5D77A]">
-                {hoveredPoint.valStr}
-              </span>
-              <span className="text-[11px] text-[#AFCDE0] font-medium">
-                {hoveredPoint.percentileStr}
-              </span>
-            </div>
-            {hoveredPoint.entry.notes && (
-              <p className="mt-1.5 pt-1.5 border-t border-white/10 text-[11px] text-stone-300 line-clamp-2 italic">
-                “{hoveredPoint.entry.notes}”
-              </p>
-            )}
-            {hoveredPoint.entry.milestones && hoveredPoint.entry.milestones.length > 0 && (
-              <div className="mt-1 text-[10px] text-[#F5D77A]">
-                ★ {hoveredPoint.entry.milestones[0]}
-                {hoveredPoint.entry.milestones.length > 1 && ` (+${hoveredPoint.entry.milestones.length - 1} more)`}
+        {/* Hover / Click Floating Tooltip with smart edge-clamping */}
+        {hoveredPoint && (() => {
+          const xPct = (hoveredPoint.x / svgWidth) * 100;
+          const yPct = (hoveredPoint.y / svgHeight) * 100;
+          const isNearTop = yPct < 32;
+          const isNearLeft = xPct < 25;
+          const isNearRight = xPct > 75;
+
+          const transformY = isNearTop ? 'translateY(12px)' : 'translateY(calc(-100% - 12px))';
+          const posStyle: React.CSSProperties = {
+            top: `${yPct}%`,
+          };
+
+          if (isNearLeft) {
+            posStyle.left = '8px';
+            posStyle.transform = transformY;
+          } else if (isNearRight) {
+            posStyle.right = '8px';
+            posStyle.left = 'auto';
+            posStyle.transform = transformY;
+          } else {
+            posStyle.left = `${xPct}%`;
+            posStyle.transform = `translateX(-50%) ${transformY}`;
+          }
+
+          return (
+            <div
+              className="absolute z-30 pointer-events-none bg-[#1A231D] text-white rounded-2xl px-3.5 py-2.5 shadow-2xl text-xs border border-[var(--color-primary)]/40 min-w-[170px] max-w-[240px] animate-in fade-in duration-150"
+              style={posStyle}
+            >
+              <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-1 mb-1.5">
+                <span className="font-bold text-stone-200">
+                  {hoveredPoint.entry.ageMonths === 0 ? 'Birth / Newborn' : `${hoveredPoint.entry.ageMonths.toFixed(1)} mo`}
+                </span>
+                <span className="text-[10px] text-stone-300 font-mono">
+                  {hoveredPoint.entry.date}
+                </span>
               </div>
-            )}
-          </div>
-        )}
+              <div className="flex items-baseline justify-between gap-2">
+                <span className="text-sm font-extrabold text-[#F5D77A] font-mono">
+                  {hoveredPoint.valStr}
+                </span>
+                <span className="text-[11px] text-emerald-300 font-bold">
+                  {hoveredPoint.percentileStr}
+                </span>
+              </div>
+              {hoveredPoint.entry.notes && (
+                <p className="mt-1 pt-1 border-t border-white/10 text-[10px] text-stone-300 line-clamp-2 italic">
+                  &ldquo;{hoveredPoint.entry.notes}&rdquo;
+                </p>
+              )}
+            </div>
+          );
+        })()}
       </div>
+
+      {/* Selected Data Point Mobile Inspection Card - 100% visible, never cut off */}
+      {hoveredPoint && (
+        <div className="mt-2.5 p-3 rounded-2xl bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30 flex items-center justify-between gap-2.5 animate-in slide-in-from-top-1 duration-150">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <span className="w-8 h-8 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
+              {hoveredPoint.entry.ageMonths === 0 ? '0m' : `${hoveredPoint.entry.ageMonths.toFixed(0)}m`}
+            </span>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold text-[var(--color-text-main)]">
+                  {hoveredPoint.valStr}
+                </span>
+                <span className="text-[11px] font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] px-2 py-0.2 rounded-full bg-[var(--color-primary)]/20">
+                  {hoveredPoint.percentileStr}
+                </span>
+                {hoveredPoint.entry.isPediatricianVisit && (
+                  <span className="text-[10px] text-blue-700 dark:text-blue-300 font-semibold">
+                    Pediatrician Visit
+                  </span>
+                )}
+              </div>
+              <div className="text-[11px] text-[var(--color-text-muted)] truncate mt-0.5">
+                Recorded on {hoveredPoint.entry.date} {hoveredPoint.entry.notes ? `· "${hoveredPoint.entry.notes}"` : ''}
+              </div>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setHoveredPoint(null)}
+            className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 transition-colors shrink-0 cursor-pointer"
+            title="Dismiss selection"
+            aria-label="Dismiss selection"
+          >
+            <span className="text-xs font-bold px-1 select-none">✕</span>
+          </button>
+        </div>
+      )}
 
       {/* Chart Footer Legend */}
       <div className="mt-3.5 pt-3 border-t border-[var(--color-card-border,#E2E9E0)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">

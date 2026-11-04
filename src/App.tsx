@@ -72,17 +72,6 @@ export default function App() {
       if (saved) {
         const parsed = JSON.parse(saved);
         if (parsed && parsed.birthDate) {
-          // If this was an old demo session containing user's child dates or Dhruv, flush to synthetic sample
-          if (
-            parsed.id === 'baby-dhruv' ||
-            parsed.id === 'baby-main' ||
-            parsed.birthDate === '2026-03-28' ||
-            parsed.name === 'Dhruv'
-          ) {
-            localStorage.setItem('tinybloom_profile', JSON.stringify(DEFAULT_PROFILE));
-            localStorage.setItem('tinybloom_entries', JSON.stringify(DEFAULT_GROWTH_ENTRIES));
-            return DEFAULT_PROFILE;
-          }
           if (parsed.id === 'demo-sample-baby' && (!parsed.avatarUrl || parsed.avatarUrl.includes('baby_portrait'))) {
             parsed.avatarUrl = DEFAULT_AVATAR;
           }
@@ -112,10 +101,6 @@ export default function App() {
       if (saved !== null) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
-          // If records contain the old March 28 birthdate or Dhruv, replace with synthetic sample
-          if (parsed.some((e: any) => e.date === '2026-03-28' || (e.notes && e.notes.includes('Dhruv')))) {
-            return DEFAULT_GROWTH_ENTRIES;
-          }
           return parsed;
         }
       }
@@ -441,21 +426,85 @@ export default function App() {
     setEntries(newEntries);
   };
 
-  const handleImportPastEntries = (newEntries: GrowthEntry[], mode: 'merge' | 'replace') => {
-    if (mode === 'replace') {
-      setEntries(newEntries);
-    } else {
-      setEntries((prev) => {
-        const map = new Map<string, GrowthEntry>();
-        prev.forEach((e) => map.set(e.date, e));
-        newEntries.forEach((e) => map.set(e.date, e));
-        return Array.from(map.values()).sort(
-          (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-        );
-      });
+  const handleSaveProfile = (updatedProfile: BabyProfile) => {
+    const isPreviousDemo = !updatedProfile.id || updatedProfile.id === 'demo-sample-baby' || updatedProfile.id === 'baby-main';
+    const cleanProfile: BabyProfile = {
+      ...updatedProfile,
+      id: isPreviousDemo ? `baby-${Date.now()}` : updatedProfile.id,
+    };
+    setProfile(cleanProfile);
+    try {
+      localStorage.setItem('tinybloom_profile', JSON.stringify(cleanProfile));
+      localStorage.setItem('tinybloom_onboarded', 'true');
+      localStorage.removeItem('tinybloom_wiped');
+    } catch (e) {
+      console.error(e);
     }
-    setToastMessage(`Imported ${newEntries.length} entries successfully!`);
+    setToastMessage(`✨ Saved details for ${cleanProfile.name}!`);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleImportPastEntries = (
+    newEntries: GrowthEntry[],
+    mode: 'merge' | 'replace',
+    detectedProfile?: Partial<BabyProfile>
+  ) => {
+    const isCurrentDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+
+    let finalEntries: GrowthEntry[] = [];
+    if (mode === 'replace' || isCurrentDemo) {
+      finalEntries = [...newEntries].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    } else {
+      const map = new Map<string, GrowthEntry>();
+      entries.forEach((e) => map.set(e.date, e));
+      newEntries.forEach((e) => map.set(e.date, e));
+      finalEntries = Array.from(map.values()).sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+    }
+
+    setEntries(finalEntries);
+
+    let updatedProfile = { ...profile };
+    let profileChanged = false;
+
+    if (isCurrentDemo) {
+      updatedProfile.id = `baby-${Date.now()}`;
+      if (updatedProfile.name === 'Sample Baby') {
+        updatedProfile.name = detectedProfile?.name || 'My Baby';
+      }
+      profileChanged = true;
+    }
+    if (detectedProfile?.name && (updatedProfile.name === 'My Baby' || updatedProfile.name === 'Sample Baby')) {
+      updatedProfile.name = detectedProfile.name;
+      profileChanged = true;
+    }
+    if (detectedProfile?.birthDate && isCurrentDemo) {
+      updatedProfile.birthDate = detectedProfile.birthDate;
+      profileChanged = true;
+    }
+
+    if (profileChanged) {
+      setProfile(updatedProfile);
+      try {
+        localStorage.setItem('tinybloom_profile', JSON.stringify(updatedProfile));
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    try {
+      localStorage.setItem('tinybloom_entries', JSON.stringify(finalEntries));
+      localStorage.setItem('tinybloom_onboarded', 'true');
+      localStorage.removeItem('tinybloom_wiped');
+    } catch (e) {
+      console.error(e);
+    }
+
+    setToastMessage(`✨ Successfully imported ${newEntries.length} records!`);
+    setTimeout(() => setToastMessage(null), 4000);
   };
 
   const currentAge = calculateAge(profile.birthDate);
@@ -516,8 +565,8 @@ export default function App() {
 
       {/* Main Container */}
       <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
-        {/* Sample Demo Mode Banner - Sleek, slim, compact, and non-intrusive */}
-        {(profile.id === 'demo-sample-baby' || profile.id === 'baby-main' || profile.name === 'Sample Baby') && (
+        {/* Sample Demo Mode Banner - Only shown when exploring initial demo records */}
+        {(profile.id === 'demo-sample-baby' && profile.name === 'Sample Baby') && (
           <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2.5 text-xs shadow-2xs">
             <div className="flex items-center gap-2 min-w-0 truncate">
               <span className="text-sm shrink-0 select-none">🌱</span>
@@ -1092,7 +1141,7 @@ export default function App() {
         isOpen={isSettingsOpen}
         onClose={() => setIsSettingsOpen(false)}
         profile={profile}
-        onSaveProfile={setProfile}
+        onSaveProfile={handleSaveProfile}
         entries={entries}
         onImportData={handleImportData}
         onResetData={handleResetData}
@@ -1134,6 +1183,25 @@ export default function App() {
         birthDate={profile.birthDate}
         unit={unit}
         onImport={handleImportPastEntries}
+      />
+
+      <PrivateGuaranteeModal
+        isOpen={isPrivateGuaranteeOpen}
+        onClose={() => setIsPrivateGuaranteeOpen(false)}
+        entries={entries}
+        profile={profile}
+      />
+
+      <ScreenshotImportModal
+        isOpen={isScreenshotImportOpen}
+        onClose={() => setIsScreenshotImportOpen(false)}
+        birthDate={profile.birthDate}
+        profile={profile}
+        existingEntries={entries}
+        defaultUnit={unit}
+        onImport={(newEntries, mode, detectedProf) =>
+          handleImportPastEntries(newEntries, mode, detectedProf)
+        }
       />
     </div>
   );

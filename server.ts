@@ -110,6 +110,14 @@ Return strictly structured JSON.`;
                 type: Type.STRING,
                 description: '1-sentence user-friendly summary of the records found in the screenshot',
               },
+              detectedBabyName: {
+                type: Type.STRING,
+                description: 'The baby name detected in the screenshot header or profile, if visible',
+              },
+              detectedBirthDate: {
+                type: Type.STRING,
+                description: 'The baby birth date in YYYY-MM-DD if visible in screenshot profile or record header',
+              },
               entries: {
                 type: Type.ARRAY,
                 items: {
