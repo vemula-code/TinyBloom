@@ -3,6 +3,7 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
+  /* Theme 1: Botanical Sage (Inspired by Nara Baby & Natural Nursery) */
   :root, [data-theme="sage"] {
     --color-primary: #4A7347;
     --color-primary-dark: #2F4F2D;
@@ -14,19 +15,31 @@
     --color-text-muted: #596B5B;
   }
 
-  /* Theme 2: Warm Linen & Oatmeal (Inspired by Hatch & Nara Baby) */
-  [data-theme="linen"] {
-    --color-primary: #855835;
-    --color-primary-dark: #5C381E;
-    --color-primary-light: rgba(133, 88, 53, 0.12);
-    --color-canvas: #FAF6EE;
+  /* Theme 2: Apple Slate (iOS System, Apple Health & Clean Minimalist Style) */
+  [data-theme="slate"] {
+    --color-primary: #2563EB;
+    --color-primary-dark: #1D4ED8;
+    --color-primary-light: rgba(37, 99, 235, 0.12);
+    --color-canvas: #F8FAFC;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(133, 88, 53, 0.18);
-    --color-text-main: #241D17;
-    --color-text-muted: #6B5E53;
+    --color-card-border: rgba(37, 99, 235, 0.18);
+    --color-text-main: #0F172A;
+    --color-text-muted: #64748B;
   }
 
-  /* Theme 3: Soft Mist Blue (Inspired by Huckleberry) */
+  /* Theme 3: Rose & Blush (Inspired by What to Expect, Ovia & Glow Baby) */
+  [data-theme="blush"] {
+    --color-primary: #C24A66;
+    --color-primary-dark: #8F2B42;
+    --color-primary-light: rgba(194, 74, 102, 0.12);
+    --color-canvas: #FFF6F8;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(194, 74, 102, 0.18);
+    --color-text-main: #2A171C;
+    --color-text-muted: #7E5862;
+  }
+
+  /* Theme 4: Soft Mist Blue (Inspired by Huckleberry Pediatric) */
   [data-theme="sky"] {
     --color-primary: #386C94;
     --color-primary-dark: #224765;
@@ -38,8 +51,44 @@
     --color-text-muted: #576C7E;
   }
 
-  /* Theme 4 & Dark Mode: High-Contrast Nursery Night (Engineered for 2 AM Feedings) */
-  [data-theme="midnight"], .dark, html.dark {
+  /* Theme 5: Lavender Twilight (Inspired by Calm, Headspace & Moshi Sleep) */
+  [data-theme="lavender"] {
+    --color-primary: #6D5299;
+    --color-primary-dark: #4A3370;
+    --color-primary-light: rgba(109, 82, 153, 0.12);
+    --color-canvas: #F8F5FD;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(109, 82, 153, 0.18);
+    --color-text-main: #1D162B;
+    --color-text-muted: #6C5B83;
+  }
+
+  /* Theme 6: Warm Linen & Oatmeal (Inspired by Hatch Baby & Earth Tones) */
+  [data-theme="linen"] {
+    --color-primary: #855835;
+    --color-primary-dark: #5C381E;
+    --color-primary-light: rgba(133, 88, 53, 0.12);
+    --color-canvas: #FAF6EE;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(133, 88, 53, 0.18);
+    --color-text-main: #241D17;
+    --color-text-muted: #6B5E53;
+  }
+
+  /* Theme 7: Sunlit Honey & Amber (Warm Glow & Cozy Nursery) */
+  [data-theme="amber"] {
+    --color-primary: #B26514;
+    --color-primary-dark: #7F4207;
+    --color-primary-light: rgba(178, 101, 20, 0.12);
+    --color-canvas: #FFF9F2;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(178, 101, 20, 0.18);
+    --color-text-main: #2C1C0D;
+    --color-text-muted: #7E6047;
+  }
+
+  /* Theme 8: High-Contrast Nursery Night (Dark Green for 2 AM Feedings) */
+  [data-theme="midnight"], .dark:not([data-theme="oled"]), html.dark:not([data-theme="oled"]) {
     color-scheme: dark;
     --color-primary: #76C476;
     --color-primary-dark: #9CE09C;
@@ -49,6 +98,19 @@
     --color-card-border: rgba(255, 255, 255, 0.14);
     --color-text-main: #F7FAF7;
     --color-text-muted: #A3B5A5;
+  }
+
+  /* Theme 9: Pure OLED Black (True Black #000000 for Zero Glare & OLED Battery Saving) */
+  [data-theme="oled"] {
+    color-scheme: dark;
+    --color-primary: #38BDF8;
+    --color-primary-dark: #7DD3FC;
+    --color-primary-light: rgba(56, 189, 248, 0.22);
+    --color-canvas: #000000;
+    --color-card: #0A0A0A;
+    --color-card-border: rgba(255, 255, 255, 0.16);
+    --color-text-main: #FFFFFF;
+    --color-text-muted: #9CA3AF;
   }
 
   /* High contrast font and container adaptability in dark / night mode */
@@ -65,7 +127,33 @@
   [data-theme="midnight"] .bg-\[\#FFF9F0\], [data-theme="midnight"] .bg-\[\#FFF9F0\]\/60 {
     background-color: #141B17 !important;
   }
-  .dark .text-\[\#303832\], .dark .text-\[\#1D251F\], .dark .text-\[\#1B241C\],
+
+  /* OLED Pure Black Overrides */
+  [data-theme="oled"] .bg-white,
+  .dark[data-theme="oled"] .bg-white {
+    background-color: #0A0A0A !important;
+  }
+  [data-theme="oled"] .bg-white\/95,
+  .dark[data-theme="oled"] .bg-white\/95 {
+    background-color: rgba(10, 10, 10, 0.95) !important;
+  }
+  [data-theme="oled"] .bg-white\/90,
+  .dark[data-theme="oled"] .bg-white\/90 {
+    background-color: rgba(10, 10, 10, 0.90) !important;
+  }
+  [data-theme="oled"] .bg-\[\#FFF9F0\],
+  .dark[data-theme="oled"] .bg-\[\#FFF9F0\],
+  [data-theme="oled"] .bg-\[\#FAF8F3\] {
+    background-color: #000000 !important;
+  }
+  [data-theme="oled"] input,
+  [data-theme="oled"] select,
+  [data-theme="oled"] textarea {
+    background-color: #080808 !important;
+    color: #FFFFFF !important;
+    border-color: rgba(255, 255, 255, 0.22) !important;
+  }
+  .dark .text-[#303832], .dark .text-[#1D251F], .dark .text-[#1B241C],
   [data-theme="midnight"] .text-\[\#303832\], [data-theme="midnight"] .text-\[\#1D251F\], [data-theme="midnight"] .text-\[\#1B241C\] {
     color: #F7FAF7 !important;
   }

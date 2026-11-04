@@ -68,11 +68,21 @@ Granular, gentle developmental guidance covering every stage of early childhood:
 - **Built for 3 AM Parenting**: Designed specifically for tired parents holding a sleeping baby with one hand.
 - **Clean Action Grid**: Prominent side-by-side `+ Log Growth` and `📸 Scan Screenshot` buttons that never wrap awkwardly.
 - **No Cut-Offs**: All reassurance headers and baby age badges are 100% visible on narrow phone screens (360px–390px).
-- **3-Way Appearance Switch**:
+- **4-Way Display Appearance Switch**:
   - **Phone System**: Matches your phone's dark/light mode dynamically.
-  - **Day Light**: Soft natural sunlight tones.
+  - **Day Light**: Soft natural daytime illumination.
   - **Nursery Dark**: Deep contrast theme with high-contrast `#F7FAF7` text so you can log midnight feeds without straining your eyes or waking your baby.
-- **4 Accessible Color Palettes**: Botanical Sage, Warm Linen, Soft Mist Blue, and Nursery Night.
+  - **Pure OLED Black**: 100% True Black (`#000000`) for pitch-black nursery rooms, zero screen glare, and maximum OLED battery savings.
+- **9 Standard Mobile Color Palettes (Curated from Top Health & Parenting Apps)**:
+  - 🌿 **Botanical Sage**: Fresh eucalyptus & warm cream (*Nara Baby Style*)
+  - 🍏 **Apple Slate**: Minimalist system blue & crisp pearl slate (*iOS & Apple Health Style*)
+  - 🌸 **Rose & Blush**: Warm petal rose & comforting nursery blush (*What to Expect & Ovia Style*)
+  - 🍼 **Soft Mist Blue**: Soothing pediatric sky blue & calm porcelain (*Huckleberry Style*)
+  - 🌙 **Lavender Twilight**: Restful evening lilac & bedtime violet (*Calm & Moshi Sleep Style*)
+  - 🌾 **Warm Linen & Oatmeal**: Cashmere earth tones & warm sand (*Hatch Baby Style*)
+  - 🍯 **Sunlit Honey & Amber**: Cheerful golden honey & warm oat (*Cozy Nursery Glow*)
+  - 🌌 **Nursery Night**: High-contrast dark green for 2 AM feeds
+  - 🖤 **Pure OLED Black**: True `#000000` pitch black for OLED phone screens
 
 ### 🩺 6. Doctor Visit Brief (Printable Pediatrician Report)
 - One-click clinical summary formatted for 8.5x11 / A4 paper.

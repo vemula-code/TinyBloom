@@ -5,7 +5,16 @@ export type MetricUnit = 'metric' | 'imperial';
 export type ChartType = 'weight' | 'height' | 'head' | 'bmi';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
-export type PaletteTheme = 'sage' | 'linen' | 'sky' | 'midnight';
+export type PaletteTheme =
+  | 'sage'
+  | 'slate'
+  | 'blush'
+  | 'sky'
+  | 'lavender'
+  | 'linen'
+  | 'amber'
+  | 'midnight'
+  | 'oled';
 
 export interface BabyProfile {
   id: string;

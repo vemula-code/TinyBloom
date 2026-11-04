@@ -137,7 +137,22 @@ export default function App() {
 
   const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>(() => {
     try {
-      return (localStorage.getItem('tinybloom_palette') as PaletteTheme) || 'sage';
+      const saved = localStorage.getItem('tinybloom_palette') as PaletteTheme;
+      const valid: PaletteTheme[] = [
+        'sage',
+        'slate',
+        'blush',
+        'sky',
+        'lavender',
+        'linen',
+        'amber',
+        'midnight',
+        'oled',
+      ];
+      if (saved && valid.includes(saved)) {
+        return saved;
+      }
+      return 'sage';
     } catch {
       return 'sage';
     }
@@ -173,12 +188,13 @@ export default function App() {
       const isDark =
         themeMode === 'dark' ||
         paletteTheme === 'midnight' ||
+        paletteTheme === 'oled' ||
         (themeMode === 'system' && isSystemDark);
 
       if (isDark) {
         root.classList.add('dark');
         document.body.classList.add('dark');
-        root.setAttribute('data-theme', 'midnight');
+        root.setAttribute('data-theme', paletteTheme === 'oled' ? 'oled' : 'midnight');
       } else {
         root.classList.remove('dark');
         document.body.classList.remove('dark');
@@ -187,7 +203,10 @@ export default function App() {
 
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute('content', isDark ? '#121714' : '#4A6E43');
+        metaThemeColor.setAttribute(
+          'content',
+          paletteTheme === 'oled' ? '#000000' : isDark ? '#121714' : '#4A6E43'
+        );
       }
     };
 
