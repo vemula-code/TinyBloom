@@ -835,7 +835,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           About TinyBloom
                         </span>
                         <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
-                          Why we built this app (100% private, zero anxiety)
+                          First baby, what the curves actually mean &amp; why we built this
                         </span>
                       </div>
                       <button

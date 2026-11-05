@@ -8,22 +8,33 @@ A gentle, calm, and 100% private offline-first baby growth and milestone compani
 
 ## 💛 A Letter to Parents: Why We Built TinyBloom
 
-When our baby was born, we watched every doctor checkup with intense anxiety. 
+When we had our very first baby, we were completely new to everything. 
 
-At one pediatric visit, our doctor pointed to a graph and noted our baby was tracking along the lower curve. As first-time parents, our hearts sank. We spent sleepless nights questioning ourselves: *Was our baby eating enough? Were we doing something wrong? Why weren't they in the 80th or 90th percentile like the babies on social media?*
+At our pediatric checkups, the doctor would measure our baby's weight and length, then hand us a growth chart filled with wavy lines and numbers—3%, 15%, 50%, 85%, 97%.
 
-Then, our pediatrician gently held our hands and shared the truth that changed everything:
+Honestly? **We didn't get what each line meant at all.** When the doctor noted our baby was measuring along the 15th percentile line, panic hit us hard. We asked ourselves: *Does low mean bad? Is our baby not eating enough? Are we failing as parents? Why is another baby in our parent group on the 85th percentile while ours is down here?* We spent sleepless nights spiraling over a chart we didn't understand.
 
-> **"Percentiles are not grades. They are not competitions or rankings.**
-> A baby growing along the 15th percentile is just as healthy, capable, and thriving as one growing along the 85th percentile. Every baby comes into this world with their own unique genetics, their own natural tempo, and their own beautiful curve. All that matters is steady, consistent growth along their own trajectory."
+It took an honest, reassuring conversation with our pediatrician to finally hear the truth:
 
-We went home with a lighter heart and looked for a simple, calm app to track growth over time. 
+> **"Percentiles are not grades in school. 90% is not an A+, and 10% is not failing.**
+> **Low does NOT mean bad, and high does NOT mean good.** Just like adults come in all natural shapes and heights, babies do too. A petite baby growing naturally on the 15th percentile line is 100% just as healthy, strong, and thriving as a baby on the 85th line. All doctors care about is the curve: is your baby steadily following their own natural curve over time? As long as their line stays steady, they are blooming."
 
-Instead, we found commercial parenting apps packed with screaming red alerts, anxiety-inducing comparison bars, predatory $10–$15 monthly subscriptions, and aggressive data tracking selling private nursery moments to advertisers.
+We wanted a simple, calm app on our phone to log checkups, see the curves clearly, and have peace of mind.
 
-So we built **TinyBloom**. 
+Instead, every app we downloaded was deeply frustrating:
+- **Aggressive Subscriptions**: Demanding $8 to $15 every month just to view a basic growth curve.
+- **Plastered with Ads**: Distracting popups selling baby formulas and gadgets right when parents are tired and anxious.
+- **Cloud Harvesting**: Forcing account creation, taking emails, and uploading private nursery moments to corporate servers.
+- **Paywalled Data**: No way to import past doctor papers or old app records without paying expensive subscription fees or API costs.
 
-**TinyBloom belongs to parents.** No paywalls, no monthly fees, no accounts, no ads, and no surveillance. 100% of your baby's data stays securely on your phone.
+**So we built TinyBloom.**
+
+TinyBloom is the companion we wished we had on day one:
+- **Clear WHO Curves**: Plain-English explanations for every line, with zero anxiety and zero comparisons.
+- **100% Free Forever**: No monthly fees, no locked features, no subscriptions.
+- **Zero Ads**: A calm, respectful space for you and your baby.
+- **100% On-Device Privacy**: All measurements and photos stay strictly on your phone. No logins, no cloud tracking.
+- **Smart Screenshot Scanner**: Snap a picture of past doctor papers or other baby apps—TinyBloom reads the numbers in memory so you never have to pay for other apps' API lock-ins.
 
 ---
 
