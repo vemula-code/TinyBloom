@@ -19,22 +19,9 @@ It took an honest, reassuring conversation with our pediatrician to finally hear
 > **"Percentiles are not grades in school. 90% is not an A+, and 10% is not failing.**
 > **Low does NOT mean bad, and high does NOT mean good.** Just like adults come in all natural shapes and heights, babies do too. A petite baby growing naturally on the 15th percentile line is 100% just as healthy, strong, and thriving as a baby on the 85th line. All doctors care about is the curve: is your baby steadily following their own natural curve over time? As long as their line stays steady, they are blooming."
 
-We wanted a simple, calm app on our phone to log checkups, see the curves clearly, and have peace of mind.
+When we looked for an app to track our baby's curves, most apps were either locked behind paid monthly subscriptions ($8–$15/mo) or packed with ads.
 
-Instead, every app we downloaded was deeply frustrating:
-- **Aggressive Subscriptions**: Demanding $8 to $15 every month just to view a basic growth curve.
-- **Plastered with Ads**: Distracting popups selling baby formulas and gadgets right when parents are tired and anxious.
-- **Cloud Harvesting**: Forcing account creation, taking emails, and uploading private nursery moments to corporate servers.
-- **Paywalled Data**: No way to import past doctor papers or old app records without paying expensive subscription fees or API costs.
-
-**So we built TinyBloom.**
-
-TinyBloom is the companion we wished we had on day one:
-- **Clear WHO Curves**: Plain-English explanations for every line, with zero anxiety and zero comparisons.
-- **100% Free Forever**: No monthly fees, no locked features, no subscriptions.
-- **Zero Ads**: A calm, respectful space for you and your baby.
-- **100% On-Device Privacy**: All measurements and photos stay strictly on your phone. No logins, no cloud tracking.
-- **Smart Screenshot Scanner**: Snap a picture of past doctor papers or other baby apps—TinyBloom reads the numbers in memory so you never have to pay for other apps' API lock-ins.
+**So we built TinyBloom:** 100% free, all local on your device, with zero ads, zero accounts, and zero cloud tracking. Your baby's data never leaves your phone.
 
 ---
 

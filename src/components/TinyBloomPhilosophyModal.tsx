@@ -100,56 +100,34 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
             </ul>
           </div>
 
-          {/* Card 3: Looking for an App... Paid Subscriptions & Ads Everywhere */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2">
-            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
-              <ShieldCheck className="w-4 h-4 text-amber-600 dark:text-amber-400 shrink-0" />
-              <span>Looking for an App: Paid Subscriptions &amp; Ads</span>
-            </div>
-            <p className="text-xs text-[var(--color-text-main)] leading-relaxed">
-              All we wanted was a calm, simple app on our phone to log checkups, see the lines clearly, and have peace of mind. But every app we downloaded was frustrating:
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5 text-[11px]">
-              <div className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300">
-                <strong>Expensive Subscriptions:</strong> Charging $8 to $15 every single month just to view a simple growth graph.
-              </div>
-              <div className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300">
-                <strong>Cluttered with Ads:</strong> Intrusive popups selling baby formulas and gear right when you&apos;re stressed.
-              </div>
-              <div className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300">
-                <strong>Cloud Harvesting:</strong> Demanding email signups and uploading your baby&apos;s private logs to corporate servers.
-              </div>
-              <div className="p-2 rounded-xl bg-stone-50 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 text-stone-700 dark:text-stone-300">
-                <strong>Data Lock-in:</strong> No way to import past doctor papers or screenshots without paying for their API.
-              </div>
-            </div>
-          </div>
-
-          {/* Card 4: Why We Built TinyBloom */}
-          <div className="p-4 rounded-2xl bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 shadow-2xs space-y-2 text-[var(--color-text-main)]">
+          {/* Card 3: Why We Built TinyBloom (Trimmed & Direct) */}
+          <div className="p-4 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2.5">
             <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
               <Heart className="w-4 h-4 text-rose-500 fill-rose-500/30 shrink-0" />
-              <span>So We Built TinyBloom For All of Us</span>
+              <span>Why We Built TinyBloom</span>
             </div>
-            <p className="text-xs leading-relaxed">
-              We built TinyBloom to be the app we wished existed on day one:
+            <p className="text-xs text-[var(--color-text-main)] leading-relaxed">
+              When we looked for an app to track our baby&apos;s curves, most apps were either locked behind paid monthly subscriptions ($8–$15/mo) or packed with ads.
             </p>
-            <div className="space-y-1.5 text-xs">
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>100% Free Forever:</strong> Zero subscriptions, zero paywalls. Everything is open.</span>
+            <p className="text-xs text-[var(--color-text-main)] leading-relaxed">
+              So we built TinyBloom: <strong>100% free, all local on your device</strong>, with zero ads, zero accounts, and zero cloud tracking. Your baby&apos;s data never leaves this phone.
+            </p>
+            <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>100% Local &amp; Private</span>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Zero Ads:</strong> No distractions, no sales pitches in your nursery.</span>
+              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Zero Ads or Fees</span>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>100% On-Device Privacy:</strong> Stored strictly on this phone. No accounts, no cloud servers.</span>
+              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Clear WHO Curves</span>
               </div>
-              <div className="flex items-start gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                <span><strong>Smart Screenshot Scan:</strong> Easily upload screenshots from other apps or doctor papers to auto-fill records without typing or paying for API links.</span>
+              <div className="flex items-center gap-1.5 text-emerald-800 dark:text-emerald-300 font-bold">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>Screenshot Importer</span>
               </div>
             </div>
           </div>

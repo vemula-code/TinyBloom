@@ -25,6 +25,7 @@ import {
   Camera,
   Share2,
   Copy,
+  QrCode,
   Layers,
   Smartphone,
   CheckCircle2,
@@ -45,6 +46,7 @@ interface SettingsModalProps {
   onResetData: () => void;
   onDeleteAll?: () => void;
   onOpenImportPastData?: () => void;
+  onOpenPartnerSync?: () => void;
   unit: MetricUnit;
   onToggleUnit: (u: MetricUnit) => void;
   themeMode: ThemeMode;
@@ -73,6 +75,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onResetData,
   onDeleteAll,
   onOpenImportPastData,
+  onOpenPartnerSync,
   unit,
   onToggleUnit,
   themeMode,
@@ -176,10 +179,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         birthDate,
         avatarUrl,
       };
-      const url = generateSyncUrl(activeProf, entries);
+      const url = generateSyncUrl(activeProf, entries, unit);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
-        setStatusMsg('✨ Private sync link copied to clipboard! Send to your partner.');
+        setStatusMsg('✨ Private sync link copied to clipboard! Send to your partner on WhatsApp or Messages.');
       } else {
         window.prompt('Copy this sync link to send to your partner:', url);
         setStatusMsg('Sync link generated!');
@@ -187,6 +190,35 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       setTimeout(() => setStatusMsg(''), 4500);
     } catch (err: any) {
       setErrorMsg('Could not copy link to clipboard automatically.');
+    }
+  };
+
+  // Direct 1-tap share via WhatsApp, Messages, etc.
+  const handleShareSyncLink = async () => {
+    try {
+      const activeProf: BabyProfile = {
+        ...profile,
+        name: name.trim() || profile.name,
+        gender,
+        birthDate,
+        avatarUrl,
+      };
+      const url = generateSyncUrl(activeProf, entries, unit);
+      if (navigator.share) {
+        await navigator.share({
+          title: `${activeProf.name}’s Growth Tracker · TinyBloom`,
+          text: `Hi! Here is ${activeProf.name}’s baby growth curves and milestone tracker. Open this link on your phone to sync everything instantly:`,
+          url,
+        });
+        setStatusMsg('✨ Shared with partner!');
+      } else {
+        await handleCopySyncLink();
+      }
+      setTimeout(() => setStatusMsg(''), 4500);
+    } catch (err: any) {
+      if (err.name !== 'AbortError') {
+        await handleCopySyncLink();
+      }
     }
   };
 
@@ -1305,24 +1337,52 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Co-Parent Partner Sync Link */}
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3 shadow-2xs">
-                <div className="flex items-center gap-2">
-                  <Share2 className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
-                  <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
-                    Sync with Spouse or Partner
-                  </h3>
+              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-emerald-500/30 space-y-3 shadow-2xs">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Share2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
+                      Sync with Spouse or Partner
+                    </h3>
+                  </div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                    Instant
+                  </span>
                 </div>
                 <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
-                  Generate a private, self-contained sync link containing your baby’s measurements. When your partner opens the link on their phone, the data merges instantly.
+                  Send a private sync link to your partner on WhatsApp or Messages. When she opens it on her phone, all of {name.trim() || profile.name}’s measurements and curves load immediately.
                 </p>
-                <button
-                  type="button"
-                  onClick={handleCopySyncLink}
-                  className="w-full py-2.5 px-4 rounded-xl bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-[var(--color-primary,#91A98B)]/30"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                  <span>Copy Private Partner Sync Link</span>
-                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={handleShareSyncLink}
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                  >
+                    <Share2 className="w-3.5 h-3.5 shrink-0" />
+                    <span>Send via WhatsApp / Messages</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleCopySyncLink}
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-[var(--color-primary,#91A98B)]/30 cursor-pointer active:scale-98"
+                  >
+                    <Copy className="w-3.5 h-3.5 shrink-0" />
+                    <span>Copy Sync Link</span>
+                  </button>
+                </div>
+                {onOpenPartnerSync && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onClose();
+                      onOpenPartnerSync();
+                    }}
+                    className="w-full py-2 text-center text-[11px] font-semibold text-[var(--color-primary)] hover:underline flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    <QrCode className="w-3.5 h-3.5" />
+                    <span>Together in person? Scan QR code with phone camera &rarr;</span>
+                  </button>
+                )}
               </div>
 
               {/* Danger Zone: Delete All Data & Start Fresh */}

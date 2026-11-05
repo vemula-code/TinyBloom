@@ -22,6 +22,8 @@ import { HeartfeltModal } from './components/HeartfeltModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { PrivateGuaranteeModal } from './components/PrivateGuaranteeModal';
 import { ScreenshotImportModal } from './components/ScreenshotImportModal';
+import { PartnerSyncModal } from './components/PartnerSyncModal';
+import { PartnerSyncSuccessModal } from './components/PartnerSyncSuccessModal';
 import { decodeSyncUrl } from './utils/syncPayload';
 import {
   Plus,
@@ -47,7 +49,8 @@ import {
   Palette,
   Home as HomeIcon,
   Camera,
-  Edit3
+  Edit3,
+  Share2
 } from 'lucide-react';
 
 // Helper: concise developmental stage summary for top header
@@ -239,6 +242,8 @@ export default function App() {
   const [isHeartModalOpen, setIsHeartModalOpen] = useState(false);
   const [isPrivateGuaranteeOpen, setIsPrivateGuaranteeOpen] = useState(false);
   const [isScreenshotImportOpen, setIsScreenshotImportOpen] = useState(false);
+  const [isPartnerSyncOpen, setIsPartnerSyncOpen] = useState(false);
+  const [syncSuccessData, setSyncSuccessData] = useState<{ profile: BabyProfile; count: number } | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
     try {
       const hasSaved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
@@ -344,32 +349,88 @@ export default function App() {
     }
 
     const result = decodeSyncUrl(window.location.search);
-    if (result && result.entries.length > 0) {
+    if (result && (result.entries.length > 0 || (result.profile && result.profile.name))) {
+      // 1. Check if recipient's phone is currently on sample demo baby
+      let isRecipientDemo = true;
+      try {
+        const savedProfStr = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
+        if (savedProfStr) {
+          const parsed = JSON.parse(savedProfStr);
+          if (parsed && parsed.id !== 'demo-sample-baby' && parsed.name !== 'Sample Baby') {
+            isRecipientDemo = false;
+          }
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      // 2. Prepare updated baby profile
+      const targetProfile: BabyProfile = {
+        id: isRecipientDemo ? `baby-${Date.now()}` : (result.profile.id || profile.id),
+        name: result.profile.name || (isRecipientDemo ? 'My Baby' : profile.name),
+        gender: (result.profile.gender as 'boy' | 'girl') || profile.gender,
+        birthDate: result.profile.birthDate || profile.birthDate,
+        avatarUrl: profile.avatarUrl || DEFAULT_AVATAR,
+        notes: result.profile.notes || profile.notes,
+      };
+
+      setProfile(targetProfile);
+
+      // 3. Prepare entries: If recipient was on sample demo fixtures, discard demo entries and load partner's real data
+      let finalEntries: GrowthEntry[] = [];
       setEntries((prev) => {
-        const merged = [...prev];
-        for (const incoming of result.entries) {
-          const idx = merged.findIndex((m) => m.id === incoming.id || m.date === incoming.date);
-          if (idx >= 0) {
-            merged[idx] = { ...merged[idx], ...incoming };
-          } else {
-            merged.push(incoming);
+        let merged: GrowthEntry[];
+        if (isRecipientDemo) {
+          merged = [...result.entries];
+        } else {
+          merged = [...prev];
+          for (const incoming of result.entries) {
+            const idx = merged.findIndex((m) => m.id === incoming.id || m.date === incoming.date);
+            if (idx >= 0) {
+              merged[idx] = { ...merged[idx], ...incoming };
+            } else {
+              merged.push(incoming);
+            }
           }
         }
         merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        finalEntries = merged;
+        try {
+          localStorage.setItem('tinybloom_entries', JSON.stringify(merged));
+          localStorage.removeItem('tinybloom_wiped');
+        } catch (e) {
+          console.error(e);
+        }
         return merged;
       });
 
-      if (result.profile.name) {
-        setProfile((prev) => ({
-          ...prev,
-          ...result.profile,
-        }));
+      // 4. Sync measurement unit if provided
+      if (result.unit) {
+        setUnit(result.unit);
+        try {
+          localStorage.setItem('tinybloom_unit', result.unit);
+        } catch (e) {
+          console.error(e);
+        }
       }
 
-      setToastMessage(`✨ Successfully synced with your partner! ${result.entries.length} measurements loaded.`);
+      // 5. Persist profile immediately to localStorage
+      try {
+        localStorage.setItem('tinybloom_profile', JSON.stringify(targetProfile));
+        localStorage.removeItem('tinybloom_wiped');
+      } catch (e) {
+        console.error(e);
+      }
+
+      // 6. Close any onboarding modal and show PartnerSyncSuccessModal
+      setIsOnboardingOpen(false);
+      setSyncSuccessData({
+        profile: targetProfile,
+        count: result.entries.length,
+      });
+
+      // 7. Clean up URL so browser history and bookmarking are clean
       window.history.replaceState({}, document.title, window.location.pathname);
-      const timer = setTimeout(() => setToastMessage(null), 5000);
-      return () => clearTimeout(timer);
     }
   }, []);
 
@@ -599,8 +660,20 @@ export default function App() {
             </button>
           </div>
 
-          {/* Right Header: Baby Details / Settings */}
-          <div className="flex items-center gap-2 shrink-0">
+          {/* Right Header: Baby Details, Sync & Settings */}
+          <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+            {/* Quick Partner Sync Button */}
+            <button
+              type="button"
+              onClick={() => setIsPartnerSyncOpen(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200/80 dark:border-emerald-800/50 text-xs font-semibold text-emerald-800 dark:text-emerald-300 active:scale-95 transition-all cursor-pointer shrink-0"
+              title="Sync with Spouse or Partner via WhatsApp, link, or QR code"
+              aria-label="Sync with Partner"
+            >
+              <Share2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <span className="hidden xs:inline font-bold">Sync</span>
+            </button>
+
             {/* Quick Profile & Settings */}
             <button
               type="button"
@@ -1222,6 +1295,22 @@ export default function App() {
         chartTimelineRange={chartTimelineRange}
         onChangeChartTimelineRange={handleSetChartTimelineRange}
         onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
+        onOpenPartnerSync={() => setIsPartnerSyncOpen(true)}
+      />
+
+      <PartnerSyncModal
+        isOpen={isPartnerSyncOpen}
+        onClose={() => setIsPartnerSyncOpen(false)}
+        profile={profile}
+        entries={entries}
+        unit={unit}
+      />
+
+      <PartnerSyncSuccessModal
+        isOpen={Boolean(syncSuccessData)}
+        onClose={() => setSyncSuccessData(null)}
+        profile={syncSuccessData?.profile || profile}
+        entryCount={syncSuccessData?.count || entries.length}
       />
 
       <HeartfeltModal
