@@ -57,29 +57,41 @@ async function startServer() {
       const cleanBase64 = String(imageBase64).replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
 
       const prompt = `You are an expert pediatric medical records assistant.
-Examine this screenshot or photo from another baby tracking app (e.g., Huckleberry, Baby Tracker, Sprout, Hatch Baby, Cubtale, Ovia, hospital discharge papers, clinic growth chart, or pediatrician visit summary).
+Examine this screenshot or photo from a baby tracking app (e.g., Huckleberry, Baby Tracker, Sprout, Hatch Baby, Cubtale, Ovia, hospital discharge papers, clinic growth chart, or pediatrician visit summary).
 
 Context:
 - Baby Name: ${babyName || 'Baby'}
 - Baby Birth Date: ${babyBirthDate || 'Unknown'}
 
 Your task is to accurately extract ALL baby growth measurements recorded or displayed in this screenshot.
-If the screenshot shows a history log, list, or multiple measurements, extract EVERY single one as a separate item.
+If the screenshot shows a history log, table, or multiple checkup dates, extract EVERY single one as a separate item.
 
-For each measurement entry, extract:
-- date: YYYY-MM-DD format. If year is missing in screenshot, deduce reasonable year based on birth date or recent dates.
-- weightKg: decimal weight in kilograms. If displayed in lbs/oz (e.g. "14 lb 6 oz") or grams, convert accurately to kilograms (round to 2 decimals).
-- weightLbs: integer or decimal pounds if recorded in imperial.
-- weightOz: remaining ounces if recorded in imperial.
-- heightCm: length or height in centimeters (round to 1 decimal).
-- heightIn: length or height in inches (round to 1 decimal).
-- headCircumferenceCm: head circumference in centimeters (round to 1 decimal).
-- headCircumferenceIn: head circumference in inches (round to 1 decimal).
-- notes: any comments, feeding note, doctor note, or milestone associated with this specific checkup.
-- sourceApp: name of app or document type detected (e.g. "Huckleberry", "Sprout", "Baby Tracker", "Hatch", "Pediatrician Checkup Slip", "Epic MyChart", "Paper Record").
-- confidence: "high", "medium", or "low".
+CRITICAL DATE EXTRACTION RULES:
+1. Search for any calendar date (e.g., "October 14, 2024", "10/14/2024", "14-Sep-2024", "Sep 15"). Format as YYYY-MM-DD.
+2. If month/day is shown without a year (e.g. "Oct 14" or "9/12"), deduce the correct year using the Baby Birth Date (${babyBirthDate || 'Unknown'}).
+3. CRITICAL: If the screenshot displays an age or visit label instead of a calendar date (e.g., "Birth", "Newborn", "2 weeks", "1 month", "2 mo", "4 months", "6 months", "9 months", "12 months / 1 year", "15m", "18m", "24m"):
+   CALCULATE the calendar date by adding that exact age to the Baby Birth Date (${babyBirthDate || 'Unknown'})!
+   For example, if birth date is 2024-05-10 and screenshot says "4 Month Visit", date must be 2024-09-10. DO NOT default to today's date!
+4. Each historical checkup must have its own distinct historical date.
 
-Return strictly structured JSON.`;
+CRITICAL MEASUREMENT EXTRACTION RULES:
+- Weight:
+  * If in lbs & oz (e.g. "14 lb 6 oz" or "14 lbs 8 oz"): convert to kg accurately: (lbs + oz/16) * 0.45359237. Round weightKg to 2 decimals. Also provide weightLbs and weightOz.
+  * If in decimal lbs (e.g. "14.5 lbs"): convert to kg: 14.5 * 0.45359237 = 6.58 kg.
+  * If in kilograms (e.g. "6.58 kg"): weightKg = 6.58.
+  * If in grams (e.g. "3400 g"): weightKg = 3.4.
+  * Never confuse lbs with kg: a 14-lb baby is ~6.35 kg, NOT 14 kg!
+- Length / Height:
+  * If in inches (e.g. "25.5 in"): heightCm = round(25.5 * 2.54, 1) = 64.8 cm. Also provide heightIn = 25.5.
+  * If in cm (e.g. "64.8 cm"): heightCm = 64.8.
+- Head Circumference:
+  * If in inches: convert to cm (in * 2.54).
+  * If in cm: headCircumferenceCm = cm.
+- Notes & Source:
+  * notes: checkup visit note, milestones, doctor note.
+  * sourceApp: name of app or document (e.g., "Huckleberry", "Sprout", "Baby Tracker", "Hatch", "Pediatrician Slip").
+
+Return strictly structured JSON matching the schema.`;
 
       const response = await ai.models.generateContent({
         model: 'gemini-3.8-flash',

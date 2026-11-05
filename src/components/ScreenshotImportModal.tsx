@@ -165,15 +165,47 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
             if (Array.isArray(data.entries)) {
               for (const entry of data.entries) {
-                // Check if existing
-                const isDup = existingEntries.some((e) => e.date === entry.date);
+                // If weightKg is missing but weightLbs was returned, convert it
+                let weightKg = typeof entry.weightKg === 'number' ? entry.weightKg : undefined;
+                if (weightKg === undefined && typeof entry.weightLbs === 'number') {
+                  const totalLbs = entry.weightLbs + (typeof entry.weightOz === 'number' ? entry.weightOz / 16 : 0);
+                  weightKg = Math.round(totalLbs * 0.45359237 * 100) / 100;
+                }
+
+                // If heightCm is missing but heightIn was returned, convert it
+                let heightCm = typeof entry.heightCm === 'number' ? entry.heightCm : undefined;
+                if (heightCm === undefined && typeof entry.heightIn === 'number') {
+                  heightCm = Math.round(entry.heightIn * 2.54 * 10) / 10;
+                }
+
+                let headCm = typeof entry.headCircumferenceCm === 'number' ? entry.headCircumferenceCm : undefined;
+                if (headCm === undefined && typeof entry.headCircumferenceIn === 'number') {
+                  headCm = Math.round(entry.headCircumferenceIn * 2.54 * 10) / 10;
+                }
+
+                // Normalize date if needed (YYYY-MM-DD)
+                let entryDate = entry.date ? String(entry.date).trim() : '';
+                if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
+                  // If date like MM/DD/YYYY
+                  const parsedTime = Date.parse(entryDate);
+                  if (!isNaN(parsedTime)) {
+                    entryDate = new Date(parsedTime).toISOString().split('T')[0];
+                  } else {
+                    entryDate = new Date().toISOString().split('T')[0];
+                  }
+                }
+
+                const isDup = existingEntries.some(
+                  (e) => e.date === entryDate && Math.abs((e.weightKg || 0) - (weightKg || 0)) < 0.05
+                );
+
                 aggregatedEntries.push({
-                  id: `extracted-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+                  id: `extracted-${Date.now()}-${i}-${aggregatedEntries.length}-${Math.random().toString(36).substring(2, 7)}`,
                   selected: true,
-                  date: entry.date || new Date().toISOString().split('T')[0],
-                  weightKg: typeof entry.weightKg === 'number' ? entry.weightKg : undefined,
-                  heightCm: typeof entry.heightCm === 'number' ? entry.heightCm : undefined,
-                  headCircumferenceCm: typeof entry.headCircumferenceCm === 'number' ? entry.headCircumferenceCm : undefined,
+                  date: entryDate,
+                  weightKg,
+                  heightCm,
+                  headCircumferenceCm: headCm,
                   notes: entry.notes || (data.sourceDetected ? `Imported from ${data.sourceDetected}` : 'Imported from screenshot'),
                   sourceApp: entry.sourceApp || data.sourceDetected || 'Other App',
                   confidence: entry.confidence || 'high',
@@ -184,7 +216,6 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           }
         } catch (innerErr: any) {
           console.warn(`Extraction error for image ${i}:`, innerErr);
-          // If server reported missing key or error, allow fallback sample fixture for testing
           if (innerErr.message.includes('GEMINI_API_KEY') || innerErr.message.includes('API key')) {
             throw innerErr;
           }
@@ -213,7 +244,9 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       aggregatedEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       setSourceDetected(detectedApp || 'Other App Screenshot');
-      setSummaryMessage(summaryText || `Extracted ${aggregatedEntries.length} records`);
+      setSummaryMessage(
+        summaryText || `Extracted ${aggregatedEntries.length} total records from ${selectedImages.length} screenshot(s)`
+      );
       setExtractedItems(aggregatedEntries);
     } catch (err: any) {
       setErrorMessage(err.message || 'Failed to scan screenshot. Please verify your screenshot is clear.');
@@ -288,10 +321,11 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     const selected = extractedItems.filter((item) => item.selected);
     if (selected.length === 0) return;
 
-    const formattedEntries: GrowthEntry[] = selected.map((item) => {
-      const age = calculateAge(birthDate, item.date);
+    const effectiveBirthDate = (applyDetectedProfile && detectedBirthDate) ? detectedBirthDate : birthDate;
+    const formattedEntries: GrowthEntry[] = selected.map((item, idx) => {
+      const age = calculateAge(effectiveBirthDate, item.date);
       return {
-        id: `entry-${item.date}-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        id: `entry-${item.date}-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
         date: item.date,
         ageMonths: age.exactMonths,
         weightKg: item.weightKg,

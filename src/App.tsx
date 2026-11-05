@@ -375,6 +375,33 @@ export default function App() {
 
   // Handlers for entries
   const handleSaveEntry = (newEntry: GrowthEntry) => {
+    const isCurrentDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    if (isCurrentDemo) {
+      // If currently on sample demo baby and parent logs their first real measurement:
+      // Start real baby profile and clear sample demo fixtures!
+      const realProfile: BabyProfile = {
+        id: `baby-${Date.now()}`,
+        name: 'My Baby',
+        gender: profile.gender,
+        birthDate: profile.birthDate,
+        notes: 'Private local baby tracker',
+      };
+      setProfile(realProfile);
+      setEntries([newEntry]);
+      try {
+        localStorage.setItem('tinybloom_profile', JSON.stringify(realProfile));
+        localStorage.setItem('tinybloom_entries', JSON.stringify([newEntry]));
+        localStorage.setItem('tinybloom_onboarded', 'true');
+        localStorage.removeItem('tinybloom_wiped');
+      } catch (e) {
+        console.error(e);
+      }
+      setEditingEntry(null);
+      setToastMessage('🌱 First growth record logged for your baby!');
+      setTimeout(() => setToastMessage(null), 3500);
+      return;
+    }
+
     setEntries((prev) => {
       const index = prev.findIndex((e) => e.id === newEntry.id);
       if (index >= 0) {
@@ -476,10 +503,24 @@ export default function App() {
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     } else {
-      const map = new Map<string, GrowthEntry>();
-      entries.forEach((e) => map.set(e.date, e));
-      newEntries.forEach((e) => map.set(e.date, e));
-      finalEntries = Array.from(map.values()).sort(
+      // Smart non-destructive merge: preserve all imported entries without dropping multiple checkups
+      const combined = [...entries];
+      for (const incoming of newEntries) {
+        const matchIdx = combined.findIndex(
+          (e) =>
+            e.id === incoming.id ||
+            (e.date === incoming.date &&
+              e.weightKg !== undefined &&
+              incoming.weightKg !== undefined &&
+              Math.abs(e.weightKg - incoming.weightKg) < 0.05)
+        );
+        if (matchIdx >= 0) {
+          combined[matchIdx] = { ...combined[matchIdx], ...incoming };
+        } else {
+          combined.push(incoming);
+        }
+      }
+      finalEntries = combined.sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
     }
