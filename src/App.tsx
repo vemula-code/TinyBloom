@@ -602,10 +602,21 @@ export default function App() {
       updatedProfile.name = detectedProfile.name;
       profileChanged = true;
     }
-    if (detectedProfile?.birthDate && isCurrentDemo) {
+    if (detectedProfile?.birthDate && (isCurrentDemo || updatedProfile.birthDate === DEFAULT_PROFILE.birthDate)) {
       updatedProfile.birthDate = detectedProfile.birthDate;
       profileChanged = true;
     }
+
+    // Ensure all entries have accurate ageMonths relative to the effective birthDate
+    finalEntries = finalEntries.map((entry) => {
+      const age = calculateAge(updatedProfile.birthDate, entry.date);
+      return {
+        ...entry,
+        ageMonths: age.exactMonths,
+      };
+    });
+
+    setEntries(finalEntries);
 
     if (profileChanged) {
       setProfile(updatedProfile);
@@ -624,7 +635,7 @@ export default function App() {
       console.error(e);
     }
 
-    setToastMessage(`✨ Successfully imported ${newEntries.length} records!`);
+    setToastMessage(`✨ Successfully loaded ${newEntries.length} measurement(s) into ${updatedProfile.name}’s curves!`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -1242,23 +1253,6 @@ export default function App() {
         gender={profile.gender}
         defaultUnit={unit}
         onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
-      />
-
-      <PrivateGuaranteeModal
-        isOpen={isPrivateGuaranteeOpen}
-        onClose={() => setIsPrivateGuaranteeOpen(false)}
-        entries={entries}
-        profile={profile}
-      />
-
-      <ScreenshotImportModal
-        isOpen={isScreenshotImportOpen}
-        onClose={() => setIsScreenshotImportOpen(false)}
-        birthDate={profile.birthDate}
-        profile={profile}
-        existingEntries={entries}
-        defaultUnit={unit}
-        onImport={handleImportPastEntries}
       />
 
       {isReportOpen && (

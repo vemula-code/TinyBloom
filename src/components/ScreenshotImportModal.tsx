@@ -72,33 +72,86 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Handle image selection
-  const handleFilesSelected = (files: FileList | null) => {
+  // Helper: resize large phone screenshots in-memory for fast transmission & crisp OCR
+  const resizeScreenshot = (file: File): Promise<{ name: string; base64: string; mimeType: string }> => {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const rawResult = e.target?.result as string;
+        if (!rawResult) {
+          resolve({ name: file.name, base64: '', mimeType: file.type || 'image/jpeg' });
+          return;
+        }
+
+        const img = new Image();
+        img.onload = () => {
+          const MAX_DIM = 1600;
+          let { width, height } = img;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            resolve({
+              name: file.name,
+              base64: dataUrl,
+              mimeType: 'image/jpeg',
+            });
+            return;
+          }
+
+          resolve({
+            name: file.name,
+            base64: rawResult,
+            mimeType: file.type || 'image/jpeg',
+          });
+        };
+
+        img.onerror = () => {
+          resolve({
+            name: file.name,
+            base64: rawResult,
+            mimeType: file.type || 'image/jpeg',
+          });
+        };
+
+        img.src = rawResult;
+      };
+
+      reader.onerror = () => {
+        resolve({
+          name: file.name,
+          base64: '',
+          mimeType: file.type || 'image/jpeg',
+        });
+      };
+
+      reader.readAsDataURL(file);
+    });
+  };
+
+  // Handle image selection with smart fast resizing
+  const handleFilesSelected = async (files: FileList | null) => {
     if (!files || files.length === 0) return;
     setErrorMessage(null);
 
-    const newImages: { name: string; base64: string; mimeType: string }[] = [];
-    const readPromises = Array.from(files).map((file) => {
-      return new Promise<void>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const res = e.target?.result as string;
-          if (res) {
-            newImages.push({
-              name: file.name,
-              base64: res,
-              mimeType: file.type || 'image/jpeg',
-            });
-          }
-          resolve();
-        };
-        reader.readAsDataURL(file);
-      });
-    });
+    const fileList = Array.from(files);
+    const resizedImages = await Promise.all(fileList.map((f) => resizeScreenshot(f)));
+    const validImages = resizedImages.filter((img) => img.base64.length > 50);
 
-    Promise.all(readPromises).then(() => {
-      setSelectedImages((prev) => [...prev, ...newImages]);
-    });
+    setSelectedImages((prev) => [...prev, ...validImages]);
   };
 
   const handleRemoveImage = (index: number) => {
@@ -116,16 +169,18 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
     setIsProcessing(true);
     setErrorMessage(null);
-    setProcessingStatus('Connecting to AI Vision scanner...');
+    setProcessingStatus(`Connecting to AI Vision scanner...`);
 
     const aggregatedEntries: ExtractedEntryItem[] = [];
     let detectedApp = '';
     let summaryText = '';
+    let failedImagesCount = 0;
+    const errors: string[] = [];
 
     try {
       for (let i = 0; i < selectedImages.length; i++) {
         const img = selectedImages[i];
-        setProcessingStatus(`Analyzing screenshot ${i + 1} of ${selectedImages.length}...`);
+        setProcessingStatus(`Scanning screenshot ${i + 1} of ${selectedImages.length} (${img.name})...`);
 
         try {
           const response = await fetch('/api/extract-growth-screenshot', {
@@ -145,7 +200,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             if (resData.needsKey) {
               throw new Error(resData.error || 'Gemini API key is required on the server to read screenshots.');
             }
-            throw new Error(resData.error || 'Server error reading screenshot.');
+            throw new Error(resData.error || `Error reading screenshot ${img.name}`);
           }
 
           if (resData.success && resData.data) {
@@ -153,7 +208,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             if (data.sourceDetected && !detectedApp) {
               detectedApp = data.sourceDetected;
             }
-            if (data.summary) {
+            if (data.summary && !summaryText) {
               summaryText = data.summary;
             }
             if (data.detectedBabyName && !detectedBabyName) {
@@ -186,7 +241,6 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 // Normalize date if needed (YYYY-MM-DD)
                 let entryDate = entry.date ? String(entry.date).trim() : '';
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
-                  // If date like MM/DD/YYYY
                   const parsedTime = Date.parse(entryDate);
                   if (!isNaN(parsedTime)) {
                     entryDate = new Date(parsedTime).toISOString().split('T')[0];
@@ -206,8 +260,8 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   weightKg,
                   heightCm,
                   headCircumferenceCm: headCm,
-                  notes: entry.notes || (data.sourceDetected ? `Imported from ${data.sourceDetected}` : 'Imported from screenshot'),
-                  sourceApp: entry.sourceApp || data.sourceDetected || 'Other App',
+                  notes: entry.notes || (data.sourceDetected ? `Imported from ${data.sourceDetected}` : `From screenshot ${i + 1}`),
+                  sourceApp: entry.sourceApp || data.sourceDetected || `Screenshot ${i + 1}`,
                   confidence: entry.confidence || 'high',
                   isDuplicate: isDup,
                 });
@@ -215,37 +269,27 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             }
           }
         } catch (innerErr: any) {
-          console.warn(`Extraction error for image ${i}:`, innerErr);
-          if (innerErr.message.includes('GEMINI_API_KEY') || innerErr.message.includes('API key')) {
-            throw innerErr;
-          }
+          console.warn(`Extraction error for screenshot ${img.name}:`, innerErr);
+          failedImagesCount++;
+          errors.push(innerErr.message || `Screenshot ${i + 1}`);
         }
       }
 
       if (aggregatedEntries.length === 0) {
-        // Fallback demo sample from screenshot so user can test and experience without friction
-        aggregatedEntries.push({
-          id: `sample-1`,
-          selected: true,
-          date: new Date(Date.now() - 45 * 86400000).toISOString().split('T')[0],
-          weightKg: 6.8,
-          heightCm: 64.2,
-          headCircumferenceCm: 42.0,
-          notes: '4-month checkup (screenshot preview)',
-          sourceApp: 'Huckleberry / Sprout',
-          confidence: 'high',
-          isDuplicate: false,
-        });
-        detectedApp = 'Baby Tracker / Huckleberry';
-        summaryText = 'Extracted growth entry from uploaded screenshot';
+        if (errors.length > 0) {
+          throw new Error(`Could not extract growth records: ${errors[0]}`);
+        }
+        throw new Error(
+          'No growth measurements were found in the uploaded screenshot(s). Please verify the screenshot clearly displays dates, weight, or height numbers.'
+        );
       }
 
       // Sort by date ascending
       aggregatedEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      setSourceDetected(detectedApp || 'Other App Screenshot');
+      setSourceDetected(detectedApp || 'Screenshots Parsed');
       setSummaryMessage(
-        summaryText || `Extracted ${aggregatedEntries.length} total records from ${selectedImages.length} screenshot(s)`
+        `Successfully extracted ${aggregatedEntries.length} total growth record(s) from ${selectedImages.length - failedImagesCount} of ${selectedImages.length} screenshot(s)`
       );
       setExtractedItems(aggregatedEntries);
     } catch (err: any) {

@@ -14,8 +14,8 @@ async function startServer() {
   const PORT = Number(process.env.PORT) || 3000;
 
   // Allow larger payload for screenshot images from phone and web
-  app.use(express.json({ limit: '25mb' }));
-  app.use(express.urlencoded({ extended: true, limit: '25mb' }));
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
   // Local status endpoint (no personal data transmitted)
   app.get('/api/health', (req, res) => {
@@ -93,70 +93,91 @@ CRITICAL MEASUREMENT EXTRACTION RULES:
 
 Return strictly structured JSON matching the schema.`;
 
-      const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
-        contents: {
-          parts: [
-            {
-              inlineData: {
-                mimeType: mimeType || 'image/jpeg',
-                data: cleanBase64,
-              },
-            },
-            {
-              text: prompt,
-            },
-          ],
-        },
-        config: {
-          systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, weight, height, head circumference) from baby tracking app screenshots and doctor papers.',
-          responseMimeType: 'application/json',
-          responseSchema: {
-            type: Type.OBJECT,
-            properties: {
-              sourceDetected: {
-                type: Type.STRING,
-                description: 'The app or document source detected (e.g., Huckleberry, Baby Tracker, Sprout, Hatch, Clinic Chart)',
-              },
-              summary: {
-                type: Type.STRING,
-                description: '1-sentence user-friendly summary of the records found in the screenshot',
-              },
-              detectedBabyName: {
-                type: Type.STRING,
-                description: 'The baby name detected in the screenshot header or profile, if visible',
-              },
-              detectedBirthDate: {
-                type: Type.STRING,
-                description: 'The baby birth date in YYYY-MM-DD if visible in screenshot profile or record header',
-              },
-              entries: {
-                type: Type.ARRAY,
-                items: {
-                  type: Type.OBJECT,
-                  properties: {
-                    date: { type: Type.STRING, description: 'YYYY-MM-DD' },
-                    weightKg: { type: Type.NUMBER, description: 'Weight in kg' },
-                    weightLbs: { type: Type.NUMBER, description: 'Weight in lbs' },
-                    weightOz: { type: Type.NUMBER, description: 'Weight in oz' },
-                    heightCm: { type: Type.NUMBER, description: 'Height/length in cm' },
-                    heightIn: { type: Type.NUMBER, description: 'Height/length in inches' },
-                    headCircumferenceCm: { type: Type.NUMBER, description: 'Head circumference in cm' },
-                    headCircumferenceIn: { type: Type.NUMBER, description: 'Head circumference in inches' },
-                    notes: { type: Type.STRING, description: 'Notes or milestones' },
-                    sourceApp: { type: Type.STRING, description: 'Detected source app name' },
-                    confidence: { type: Type.STRING, description: 'high | medium | low' },
-                  },
-                  required: ['date'],
-                },
-              },
-            },
-            required: ['entries'],
-          },
-        },
-      });
+      // Candidate models: start with gemini-3.1-flash-lite for instant, high-availability OCR, followed by flash fallbacks
+      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+      let responseText: string | undefined;
+      let lastError: any = null;
 
-      const parsedData = JSON.parse(response.text || '{}');
+      for (const model of candidateModels) {
+        try {
+          const response = await ai.models.generateContent({
+            model,
+            contents: {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: mimeType || 'image/jpeg',
+                    data: cleanBase64,
+                  },
+                },
+                {
+                  text: prompt,
+                },
+              ],
+            },
+            config: {
+              systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, weight, height, head circumference) from baby tracking app screenshots and doctor papers.',
+              responseMimeType: 'application/json',
+              responseSchema: {
+                type: Type.OBJECT,
+                properties: {
+                  sourceDetected: {
+                    type: Type.STRING,
+                    description: 'The app or document source detected (e.g., Huckleberry, Baby Tracker, Sprout, Hatch, Clinic Chart)',
+                  },
+                  summary: {
+                    type: Type.STRING,
+                    description: '1-sentence user-friendly summary of the records found in the screenshot',
+                  },
+                  detectedBabyName: {
+                    type: Type.STRING,
+                    description: 'The baby name detected in the screenshot header or profile, if visible',
+                  },
+                  detectedBirthDate: {
+                    type: Type.STRING,
+                    description: 'The baby birth date in YYYY-MM-DD if visible in screenshot profile or record header',
+                  },
+                  entries: {
+                    type: Type.ARRAY,
+                    items: {
+                      type: Type.OBJECT,
+                      properties: {
+                        date: { type: Type.STRING, description: 'YYYY-MM-DD' },
+                        weightKg: { type: Type.NUMBER, description: 'Weight in kg' },
+                        weightLbs: { type: Type.NUMBER, description: 'Weight in lbs' },
+                        weightOz: { type: Type.NUMBER, description: 'Weight in oz' },
+                        heightCm: { type: Type.NUMBER, description: 'Height/length in cm' },
+                        heightIn: { type: Type.NUMBER, description: 'Height/length in inches' },
+                        headCircumferenceCm: { type: Type.NUMBER, description: 'Head circumference in cm' },
+                        headCircumferenceIn: { type: Type.NUMBER, description: 'Head circumference in inches' },
+                        notes: { type: Type.STRING, description: 'Notes or milestones' },
+                        sourceApp: { type: Type.STRING, description: 'Detected source app name' },
+                        confidence: { type: Type.STRING, description: 'high | medium | low' },
+                      },
+                      required: ['date'],
+                    },
+                  },
+                },
+                required: ['entries'],
+              },
+            },
+          });
+
+          if (response && response.text) {
+            responseText = response.text;
+            break;
+          }
+        } catch (modelErr: any) {
+          console.warn(`Extraction with ${model} failed, trying next candidate:`, modelErr.message || modelErr);
+          lastError = modelErr;
+        }
+      }
+
+      if (!responseText) {
+        throw lastError || new Error('All AI models were unable to process this image.');
+      }
+
+      const parsedData = JSON.parse(responseText || '{}');
       return res.json({
         success: true,
         data: parsedData,
