@@ -22,6 +22,7 @@ import { HeartfeltModal } from './components/HeartfeltModal';
 import { OnboardingModal } from './components/OnboardingModal';
 import { PrivateGuaranteeModal } from './components/PrivateGuaranteeModal';
 import { ScreenshotImportModal } from './components/ScreenshotImportModal';
+import { ImportSuccessModal, ImportSuccessSummary } from './components/ImportSuccessModal';
 import { PartnerSyncModal } from './components/PartnerSyncModal';
 import { PartnerSyncSuccessModal } from './components/PartnerSyncSuccessModal';
 import { decodeSyncUrl } from './utils/syncPayload';
@@ -244,6 +245,7 @@ export default function App() {
   const [isScreenshotImportOpen, setIsScreenshotImportOpen] = useState(false);
   const [isPartnerSyncOpen, setIsPartnerSyncOpen] = useState(false);
   const [syncSuccessData, setSyncSuccessData] = useState<{ profile: BabyProfile; count: number } | null>(null);
+  const [importSuccessData, setImportSuccessData] = useState<ImportSuccessSummary | null>(null);
   const [isOnboardingOpen, setIsOnboardingOpen] = useState<boolean>(() => {
     try {
       const hasSaved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
@@ -326,6 +328,56 @@ export default function App() {
       console.error(e);
     }
   }, [unit]);
+
+  // Auto-heal check on initial load for previously imported entries where ageMonths was stuck at 0
+  useEffect(() => {
+    if (entries.length === 0) return;
+    const isDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    if (isDemo) return;
+
+    const earliestEntryDate = entries.reduce(
+      (min, e) => (!min || (e.date && e.date < min) ? e.date : min),
+      ''
+    );
+
+    const todayIso = new Date().toISOString().split('T')[0];
+    const hasYAxisBug =
+      (earliestEntryDate && profile.birthDate >= earliestEntryDate) ||
+      profile.birthDate >= todayIso ||
+      profile.birthDate === DEFAULT_PROFILE.birthDate ||
+      (entries.length > 1 && entries.every((e) => !e.ageMonths || e.ageMonths === 0));
+
+    if (hasYAxisBug && earliestEntryDate) {
+      let inferredBirth = profile.birthDate;
+      const entryWithAge = entries.find((e) => typeof e.ageMonths === 'number' && e.ageMonths > 0);
+
+      if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
+        const ms = new Date(entryWithAge.date).getTime() - (entryWithAge.ageMonths * 30.4375 * 86400000);
+        inferredBirth = new Date(ms).toISOString().split('T')[0];
+      } else {
+        inferredBirth = earliestEntryDate;
+      }
+
+      const healedEntries = entries.map((entry) => {
+        let age = entry.ageMonths;
+        const calc = calculateAge(inferredBirth, entry.date);
+        if (calc.exactMonths > 0) {
+          age = calc.exactMonths;
+        } else if ((age === undefined || age <= 0) && entry.date > earliestEntryDate) {
+          age = calculateAge(earliestEntryDate, entry.date).exactMonths;
+        }
+        return {
+          ...entry,
+          ageMonths: Math.round((age || 0) * 10) / 10,
+        };
+      });
+
+      if (inferredBirth !== profile.birthDate) {
+        setProfile((prev) => ({ ...prev, birthDate: inferredBirth }));
+      }
+      setEntries(healedEntries);
+    }
+  }, []);
 
   // Handle partner URL sync if opened (?sync=...) or clean template (?fresh=true)
   useEffect(() => {
@@ -591,6 +643,12 @@ export default function App() {
     let updatedProfile = { ...profile };
     let profileChanged = false;
 
+    // Detect earliest checkup date among final entries
+    const earliestCheckupDate = finalEntries.reduce(
+      (min, e) => (!min || (e.date && e.date < min) ? e.date : min),
+      ''
+    );
+
     if (isCurrentDemo) {
       updatedProfile.id = `baby-${Date.now()}`;
       if (updatedProfile.name === 'Sample Baby') {
@@ -602,17 +660,45 @@ export default function App() {
       updatedProfile.name = detectedProfile.name;
       profileChanged = true;
     }
-    if (detectedProfile?.birthDate && (isCurrentDemo || updatedProfile.birthDate === DEFAULT_PROFILE.birthDate)) {
+
+    // Determine birthDate: if current birth date is default, today, or later than earliest checkup, infer accurately
+    const todayIso = new Date().toISOString().split('T')[0];
+    const isBirthDateNeedsInference =
+      isCurrentDemo ||
+      !updatedProfile.birthDate ||
+      updatedProfile.birthDate === DEFAULT_PROFILE.birthDate ||
+      updatedProfile.birthDate >= todayIso ||
+      (earliestCheckupDate && updatedProfile.birthDate >= earliestCheckupDate);
+
+    if (detectedProfile?.birthDate) {
       updatedProfile.birthDate = detectedProfile.birthDate;
+      profileChanged = true;
+    } else if (isBirthDateNeedsInference && earliestCheckupDate) {
+      const entryWithAge = finalEntries.find((e) => typeof e.ageMonths === 'number' && e.ageMonths > 0);
+      if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
+        const ms = new Date(entryWithAge.date).getTime() - entryWithAge.ageMonths * 30.4375 * 86400000;
+        updatedProfile.birthDate = new Date(ms).toISOString().split('T')[0];
+      } else {
+        updatedProfile.birthDate = earliestCheckupDate;
+      }
       profileChanged = true;
     }
 
     // Ensure all entries have accurate ageMonths relative to the effective birthDate
     finalEntries = finalEntries.map((entry) => {
-      const age = calculateAge(updatedProfile.birthDate, entry.date);
+      const calculatedAge = calculateAge(updatedProfile.birthDate, entry.date);
+      let effectiveAge = calculatedAge.exactMonths;
+
+      // If calculatedAge is <= 0 but entry.ageMonths was extracted and valid, keep it!
+      if (effectiveAge <= 0 && typeof entry.ageMonths === 'number' && entry.ageMonths > 0) {
+        effectiveAge = entry.ageMonths;
+      } else if (effectiveAge <= 0 && earliestCheckupDate && entry.date > earliestCheckupDate) {
+        effectiveAge = calculateAge(earliestCheckupDate, entry.date).exactMonths;
+      }
+
       return {
         ...entry,
-        ageMonths: age.exactMonths,
+        ageMonths: Math.round(effectiveAge * 10) / 10,
       };
     });
 
@@ -634,6 +720,44 @@ export default function App() {
     } catch (e) {
       console.error(e);
     }
+
+    // Compute metric breakdown for completion modal
+    const headCount = newEntries.filter((e) => e.headCircumferenceCm !== undefined && e.headCircumferenceCm > 0).length;
+    const weightCount = newEntries.filter((e) => e.weightKg !== undefined && e.weightKg > 0).length;
+    const heightCount = newEntries.filter((e) => e.heightCm !== undefined && e.heightCm > 0).length;
+
+    const sortedByDate = [...newEntries].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    const dateStart = sortedByDate[0]?.date;
+    const dateEnd = sortedByDate[sortedByDate.length - 1]?.date;
+
+    const allAges = finalEntries.map((e) => e.ageMonths).filter((a) => typeof a === 'number');
+    const minAge = allAges.length > 0 ? Math.min(...allAges) : 0;
+    const maxAge = allAges.length > 0 ? Math.max(...allAges) : 0;
+
+    let preferredChart: ChartType = activeChartType;
+    if (headCount > 0 && weightCount === 0 && heightCount === 0) {
+      preferredChart = 'head';
+      setActiveChartType('head');
+    } else if (weightCount > 0 && activeChartType === 'weight') {
+      preferredChart = 'weight';
+    } else if (heightCount > 0 && activeChartType === 'height') {
+      preferredChart = 'height';
+    } else if (headCount > 0) {
+      preferredChart = 'head';
+    }
+
+    // Open dedicated import success modal
+    setImportSuccessData({
+      totalCount: newEntries.length,
+      headCount,
+      weightCount,
+      heightCount,
+      dateStart,
+      dateEnd,
+      minAgeMonths: minAge,
+      maxAgeMonths: maxAge,
+      preferredChartType: preferredChart,
+    });
 
     setToastMessage(`✨ Successfully loaded ${newEntries.length} measurement(s) into ${updatedProfile.name}’s curves!`);
     setTimeout(() => setToastMessage(null), 4000);
@@ -900,20 +1024,23 @@ export default function App() {
             />
 
             {/* 2. Interactive WHO Growth Chart directly below the selected metric */}
-            <GrowthChart
-              entries={entries}
-              chartType={activeChartType}
-              gender={profile.gender}
-              unit={unit}
-              babyName={profile.name}
-              babyAgeMonths={currentAge.exactMonths}
-              timelineRange={chartTimelineRange}
-              onOpenAddModal={() => {
-                setEditingEntry(null);
-                setIsLogModalOpen(true);
-              }}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-            />
+            <div id="growth-chart-section">
+              <GrowthChart
+                entries={entries}
+                chartType={activeChartType}
+                gender={profile.gender}
+                unit={unit}
+                babyName={profile.name}
+                babyAgeMonths={currentAge.exactMonths}
+                babyBirthDate={profile.birthDate}
+                timelineRange={chartTimelineRange}
+                onOpenAddModal={() => {
+                  setEditingEntry(null);
+                  setIsLogModalOpen(true);
+                }}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+              />
+            </div>
 
             {/* 3. Reassuring Progress & Growth Journey (Zero-Anxiety Parenting) */}
             <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs space-y-4">
@@ -1074,6 +1201,7 @@ export default function App() {
               unit={unit}
               babyName={profile.name}
               babyAgeMonths={currentAge.exactMonths}
+              babyBirthDate={profile.birthDate}
             />
           </div>
         )}
@@ -1346,6 +1474,22 @@ export default function App() {
           handleImportPastEntries(newEntries, mode, detectedProf)
         }
       />
+
+      {importSuccessData && (
+        <ImportSuccessModal
+          isOpen={importSuccessData !== null}
+          onClose={() => setImportSuccessData(null)}
+          profile={profile}
+          summary={importSuccessData}
+          onSelectChartType={(type) => {
+            setActiveChartType(type);
+            const chartElem = document.getElementById('growth-chart-section');
+            if (chartElem) {
+              chartElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+          }}
+        />
+      )}
     </div>
   );
 }

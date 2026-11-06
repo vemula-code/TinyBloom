@@ -23,6 +23,7 @@ interface ExtractedEntryItem {
   id: string;
   selected: boolean;
   date: string;
+  ageMonths?: number;
   weightKg?: number;
   heightCm?: number;
   headCircumferenceCm?: number;
@@ -257,12 +258,21 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   headCm = Math.round(entry.headCircumferenceIn * 2.54 * 10) / 10;
                 }
 
+                let ageMonths = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : undefined;
+
                 // Normalize date if needed (YYYY-MM-DD)
                 let entryDate = entry.date ? String(entry.date).trim() : '';
                 if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
                   const parsedTime = Date.parse(entryDate);
                   if (!isNaN(parsedTime)) {
                     entryDate = new Date(parsedTime).toISOString().split('T')[0];
+                  } else if (ageMonths !== undefined && birthDate) {
+                    const birthMs = new Date(birthDate).getTime();
+                    if (!isNaN(birthMs)) {
+                      entryDate = new Date(birthMs + ageMonths * 30.4375 * 86400000).toISOString().split('T')[0];
+                    } else {
+                      entryDate = new Date().toISOString().split('T')[0];
+                    }
                   } else {
                     entryDate = new Date().toISOString().split('T')[0];
                   }
@@ -276,6 +286,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   id: `extracted-${Date.now()}-${i}-${aggregatedEntries.length}-${Math.random().toString(36).substring(2, 7)}`,
                   selected: true,
                   date: entryDate,
+                  ageMonths,
                   weightKg,
                   heightCm,
                   headCircumferenceCm: headCm,
@@ -384,28 +395,75 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     const selected = extractedItems.filter((item) => item.selected);
     if (selected.length === 0) return;
 
-    const effectiveBirthDate = (applyDetectedProfile && detectedBirthDate) ? detectedBirthDate : birthDate;
-    const formattedEntries: GrowthEntry[] = selected.map((item, idx) => {
-      const age = calculateAge(effectiveBirthDate, item.date);
+    // Sort selected items chronologically
+    const sortedSelected = [...selected].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    const earliestDate = sortedSelected[0]?.date;
+
+    let effectiveBirthDate = (applyDetectedProfile && detectedBirthDate) ? detectedBirthDate : birthDate;
+
+    // Check if effectiveBirthDate is invalid, in the future, or after the earliest checkup
+    const todayIso = new Date().toISOString().split('T')[0];
+    const isBirthDateNeedsInference =
+      !effectiveBirthDate ||
+      effectiveBirthDate >= earliestDate ||
+      effectiveBirthDate >= todayIso ||
+      effectiveBirthDate === '2026-04-15';
+
+    if (isBirthDateNeedsInference && earliestDate) {
+      if (detectedBirthDate && detectedBirthDate < earliestDate) {
+        effectiveBirthDate = detectedBirthDate;
+      } else {
+        // Look for an entry with an explicit age in months
+        const entryWithAge = sortedSelected.find(
+          (it) => typeof it.ageMonths === 'number' && it.ageMonths > 0
+        );
+        if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
+          const birthTime =
+            new Date(entryWithAge.date).getTime() -
+            entryWithAge.ageMonths * 30.4375 * 86400000;
+          effectiveBirthDate = new Date(birthTime).toISOString().split('T')[0];
+        } else {
+          // Default earliest record as newborn 0m baseline
+          effectiveBirthDate = earliestDate;
+        }
+      }
+    }
+
+    const formattedEntries: GrowthEntry[] = sortedSelected.map((item, idx) => {
+      let finalAgeMonths = typeof item.ageMonths === 'number' ? item.ageMonths : undefined;
+      const calc = calculateAge(effectiveBirthDate, item.date);
+
+      if (calc.exactMonths > 0) {
+        finalAgeMonths = calc.exactMonths;
+      } else if (finalAgeMonths === undefined || finalAgeMonths <= 0) {
+        if (earliestDate && item.date > earliestDate) {
+          finalAgeMonths = calculateAge(earliestDate, item.date).exactMonths;
+        } else {
+          finalAgeMonths = 0;
+        }
+      }
+
       return {
         id: `entry-${item.date}-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
         date: item.date,
-        ageMonths: age.exactMonths,
+        ageMonths: Math.round(finalAgeMonths * 10) / 10,
         weightKg: item.weightKg,
         heightCm: item.heightCm,
         headCircumferenceCm: item.headCircumferenceCm,
         notes: item.notes,
-        isPediatricianVisit: item.notes?.toLowerCase().includes('doctor') || item.notes?.toLowerCase().includes('visit'),
+        isPediatricianVisit:
+          item.notes?.toLowerCase().includes('doctor') ||
+          item.notes?.toLowerCase().includes('visit') ||
+          item.notes?.toLowerCase().includes('clinic'),
       };
     });
 
-    const detectedProf: Partial<BabyProfile> | undefined =
-      applyDetectedProfile && (detectedBabyName || detectedBirthDate)
-        ? {
-            ...(detectedBabyName ? { name: detectedBabyName } : {}),
-            ...(detectedBirthDate ? { birthDate: detectedBirthDate } : {}),
-          }
-        : undefined;
+    const detectedProf: Partial<BabyProfile> = {
+      ...(detectedBabyName ? { name: detectedBabyName } : {}),
+      birthDate: effectiveBirthDate,
+    };
 
     onImport(formattedEntries, importMode, detectedProf);
     onClose();

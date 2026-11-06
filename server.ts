@@ -66,13 +66,14 @@ Context:
 Your task is to accurately extract ALL baby growth measurements recorded or displayed in this screenshot.
 If the screenshot shows a history log, table, or multiple checkup dates, extract EVERY single one as a separate item.
 
-CRITICAL DATE EXTRACTION RULES:
+CRITICAL AGE & DATE EXTRACTION RULES:
 1. Search for any calendar date (e.g., "October 14, 2024", "10/14/2024", "14-Sep-2024", "Sep 15"). Format as YYYY-MM-DD.
 2. If month/day is shown without a year (e.g. "Oct 14" or "9/12"), deduce the correct year using the Baby Birth Date (${babyBirthDate || 'Unknown'}).
-3. CRITICAL: If the screenshot displays an age or visit label instead of a calendar date (e.g., "Birth", "Newborn", "2 weeks", "1 month", "2 mo", "4 months", "6 months", "9 months", "12 months / 1 year", "15m", "18m", "24m"):
-   CALCULATE the calendar date by adding that exact age to the Baby Birth Date (${babyBirthDate || 'Unknown'})!
-   For example, if birth date is 2024-05-10 and screenshot says "4 Month Visit", date must be 2024-09-10. DO NOT default to today's date!
-4. Each historical checkup must have its own distinct historical date.
+3. CRITICAL: If the screenshot displays an age or visit label (e.g., "Birth", "Newborn", "2 weeks", "1 month", "2 mo", "4 months", "6 months", "9 months", "12 months / 1 year", "15m", "18m", "24m"):
+   - ALWAYS populate ageMonths with the numeric age in months (e.g., 0, 0.5, 1, 2, 4, 6, 9, 12, 15, 18, 24).
+   - If a calendar date is also visible, format it as YYYY-MM-DD.
+   - If NO calendar date is visible, calculate the calendar date by adding ageMonths to the Baby Birth Date (${babyBirthDate || 'Unknown'})!
+4. Each historical checkup must have its own distinct historical date and ageMonths.
 
 CRITICAL MEASUREMENT EXTRACTION RULES:
 - Weight:
@@ -85,8 +86,8 @@ CRITICAL MEASUREMENT EXTRACTION RULES:
   * If in inches (e.g. "25.5 in"): heightCm = round(25.5 * 2.54, 1) = 64.8 cm. Also provide heightIn = 25.5.
   * If in cm (e.g. "64.8 cm"): heightCm = 64.8.
 - Head Circumference:
-  * If in inches: convert to cm (in * 2.54).
-  * If in cm: headCircumferenceCm = cm.
+  * If in inches (e.g. "16.5 in"): headCircumferenceCm = round(16.5 * 2.54, 1) = 41.9 cm. Also provide headCircumferenceIn.
+  * If in cm (e.g. "41.9 cm"): headCircumferenceCm = 41.9.
 - Notes & Source:
   * notes: checkup visit note, milestones, doctor note.
   * sourceApp: name of app or document (e.g., "Huckleberry", "Sprout", "Baby Tracker", "Hatch", "Pediatrician Slip").
@@ -116,7 +117,7 @@ Return strictly structured JSON matching the schema.`;
               ],
             },
             config: {
-              systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, weight, height, head circumference) from baby tracking app screenshots and doctor papers.',
+              systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, age in months, weight, height, head circumference) from baby tracking app screenshots and doctor papers.',
               responseMimeType: 'application/json',
               responseSchema: {
                 type: Type.OBJECT,
@@ -143,6 +144,7 @@ Return strictly structured JSON matching the schema.`;
                       type: Type.OBJECT,
                       properties: {
                         date: { type: Type.STRING, description: 'YYYY-MM-DD' },
+                        ageMonths: { type: Type.NUMBER, description: 'Baby age in months at measurement (e.g. 0, 2, 4, 6, 9, 12, 18)' },
                         weightKg: { type: Type.NUMBER, description: 'Weight in kg' },
                         weightLbs: { type: Type.NUMBER, description: 'Weight in lbs' },
                         weightOz: { type: Type.NUMBER, description: 'Weight in oz' },

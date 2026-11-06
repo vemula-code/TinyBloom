@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
-import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, formatOrdinal } from '../data/whoGrowthStandards';
+import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, formatOrdinal, calculateAge } from '../data/whoGrowthStandards';
 import { Plus } from 'lucide-react';
 
 interface GrowthChartProps {
@@ -10,6 +10,7 @@ interface GrowthChartProps {
   unit: MetricUnit;
   babyName: string;
   babyAgeMonths?: number;
+  babyBirthDate?: string;
   timelineRange?: 'auto' | 6 | 12 | 18 | 24;
   onOpenAddModal?: () => void;
   onOpenSettings?: () => void;
@@ -22,6 +23,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   unit,
   babyName,
   babyAgeMonths,
+  babyBirthDate,
   timelineRange = 'auto',
   onOpenAddModal,
   onOpenSettings,
@@ -35,13 +37,15 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     if (timelineRange && timelineRange !== 'auto') {
       return timelineRange;
     }
-    let age = babyAgeMonths;
-    if (age === undefined || age === null) {
-      const validAges = entries.map((e) => e.ageMonths).filter((a) => a !== undefined && a !== null);
-      age = validAges.length > 0 ? Math.max(...validAges) : 2;
-    }
-    if (age < 3) return 6;
-    if (age <= 10) return 12;
+    const validEntryAges = entries
+      .map((e) => e.ageMonths)
+      .filter((a) => typeof a === 'number' && !isNaN(a) && a > 0);
+    const maxEntryAge = validEntryAges.length > 0 ? Math.max(...validEntryAges) : 0;
+    const effectiveAge = Math.max(babyAgeMonths || 0, maxEntryAge);
+
+    if (effectiveAge < 3) return 6;
+    if (effectiveAge <= 10) return 12;
+    if (effectiveAge <= 18) return 18;
     return 24;
   }, [timelineRange, babyAgeMonths, entries]);
 
@@ -162,29 +166,51 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   const babyPoints = useMemo(() => {
     const pts: { entry: GrowthEntry; x: number; y: number; rawVal: number; convVal: number }[] = [];
 
-    entries
-      .slice()
-      .sort((a, b) => a.ageMonths - b.ageMonths)
-      .forEach((entry) => {
-        let val: number | undefined;
-        if (chartType === 'weight') val = entry.weightKg;
-        else if (chartType === 'height') val = entry.heightCm;
-        else if (chartType === 'head') val = entry.headCircumferenceCm;
+    // Sort entries chronologically to ensure accurate trajectory
+    const sortedEntries = entries.slice().sort((a, b) => {
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      if (!isNaN(timeA) && !isNaN(timeB) && timeA !== timeB) {
+        return timeA - timeB;
+      }
+      return (a.ageMonths || 0) - (b.ageMonths || 0);
+    });
 
-        if (val !== undefined && val > 0 && entry.ageMonths <= rangeMonths) {
+    const earliestDate = sortedEntries[0]?.date;
+
+    sortedEntries.forEach((entry) => {
+      let val: number | undefined;
+      if (chartType === 'weight') val = entry.weightKg;
+      else if (chartType === 'height') val = entry.heightCm;
+      else if (chartType === 'head') val = entry.headCircumferenceCm;
+
+      if (val !== undefined && val > 0) {
+        let plotAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
+
+        // If plotAge is 0 or invalid, but entry has a date after birthDate or earliest checkup
+        if (plotAge <= 0 && entry.date) {
+          if (babyBirthDate && entry.date > babyBirthDate) {
+            plotAge = calculateAge(babyBirthDate, entry.date).exactMonths;
+          } else if (earliestDate && entry.date > earliestDate) {
+            plotAge = calculateAge(earliestDate, entry.date).exactMonths;
+          }
+        }
+
+        if (plotAge <= rangeMonths) {
           const convVal = convertValue(val);
           pts.push({
-            entry,
-            x: getX(entry.ageMonths),
+            entry: { ...entry, ageMonths: plotAge },
+            x: getX(plotAge),
             y: getY(convVal),
             rawVal: val,
             convVal,
           });
         }
-      });
+      }
+    });
 
     return pts;
-  }, [entries, chartType, rangeMonths, unit, minY, maxY]);
+  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate]);
 
   const babyLinePath = useMemo(() => {
     return buildLinePath(babyPoints.map((p) => ({ x: p.x, y: p.y })));
