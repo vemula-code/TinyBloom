@@ -11,14 +11,27 @@ const __dirname = path.dirname(__filename);
 
 async function startServer() {
   const app = express();
-  const PORT = Number(process.env.PORT) || 3000;
+  // Dev server and backend must always run on port 3000 where nginx proxies requests
+  const PORT = 3000;
 
   // Allow larger payload for screenshot images from phone and web
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
+  // Handle CORS & preflight OPTIONS for PWA standalone and mobile webview contexts
+  app.use((req, res, next) => {
+    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
+    res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
+    if (req.method === 'OPTIONS') {
+      return res.sendStatus(200);
+    }
+    next();
+  });
+
   // Local status endpoint (no personal data transmitted)
-  app.get('/api/health', (req, res) => {
+  app.get(['/api/health', '/api/health/'], (req, res) => {
     res.json({
       status: 'ok',
       service: 'TinyBloom Local Server',
@@ -28,7 +41,7 @@ async function startServer() {
   });
 
   // Extract baby growth data from screenshots of other apps (Huckleberry, Sprout, Hatch, Paper records, etc.)
-  app.post('/api/extract-growth-screenshot', async (req, res) => {
+  app.post(['/api/extract-growth-screenshot', '/api/extract-growth-screenshot/', '/api/extract-screenshot', '/api/extract-screenshot/'], async (req, res) => {
     try {
       const { imageBase64, mimeType = 'image/jpeg', babyBirthDate, babyName } = req.body;
       if (!imageBase64) {

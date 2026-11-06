@@ -73,8 +73,45 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
   if (!isOpen) return null;
 
-  // Helper: resize large phone screenshots in-memory for fast transmission & crisp OCR
-  const resizeScreenshot = (file: File): Promise<{ name: string; base64: string; mimeType: string }> => {
+  // Helper: resize large phone screenshots in-memory for fast mobile transmission & crisp OCR
+  const resizeScreenshot = async (file: File): Promise<{ name: string; base64: string; mimeType: string }> => {
+    const MAX_DIM = 1200;
+
+    // 1. Try modern createImageBitmap for fast, hardware-accelerated mobile downscaling
+    if (typeof createImageBitmap === 'function') {
+      try {
+        const bitmap = await createImageBitmap(file);
+        let { width, height } = bitmap;
+        if (width > MAX_DIM || height > MAX_DIM) {
+          if (width > height) {
+            height = Math.round((height * MAX_DIM) / width);
+            width = MAX_DIM;
+          } else {
+            width = Math.round((width * MAX_DIM) / height);
+            height = MAX_DIM;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(bitmap, 0, 0, width, height);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+          bitmap.close();
+          return {
+            name: file.name,
+            base64: dataUrl,
+            mimeType: 'image/jpeg',
+          };
+        }
+        bitmap.close();
+      } catch {
+        // Fallback to FileReader below
+      }
+    }
+
+    // 2. Standard FileReader + Image fallback
     return new Promise((resolve) => {
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -86,7 +123,6 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
         const img = new Image();
         img.onload = () => {
-          const MAX_DIM = 1600;
           let { width, height } = img;
           if (width > MAX_DIM || height > MAX_DIM) {
             if (width > height) {
@@ -104,7 +140,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           const ctx = canvas.getContext('2d');
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
-            const dataUrl = canvas.toDataURL('image/jpeg', 0.88);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
             resolve({
               name: file.name,
               base64: dataUrl,
@@ -168,6 +204,11 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
   const handleRunExtraction = async () => {
     if (selectedImages.length === 0) return;
 
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      setErrorMessage('Your device appears to be offline. Please verify cellular data or Wi-Fi to scan screenshots.');
+      return;
+    }
+
     setIsProcessing(true);
     setErrorMessage(null);
     setProcessingStatus(`Connecting to AI Vision scanner...`);
@@ -178,22 +219,55 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     let failedImagesCount = 0;
     const errors: string[] = [];
 
+    const origin = typeof window !== 'undefined' && window.location.origin && window.location.origin.startsWith('http')
+      ? window.location.origin
+      : '';
+    const candidateEndpoints = [
+      '/api/extract-growth-screenshot',
+      `${origin}/api/extract-growth-screenshot`,
+      '/api/extract-screenshot',
+      `${origin}/api/extract-screenshot`,
+    ];
+
     try {
       for (let i = 0; i < selectedImages.length; i++) {
         const img = selectedImages[i];
         setProcessingStatus(`Scanning screenshot ${i + 1} of ${selectedImages.length} (${img.name})...`);
 
         try {
-          const response = await fetch('/api/extract-growth-screenshot', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              imageBase64: img.base64,
-              mimeType: img.mimeType,
-              babyBirthDate: birthDate,
-              babyName: profile.name,
-            }),
-          });
+          let response: Response | null = null;
+          let lastFetchError: any = null;
+
+          // Attempt endpoints with credentials: 'include' for PWA standalone cookie handling
+          for (const endpoint of candidateEndpoints) {
+            try {
+              response = await fetch(endpoint, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Accept': 'application/json',
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                  imageBase64: img.base64,
+                  mimeType: img.mimeType,
+                  babyBirthDate: birthDate,
+                  babyName: profile.name,
+                }),
+              });
+
+              // If endpoint was found (anything other than 404), proceed
+              if (response.status !== 404) {
+                break;
+              }
+            } catch (err: any) {
+              lastFetchError = err;
+            }
+          }
+
+          if (!response) {
+            throw new Error(lastFetchError?.message || 'Could not connect to server. Please check your network connection.');
+          }
 
           // Safely parse text first to prevent "Unexpected token T... is not valid JSON" if gateway returns HTML
           const rawText = await response.text();
