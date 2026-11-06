@@ -194,13 +194,32 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             }),
           });
 
-          const resData = await response.json();
+          // Safely parse text first to prevent "Unexpected token T... is not valid JSON" if gateway returns HTML
+          const rawText = await response.text();
+          let resData: any = null;
+          try {
+            resData = JSON.parse(rawText);
+          } catch {
+            resData = null;
+          }
 
-          if (!response.ok) {
-            if (resData.needsKey) {
+          if (!response.ok || !resData || !resData.success) {
+            let errorMsg = resData?.error;
+            if (!errorMsg) {
+              if (response.status === 413) {
+                errorMsg = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
+              } else if (response.status === 502 || response.status === 503 || response.status === 504) {
+                errorMsg = 'AI Vision service is temporarily busy. Please wait a few moments and try scanning again.';
+              } else if (response.status === 404) {
+                errorMsg = 'Scanner service is temporarily unavailable. Please verify connection and retry.';
+              } else {
+                errorMsg = `Server returned status ${response.status}. Please try again.`;
+              }
+            }
+            if (resData?.needsKey) {
               throw new Error(resData.error || 'Gemini API key is required on the server to read screenshots.');
             }
-            throw new Error(resData.error || `Error reading screenshot ${img.name}`);
+            throw new Error(errorMsg);
           }
 
           if (resData.success && resData.data) {

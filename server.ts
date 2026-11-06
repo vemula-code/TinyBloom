@@ -190,6 +190,23 @@ Return strictly structured JSON matching the schema.`;
     }
   });
 
+  // Explicit error handling middleware: ensure API requests always receive structured JSON, never HTML error pages
+  app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    if (err) {
+      console.error('Server error handler caught:', err);
+      const status = err.status || err.statusCode || 500;
+      if (err.type === 'entity.too.large' || status === 413) {
+        return res.status(413).json({
+          error: 'Screenshot image payload is too large. Please crop the screenshot or upload a smaller image.',
+        });
+      }
+      return res.status(status).json({
+        error: err.message || 'An unexpected error occurred while processing the request.',
+      });
+    }
+    next();
+  });
+
   // In development, hook up Vite dev middleware
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
@@ -201,6 +218,10 @@ Return strictly structured JSON matching the schema.`;
     // In production, serve built static files from dist
     app.use(express.static(path.resolve(__dirname, 'dist')));
     app.get('*', (req, res) => {
+      // Never serve index.html for API routes
+      if (req.path.startsWith('/api/')) {
+        return res.status(404).json({ error: 'API route not found' });
+      }
       res.sendFile(path.resolve(__dirname, 'dist', 'index.html'));
     });
   }
