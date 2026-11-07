@@ -204,12 +204,19 @@ export default function App() {
       }
       root.setAttribute('data-theme', paletteTheme);
 
+      const themeColors: Record<PaletteTheme, { light: string; dark: string }> = {
+        sage: { light: '#3D6A3B', dark: '#121814' },
+        olive: { light: '#38583B', dark: '#111713' },
+        honey: { light: '#94571E', dark: '#18130E' },
+        'apple-health': { light: '#2563EB', dark: '#0B0F19' },
+        huckleberry: { light: '#1C6B7C', dark: '#0D1619' },
+        hatch: { light: '#684C95', dark: '#140E20' },
+      };
+
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        metaThemeColor.setAttribute(
-          'content',
-          isDark ? '#121814' : paletteTheme === 'apple-health' ? '#2563EB' : paletteTheme === 'huckleberry' ? '#1C6B7C' : '#3D6A3B'
-        );
+        const themeDef = themeColors[paletteTheme] || themeColors.sage;
+        metaThemeColor.setAttribute('content', isDark ? themeDef.dark : themeDef.light);
       }
     };
 
@@ -221,7 +228,11 @@ export default function App() {
       }
     };
 
-    mediaQuery.addEventListener('change', handleSystemChange);
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', handleSystemChange);
+    } else if (typeof (mediaQuery as any).addListener === 'function') {
+      (mediaQuery as any).addListener(handleSystemChange);
+    }
 
     try {
       localStorage.setItem('tinybloom_theme_mode', themeMode);
@@ -230,7 +241,13 @@ export default function App() {
       console.error(e);
     }
 
-    return () => mediaQuery.removeEventListener('change', handleSystemChange);
+    return () => {
+      if (typeof mediaQuery.removeEventListener === 'function') {
+        mediaQuery.removeEventListener('change', handleSystemChange);
+      } else if (typeof (mediaQuery as any).removeListener === 'function') {
+        (mediaQuery as any).removeListener(handleSystemChange);
+      }
+    };
   }, [themeMode, paletteTheme]);
 
   // Modals

@@ -67,7 +67,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
             <X className="w-4 h-4" />
           </button>
 
-          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-bounce">
+          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-in zoom-in duration-300">
             <CheckCircle2 className="w-8 h-8" />
           </div>
 

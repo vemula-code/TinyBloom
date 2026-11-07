@@ -27,7 +27,7 @@ export const PartnerSyncSuccessModal: React.FC<PartnerSyncSuccessModalProps> = (
       <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-emerald-500/40 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
         {/* Celebration Header */}
         <div className="relative bg-gradient-to-br from-emerald-500/20 via-[var(--color-primary)]/15 to-teal-500/10 p-5 text-center border-b border-emerald-500/20">
-          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-bounce">
+          <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-in zoom-in duration-300">
             <CheckCircle2 className="w-8 h-8" />
           </div>
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 text-[11px] font-bold uppercase tracking-wider mb-1.5 border border-emerald-300 dark:border-emerald-800">

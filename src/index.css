@@ -4,8 +4,7 @@
 
 @layer base {
   /* ========================================================
-     THEME 1: Botanical Sage (Nature / Sprout / Nursery Growth)
-     Signature TinyBloom living nursery theme
+     THEME 1: Botanical Sage (Signature Living Nursery & Sprout)
      ======================================================== */
   :root, [data-theme="sage"] {
     --color-primary: #3D6A3B;
@@ -30,8 +29,7 @@
   }
 
   /* ========================================================
-     THEME 2: Forest Oak & Sprout (Deep Tree Growth / Living Earth)
-     Deep earthy tree growth for new parents
+     THEME 2: Forest Earth (Deep Woodland Oak & Earth)
      ======================================================== */
   [data-theme="olive"] {
     --color-primary: #38583B;
@@ -56,8 +54,7 @@
   }
 
   /* ========================================================
-     THEME 3: Warm Honey & Oat (Cozy Nursery Glow & Honeycomb)
-     Warm comforting golden nursery aesthetic
+     THEME 3: Warm Honeycomb (Golden Nursery Glow & Warm Almond)
      ======================================================== */
   [data-theme="honey"] {
     --color-primary: #94571E;
@@ -82,8 +79,7 @@
   }
 
   /* ========================================================
-     THEME 4: Apple Health (iOS System Blue & Clean Minimalist)
-     Inspired by Apple Health & iOS Fitness
+     THEME 4: Ocean Slate (Precision Navy & Clean High Contrast)
      ======================================================== */
   [data-theme="apple-health"] {
     --color-primary: #2563EB;
@@ -108,8 +104,7 @@
   }
 
   /* ========================================================
-     THEME 5: Huckleberry Pediatric (Clinical Teal / Dusk Navy)
-     Inspired by Huckleberry Baby Tracker
+     THEME 5: Morning Mist Teal (Pediatric Marine & Clean Clarity)
      ======================================================== */
   [data-theme="huckleberry"] {
     --color-primary: #1C6B7C;
@@ -134,8 +129,7 @@
   }
 
   /* ========================================================
-     THEME 6: Hatch Sleep & Calm (Bedtime Twilight Lilac)
-     Inspired by Hatch Baby & Calm Restful Tracking
+     THEME 6: Evening Twilight (Bedtime Calm & Gentle Lavender Dusk)
      ======================================================== */
   [data-theme="hatch"] {
     --color-primary: #684C95;

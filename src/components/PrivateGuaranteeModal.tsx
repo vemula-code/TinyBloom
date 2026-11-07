@@ -133,7 +133,7 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
                 Screenshot Imports Are Ephemeral
               </h3>
               <p className="text-xs text-[var(--color-text-muted)] mt-0.5 leading-relaxed">
-                When you upload a screenshot from Huckleberry, Sprout, or clinic papers to import historical growth, the image is analyzed in memory solely to extract measurement numbers, then immediately discarded.
+                When you upload a photo or document of growth records or clinic checkup papers to import historical measurements, the image is analyzed in memory solely to extract measurement numbers, then immediately discarded.
               </p>
             </div>
           </div>

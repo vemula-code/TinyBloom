@@ -45,7 +45,7 @@ async function startServer() {
     });
   });
 
-  // Extract baby growth data from screenshots of other apps (Huckleberry, Sprout, Hatch, Paper records, etc.)
+  // Extract baby growth data from photos or screenshots of records (clinic charts, checkup papers, discharge slips)
   app.post(['/api/extract-growth-screenshot', '/api/extract-growth-screenshot/', '/api/extract-screenshot', '/api/extract-screenshot/'], async (req, res) => {
     try {
       const { imageBase64, mimeType = 'image/jpeg', babyBirthDate, babyName } = req.body;
@@ -92,7 +92,7 @@ async function startServer() {
       }
 
       const prompt = `You are an expert pediatric medical records assistant.
-Examine this screenshot or photo from a baby tracking app (e.g., Huckleberry, Baby Tracker, Sprout, Hatch Baby, Cubtale, Ovia, hospital discharge papers, clinic growth chart, or pediatrician visit summary).
+Examine this screenshot or photo of baby growth records (e.g., clinic growth chart, hospital discharge papers, pediatrician visit summary, digital health growth curves, or checkup slips).
 
 Context:
 - Baby Name: ${babyName || 'Baby'}
@@ -125,7 +125,7 @@ CRITICAL MEASUREMENT EXTRACTION RULES:
   * If in cm (e.g. "41.9 cm"): headCircumferenceCm = 41.9.
 - Notes & Source:
   * notes: checkup visit note, milestones, doctor note.
-  * sourceApp: name of app or document (e.g., "Huckleberry", "Sprout", "Baby Tracker", "Hatch", "Pediatrician Slip").
+  * sourceApp: name of app or document (e.g., "Clinic Growth Chart", "Pediatrician Slip", "Digital Records", "Checkup Summary").
 
 Return strictly structured JSON matching the schema.`;
 
@@ -152,14 +152,14 @@ Return strictly structured JSON matching the schema.`;
               ],
             },
             config: {
-              systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, age in months, weight, height, head circumference) from baby tracking app screenshots and doctor papers.',
+              systemInstruction: 'You are an accurate pediatric assistant extracting growth metrics (date, age in months, weight, height, head circumference) from baby tracking records and doctor papers.',
               responseMimeType: 'application/json',
               responseSchema: {
                 type: Type.OBJECT,
                 properties: {
                   sourceDetected: {
                     type: Type.STRING,
-                    description: 'The app or document source detected (e.g., Huckleberry, Baby Tracker, Sprout, Hatch, Clinic Chart)',
+                    description: 'The app or document source detected (e.g., Clinic Growth Chart, Pediatrician Slip, Digital Records, Discharge Summary)',
                   },
                   summary: {
                     type: Type.STRING,
@@ -212,7 +212,19 @@ Return strictly structured JSON matching the schema.`;
         throw lastError || new Error('All AI models were unable to process this image.');
       }
 
-      const parsedData = JSON.parse(responseText || '{}');
+      let cleanText = responseText.trim();
+      // Remove markdown code fences if model returned ```json ... ```
+      if (cleanText.startsWith('```')) {
+        cleanText = cleanText.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+      }
+      // If there are still surrounding characters, find first { or [ to last } or ]
+      const firstBrace = cleanText.indexOf('{');
+      const lastBrace = cleanText.lastIndexOf('}');
+      if (firstBrace !== -1 && lastBrace !== -1 && lastBrace > firstBrace) {
+        cleanText = cleanText.substring(firstBrace, lastBrace + 1);
+      }
+
+      const parsedData = JSON.parse(cleanText || '{}');
       return res.json({
         success: true,
         data: parsedData,
@@ -264,6 +276,8 @@ Return strictly structured JSON matching the schema.`;
       let cleanMessage = 'An unexpected error occurred while processing the request.';
       if (err.type === 'entity.too.large' || status === 413) {
         cleanMessage = 'Screenshot image payload is too large. Please crop the screenshot or upload a smaller image.';
+      } else if (err instanceof SyntaxError && 'body' in err) {
+        cleanMessage = 'Invalid JSON request format.';
       } else if (typeof err.message === 'string') {
         cleanMessage = err.message;
       }
@@ -272,6 +286,7 @@ Return strictly structured JSON matching the schema.`;
         error: cleanMessage,
       });
     }
+    next();
   });
 
   // In development, hook up Vite dev middleware

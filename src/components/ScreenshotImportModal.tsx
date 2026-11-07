@@ -137,6 +137,14 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  const handleClose = () => {
+    setSelectedImages([]);
+    setExtractedItems([]);
+    setErrorMessage(null);
+    setSummaryMessage('');
+    onClose();
+  };
+
   if (!isOpen) return null;
 
   // Helper: resize large phone screenshots in-memory for fast mobile transmission & crisp OCR
@@ -147,31 +155,37 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     if (typeof createImageBitmap === 'function') {
       try {
         const bitmap = await createImageBitmap(file);
-        let { width, height } = bitmap;
-        if (width > MAX_DIM || height > MAX_DIM) {
-          if (width > height) {
-            height = Math.round((height * MAX_DIM) / width);
-            width = MAX_DIM;
-          } else {
-            width = Math.round((width * MAX_DIM) / height);
-            height = MAX_DIM;
+        try {
+          let { width, height } = bitmap;
+          if (width > MAX_DIM || height > MAX_DIM) {
+            if (width > height) {
+              height = Math.round((height * MAX_DIM) / width);
+              width = MAX_DIM;
+            } else {
+              width = Math.round((width * MAX_DIM) / height);
+              height = MAX_DIM;
+            }
           }
-        }
-        const canvas = document.createElement('canvas');
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-        if (ctx) {
-          ctx.drawImage(bitmap, 0, 0, width, height);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(bitmap, 0, 0, width, height);
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+            // Free canvas backing buffer immediately
+            canvas.width = 0;
+            canvas.height = 0;
+            return {
+              name: file.name,
+              base64: dataUrl,
+              mimeType: 'image/jpeg',
+            };
+          }
+        } finally {
+          // Explicitly close bitmap to reclaim GPU/hardware textures on mobile devices
           bitmap.close();
-          return {
-            name: file.name,
-            base64: dataUrl,
-            mimeType: 'image/jpeg',
-          };
         }
-        bitmap.close();
       } catch {
         // Fallback to FileReader below
       }
@@ -207,6 +221,10 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           if (ctx) {
             ctx.drawImage(img, 0, 0, width, height);
             const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+            // Reclaim canvas buffer and image memory
+            canvas.width = 0;
+            canvas.height = 0;
+            img.src = '';
             resolve({
               name: file.name,
               base64: dataUrl,
@@ -215,6 +233,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             return;
           }
 
+          img.src = '';
           resolve({
             name: file.name,
             base64: rawResult,
@@ -223,6 +242,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         };
 
         img.onerror = () => {
+          img.src = '';
           resolve({
             name: file.name,
             base64: rawResult,
@@ -620,7 +640,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     };
 
     onImport(formattedEntries, importMode, detectedProf);
-    onClose();
+    handleClose();
   };
 
   return (
@@ -636,7 +656,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         <div className="relative bg-gradient-to-r from-[var(--color-primary,#4A7347)]/15 via-[#AFCDE0]/20 to-purple-500/10 p-4 sm:p-5 border-b border-[var(--color-primary,#4A7347)]/20 shrink-0">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
@@ -653,7 +673,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 <span>Zero-Typing Smart Importer</span>
               </div>
               <h2 id="screenshot-modal-title" className="text-base sm:text-lg font-bold font-heading text-[var(--color-text-main)] leading-tight">
-                Upload Screenshot from Other App
+                Upload Growth Records or Screenshots
               </h2>
             </div>
           </div>
@@ -667,24 +687,24 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-xs text-[var(--color-text-main)] flex items-center gap-1.5">
                 <FileImage className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-                <span>No API lock-in &middot; No subscriptions needed</span>
+                <span>No API lock-in &middot; Zero manual typing</span>
               </span>
               <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
                 100% Free
               </span>
             </div>
             <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
-              Don&apos;t pay expensive monthly app subscriptions just to link accounts! Simply take screenshots of your growth records from <strong>Huckleberry</strong>, <strong>Sprout</strong>, <strong>Baby Tracker</strong>, <strong>Hatch</strong>, <strong>Cubtale</strong>, or <strong>doctor checkup papers</strong>. TinyBloom will read all numbers automatically.
+              Easily migrate your growth logs without tedious manual typing! Simply select screenshots or photos of your previous growth logs, clinic visit summaries, pediatrician chart slips, or digital health records. TinyBloom reads all measurement numbers automatically.
             </p>
 
-            {/* Popular supported apps pills */}
+            {/* Popular supported document formats */}
             <div className="flex flex-wrap items-center gap-1.5 pt-1">
-              {['Huckleberry', 'Baby Tracker', 'Sprout', 'Hatch Baby', 'Glow Baby', 'MyChart / Clinic Paper', 'Wonder Weeks'].map((app) => (
+              {['Clinic Checkup Papers', 'Pediatrician Chart Summaries', 'Health Visit Logs', 'Digital Growth Records', 'Vaccination Booklets', 'Hospital Discharge Slips'].map((format) => (
                 <span
-                  key={app}
+                  key={format}
                   className="px-2 py-0.5 rounded-lg bg-[var(--color-primary)]/10 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-[10px] font-semibold"
                 >
-                  {app}
+                  {format}
                 </span>
               ))}
             </div>
@@ -1078,7 +1098,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         <div className="p-3.5 border-t border-[var(--color-card-border)] bg-white dark:bg-[#1B231F] flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleClose}
             className="px-3.5 py-1.5 rounded-xl border border-[var(--color-card-border)] text-xs font-bold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors cursor-pointer"
           >
             Cancel
