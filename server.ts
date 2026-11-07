@@ -20,8 +20,13 @@ async function startServer() {
 
   // Handle CORS & preflight OPTIONS for PWA standalone and mobile webview contexts
   app.use((req, res, next) => {
-    res.header('Access-Control-Allow-Origin', req.headers.origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
+    const origin = req.headers.origin;
+    if (origin) {
+      res.header('Access-Control-Allow-Origin', origin);
+      res.header('Access-Control-Allow-Credentials', 'true');
+    } else {
+      res.header('Access-Control-Allow-Origin', '*');
+    }
     res.header('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, DELETE');
     res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept, Authorization');
     if (req.method === 'OPTIONS') {
@@ -66,8 +71,25 @@ async function startServer() {
         },
       });
 
-      // Strip standard data:image/...;base64, prefix if present
-      const cleanBase64 = String(imageBase64).replace(/^data:image\/[a-zA-Z+]+;base64,/, '');
+      // Strip standard data URL scheme prefix if present
+      const cleanBase64 = String(imageBase64).replace(/^data:[^;]+;base64,/, '').trim();
+
+      // Normalize image with sharp: auto-orient EXIF from mobile cameras, resize to max 1400px, and ensure clean JPEG
+      let finalBase64 = cleanBase64;
+      let finalMimeType = 'image/jpeg';
+      try {
+        const inputBuf = Buffer.from(cleanBase64, 'base64');
+        const { default: sharp } = await import('sharp');
+        const processedBuf = await sharp(inputBuf)
+          .rotate() // Auto-orient based on mobile camera EXIF orientation
+          .resize({ width: 1400, height: 1400, fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 85 })
+          .toBuffer();
+        finalBase64 = processedBuf.toString('base64');
+      } catch (sharpErr) {
+        console.warn('Image pre-normalization with sharp skipped, using raw image:', sharpErr);
+        finalMimeType = (mimeType && mimeType.includes('png')) ? 'image/png' : 'image/jpeg';
+      }
 
       const prompt = `You are an expert pediatric medical records assistant.
 Examine this screenshot or photo from a baby tracking app (e.g., Huckleberry, Baby Tracker, Sprout, Hatch Baby, Cubtale, Ovia, hospital discharge papers, clinic growth chart, or pediatrician visit summary).
@@ -120,8 +142,8 @@ Return strictly structured JSON matching the schema.`;
               parts: [
                 {
                   inlineData: {
-                    mimeType: mimeType || 'image/jpeg',
-                    data: cleanBase64,
+                    mimeType: finalMimeType,
+                    data: finalBase64,
                   },
                 },
                 {
@@ -167,9 +189,7 @@ Return strictly structured JSON matching the schema.`;
                         headCircumferenceIn: { type: Type.NUMBER, description: 'Head circumference in inches' },
                         notes: { type: Type.STRING, description: 'Notes or milestones' },
                         sourceApp: { type: Type.STRING, description: 'Detected source app name' },
-                        confidence: { type: Type.STRING, description: 'high | medium | low' },
                       },
-                      required: ['date'],
                     },
                   },
                 },
@@ -199,10 +219,41 @@ Return strictly structured JSON matching the schema.`;
       });
     } catch (err: any) {
       console.error('Gemini screenshot extraction error:', err);
+      let cleanMessage = 'Failed to extract growth records from screenshot.';
+      if (err) {
+        if (typeof err.message === 'string') {
+          const trimmed = err.message.trim();
+          if (trimmed.startsWith('{') && trimmed.endsWith('}')) {
+            try {
+              const parsed = JSON.parse(trimmed);
+              cleanMessage = parsed.error?.message || parsed.message || cleanMessage;
+            } catch {
+              cleanMessage = trimmed;
+            }
+          } else if (trimmed && trimmed !== '[object Object]') {
+            cleanMessage = trimmed;
+          }
+        } else if (typeof err.error?.message === 'string') {
+          cleanMessage = err.error.message;
+        } else if (typeof err.error === 'string') {
+          cleanMessage = err.error;
+        } else if (typeof err === 'string' && err !== '[object Object]') {
+          cleanMessage = err;
+        }
+      }
       return res.status(500).json({
-        error: err.message || 'Error processing growth screenshot with Gemini API',
+        success: false,
+        error: cleanMessage,
       });
     }
+  });
+
+  // Strict guard for any unhandled /api/* request: ALWAYS return JSON 404, NEVER fall through to HTML
+  app.all(['/api', '/api/*'], (req, res) => {
+    return res.status(404).json({
+      success: false,
+      error: `API route '${req.method} ${req.path}' not found.`,
+    });
   });
 
   // Explicit error handling middleware: ensure API requests always receive structured JSON, never HTML error pages
@@ -210,16 +261,17 @@ Return strictly structured JSON matching the schema.`;
     if (err) {
       console.error('Server error handler caught:', err);
       const status = err.status || err.statusCode || 500;
+      let cleanMessage = 'An unexpected error occurred while processing the request.';
       if (err.type === 'entity.too.large' || status === 413) {
-        return res.status(413).json({
-          error: 'Screenshot image payload is too large. Please crop the screenshot or upload a smaller image.',
-        });
+        cleanMessage = 'Screenshot image payload is too large. Please crop the screenshot or upload a smaller image.';
+      } else if (typeof err.message === 'string') {
+        cleanMessage = err.message;
       }
       return res.status(status).json({
-        error: err.message || 'An unexpected error occurred while processing the request.',
+        success: false,
+        error: cleanMessage,
       });
     }
-    next();
   });
 
   // In development, hook up Vite dev middleware

@@ -47,6 +47,72 @@ interface ScreenshotImportModalProps {
   ) => void;
 }
 
+/**
+ * Safely unwrap and format any error into a clean, human-readable string.
+ * Completely prevents raw "[object Object]" or unparsed JSON from reaching the user.
+ */
+export function formatErrorMessage(err: unknown): string {
+  if (err === null || err === undefined) {
+    return 'Could not process screenshot. Please check that the image is clear and try again.';
+  }
+
+  // 1. If it's a string, inspect whether it's "[object Object]", empty, or stringified JSON
+  if (typeof err === 'string') {
+    const trimmed = err.trim();
+    if (!trimmed || trimmed === '[object Object]') {
+      return 'The screenshot could not be scanned. Please check that the image is clear and try again.';
+    }
+    // Handle stringified JSON (common in SDK errors and gateway responses)
+    if ((trimmed.startsWith('{') && trimmed.endsWith('}')) || (trimmed.startsWith('[') && trimmed.endsWith(']'))) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        return formatErrorMessage(parsed);
+      } catch {
+        // Not valid JSON, return the raw trimmed string
+      }
+    }
+    return trimmed;
+  }
+
+  // 2. If it's an Error instance or object
+  if (typeof err === 'object') {
+    const obj = err as Record<string, any>;
+
+    // Nested error object e.g. { error: { message: "..." } } or { error: "..." }
+    if (obj.error) {
+      return formatErrorMessage(obj.error);
+    }
+
+    // Standard Error.message
+    if (typeof obj.message === 'string' && obj.message.trim() && obj.message.trim() !== '[object Object]') {
+      return formatErrorMessage(obj.message);
+    }
+
+    // Common HTTP error fields
+    if (typeof obj.statusText === 'string' && obj.statusText.trim()) {
+      return obj.statusText.trim();
+    }
+    if (typeof obj.details === 'string' && obj.details.trim()) {
+      return formatErrorMessage(obj.details);
+    }
+    if (typeof obj.description === 'string' && obj.description.trim()) {
+      return formatErrorMessage(obj.description);
+    }
+
+    // Try JSON stringify if it has meaningful keys
+    try {
+      const str = JSON.stringify(err);
+      if (str && str !== '{}' && str !== '[]') {
+        return str;
+      }
+    } catch {
+      // Fall through to fallback
+    }
+  }
+
+  return 'Could not process screenshot. Please verify the image is readable and retry.';
+}
+
 export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
   isOpen,
   onClose,
@@ -189,6 +255,9 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     const validImages = resizedImages.filter((img) => img.base64.length > 50);
 
     setSelectedImages((prev) => [...prev, ...validImages]);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleRemoveImage = (index: number) => {
@@ -224,13 +293,18 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       : '';
     const candidateEndpoints = [
       '/api/extract-growth-screenshot',
-      `${origin}/api/extract-growth-screenshot`,
+      'api/extract-growth-screenshot',
+      origin ? `${origin}/api/extract-growth-screenshot` : '',
       '/api/extract-screenshot',
-      `${origin}/api/extract-screenshot`,
-    ];
+    ].filter(Boolean);
 
     try {
       for (let i = 0; i < selectedImages.length; i++) {
+        if (i > 0) {
+          // Brief pause between multiple screenshots to prevent mobile rate-limiting
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
+
         const img = selectedImages[i];
         setProcessingStatus(`Scanning screenshot ${i + 1} of ${selectedImages.length} (${img.name})...`);
 
@@ -238,7 +312,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           let response: Response | null = null;
           let lastFetchError: any = null;
 
-          // Attempt endpoints with credentials: 'include' for PWA standalone cookie handling
+          // Attempt endpoints with same-origin credentials (avoids CORS wildcard rejection on mobile PWA)
           for (const endpoint of candidateEndpoints) {
             try {
               response = await fetch(endpoint, {
@@ -247,7 +321,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
-                credentials: 'include',
+                credentials: 'same-origin',
                 body: JSON.stringify({
                   imageBase64: img.base64,
                   mimeType: img.mimeType,
@@ -256,7 +330,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 }),
               });
 
-              // If endpoint was found (anything other than 404), proceed
+              // If endpoint was reached, break
               if (response.status !== 404) {
                 break;
               }
@@ -266,7 +340,8 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           }
 
           if (!response) {
-            throw new Error(lastFetchError?.message || 'Could not connect to server. Please check your network connection.');
+            const cleanFetchErr = formatErrorMessage(lastFetchError);
+            throw new Error(cleanFetchErr || 'Could not connect to server. Please check your network connection.');
           }
 
           // Safely parse text first to prevent "Unexpected token T... is not valid JSON" if gateway returns HTML
@@ -279,20 +354,23 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           }
 
           if (!response.ok || !resData || !resData.success) {
-            let errorMsg = resData?.error;
-            if (!errorMsg) {
-              if (response.status === 413) {
-                errorMsg = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
-              } else if (response.status === 502 || response.status === 503 || response.status === 504) {
-                errorMsg = 'AI Vision service is temporarily busy. Please wait a few moments and try scanning again.';
-              } else if (response.status === 404) {
-                errorMsg = 'Scanner service is temporarily unavailable. Please verify connection and retry.';
-              } else {
-                errorMsg = `Server returned status ${response.status}. Please try again.`;
-              }
+            let errorMsg = 'Failed to extract growth records.';
+            if (resData?.error) {
+              errorMsg = formatErrorMessage(resData.error);
+            } else if (resData?.message) {
+              errorMsg = formatErrorMessage(resData.message);
+            } else if (response.status === 413) {
+              errorMsg = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
+            } else if (response.status === 502 || response.status === 503 || response.status === 504) {
+              errorMsg = 'AI Vision service is temporarily busy. Please wait a few moments and try scanning again.';
+            } else if (response.status === 404) {
+              errorMsg = 'Scanner service is temporarily unavailable. Please verify connection and retry.';
+            } else {
+              errorMsg = `Server returned status ${response.status}. Please try again.`;
             }
+
             if (resData?.needsKey) {
-              throw new Error(resData.error || 'Gemini API key is required on the server to read screenshots.');
+              throw new Error(errorMsg || 'Gemini API key is required on the server to read screenshots.');
             }
             throw new Error(errorMsg);
           }
@@ -375,13 +453,15 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         } catch (innerErr: any) {
           console.warn(`Extraction error for screenshot ${img.name}:`, innerErr);
           failedImagesCount++;
-          errors.push(innerErr.message || `Screenshot ${i + 1}`);
+          const cleanMsg = formatErrorMessage(innerErr);
+          errors.push(cleanMsg);
         }
       }
 
       if (aggregatedEntries.length === 0) {
         if (errors.length > 0) {
-          throw new Error(`Could not extract growth records: ${errors[0]}`);
+          const mainError = formatErrorMessage(errors[0]);
+          throw new Error(`Could not extract growth records: ${mainError}`);
         }
         throw new Error(
           'No growth measurements were found in the uploaded screenshot(s). Please verify the screenshot clearly displays dates, weight, or height numbers.'
@@ -397,7 +477,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       );
       setExtractedItems(aggregatedEntries);
     } catch (err: any) {
-      setErrorMessage(err.message || 'Failed to scan screenshot. Please verify your screenshot is clear.');
+      setErrorMessage(formatErrorMessage(err));
     } finally {
       setIsProcessing(false);
       setProcessingStatus('');

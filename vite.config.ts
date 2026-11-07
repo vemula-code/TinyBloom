@@ -49,8 +49,14 @@ export default defineConfig(() => {
           ],
         },
         workbox: {
-          // Never intercept or fallback API calls; pass directly to Node backend
-          navigateFallbackDenylist: [/^\/api/],
+          // Never intercept, cache, or fallback API calls; route directly to Node backend
+          navigateFallbackDenylist: [/^\/api/, /\/api\//],
+          runtimeCaching: [
+            {
+              urlPattern: ({ url }) => url.pathname.includes('/api/'),
+              handler: 'NetworkOnly',
+            },
+          ],
           globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
         },
         devOptions: {
