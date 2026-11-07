@@ -7,14 +7,11 @@ export type ChartType = 'weight' | 'height' | 'head' | 'bmi';
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type PaletteTheme =
   | 'sage'
-  | 'slate'
-  | 'blush'
-  | 'sky'
-  | 'lavender'
-  | 'linen'
-  | 'amber'
-  | 'midnight'
-  | 'oled';
+  | 'olive'
+  | 'honey'
+  | 'apple-health'
+  | 'huckleberry'
+  | 'hatch';
 
 export interface BabyProfile {
   id: string;

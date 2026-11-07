@@ -141,21 +141,23 @@ export default function App() {
 
   const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>(() => {
     try {
-      const saved = localStorage.getItem('tinybloom_palette') as PaletteTheme;
+      const saved = localStorage.getItem('tinybloom_palette') as string;
       const valid: PaletteTheme[] = [
         'sage',
-        'slate',
-        'blush',
-        'sky',
-        'lavender',
-        'linen',
-        'amber',
-        'midnight',
-        'oled',
+        'olive',
+        'honey',
+        'apple-health',
+        'huckleberry',
+        'hatch',
       ];
-      if (saved && valid.includes(saved)) {
-        return saved;
+      if (saved && valid.includes(saved as PaletteTheme)) {
+        return saved as PaletteTheme;
       }
+      // Smooth migration from older theme names
+      if (saved === 'slate') return 'apple-health';
+      if (saved === 'sky') return 'huckleberry';
+      if (saved === 'lavender') return 'hatch';
+      if (saved === 'linen' || saved === 'amber') return 'honey';
       return 'sage';
     } catch {
       return 'sage';
@@ -191,25 +193,22 @@ export default function App() {
       const isSystemDark = mediaQuery.matches;
       const isDark =
         themeMode === 'dark' ||
-        paletteTheme === 'midnight' ||
-        paletteTheme === 'oled' ||
         (themeMode === 'system' && isSystemDark);
 
       if (isDark) {
         root.classList.add('dark');
         document.body.classList.add('dark');
-        root.setAttribute('data-theme', paletteTheme === 'oled' ? 'oled' : 'midnight');
       } else {
         root.classList.remove('dark');
         document.body.classList.remove('dark');
-        root.setAttribute('data-theme', paletteTheme);
       }
+      root.setAttribute('data-theme', paletteTheme);
 
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
         metaThemeColor.setAttribute(
           'content',
-          paletteTheme === 'oled' ? '#000000' : isDark ? '#121714' : '#4A6E43'
+          isDark ? '#121814' : paletteTheme === 'apple-health' ? '#2563EB' : paletteTheme === 'huckleberry' ? '#1C6B7C' : '#3D6A3B'
         );
       }
     };
@@ -773,13 +772,13 @@ export default function App() {
       <header className="sticky top-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full max-w-full overflow-x-hidden">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
-          <div className="flex items-center gap-2 min-w-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:flex-initial">
             <button
               type="button"
               onClick={() => setActiveTab('home')}
-              className="flex items-center text-left transition-opacity hover:opacity-90 shrink-0"
+              className="flex items-center text-left transition-opacity hover:opacity-90 shrink min-w-0"
             >
-              <TinyBloomLogo size={34} showText={true} />
+              <TinyBloomLogo size={32} showText={true} />
             </button>
 
             {/* Our Story Button: Simple heart symbol on mobile, expandable on sm+ */}

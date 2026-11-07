@@ -3,185 +3,181 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @layer base {
-  /* Theme 1: Botanical Sage (Inspired by Nara Baby & Natural Nursery) */
+  /* ========================================================
+     THEME 1: Botanical Sage (Nature / Sprout / Nursery Growth)
+     Signature TinyBloom living nursery theme
+     ======================================================== */
   :root, [data-theme="sage"] {
-    --color-primary: #4A7347;
-    --color-primary-dark: #2F4F2D;
-    --color-primary-light: rgba(74, 115, 71, 0.12);
-    --color-canvas: #FAF8F3;
+    --color-primary: #3D6A3B;
+    --color-primary-dark: #274825;
+    --color-primary-light: rgba(61, 106, 59, 0.12);
+    --color-canvas: #FAF8F4;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(74, 115, 71, 0.18);
-    --color-text-main: #1B241C;
-    --color-text-muted: #596B5B;
+    --color-card-border: rgba(61, 106, 59, 0.18);
+    --color-text-main: #1A251C;
+    --color-text-muted: #546656;
+  }
+  .dark[data-theme="sage"], html.dark [data-theme="sage"], html.dark:not([data-theme]) {
+    color-scheme: dark;
+    --color-primary: #72BE6F;
+    --color-primary-dark: #97DC95;
+    --color-primary-light: rgba(114, 190, 111, 0.22);
+    --color-canvas: #121814;
+    --color-card: #1B241E;
+    --color-card-border: rgba(255, 255, 255, 0.14);
+    --color-text-main: #F7FAF7;
+    --color-text-muted: #9EB2A1;
   }
 
-  /* Theme 2: Apple Slate (iOS System, Apple Health & Clean Minimalist Style) */
-  [data-theme="slate"] {
+  /* ========================================================
+     THEME 2: Forest Oak & Sprout (Deep Tree Growth / Living Earth)
+     Deep earthy tree growth for new parents
+     ======================================================== */
+  [data-theme="olive"] {
+    --color-primary: #38583B;
+    --color-primary-dark: #233925;
+    --color-primary-light: rgba(56, 88, 59, 0.12);
+    --color-canvas: #F8F7F3;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(56, 88, 59, 0.18);
+    --color-text-main: #18231A;
+    --color-text-muted: #526354;
+  }
+  .dark[data-theme="olive"], html.dark [data-theme="olive"] {
+    color-scheme: dark;
+    --color-primary: #6FB375;
+    --color-primary-dark: #95D49A;
+    --color-primary-light: rgba(111, 179, 117, 0.22);
+    --color-canvas: #111713;
+    --color-card: #1A231C;
+    --color-card-border: rgba(255, 255, 255, 0.14);
+    --color-text-main: #F5FAF6;
+    --color-text-muted: #9BB09E;
+  }
+
+  /* ========================================================
+     THEME 3: Warm Honey & Oat (Cozy Nursery Glow & Honeycomb)
+     Warm comforting golden nursery aesthetic
+     ======================================================== */
+  [data-theme="honey"] {
+    --color-primary: #94571E;
+    --color-primary-dark: #68390E;
+    --color-primary-light: rgba(148, 87, 30, 0.12);
+    --color-canvas: #FAF6EE;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(148, 87, 30, 0.18);
+    --color-text-main: #271C12;
+    --color-text-muted: #6B5543;
+  }
+  .dark[data-theme="honey"], html.dark [data-theme="honey"] {
+    color-scheme: dark;
+    --color-primary: #E0964A;
+    --color-primary-dark: #F5B978;
+    --color-primary-light: rgba(224, 150, 74, 0.22);
+    --color-canvas: #18130E;
+    --color-card: #231C15;
+    --color-card-border: rgba(255, 255, 255, 0.14);
+    --color-text-main: #FAF6F0;
+    --color-text-muted: #B8A291;
+  }
+
+  /* ========================================================
+     THEME 4: Apple Health (iOS System Blue & Clean Minimalist)
+     Inspired by Apple Health & iOS Fitness
+     ======================================================== */
+  [data-theme="apple-health"] {
     --color-primary: #2563EB;
     --color-primary-dark: #1D4ED8;
     --color-primary-light: rgba(37, 99, 235, 0.12);
     --color-canvas: #F8FAFC;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(37, 99, 235, 0.18);
+    --color-card-border: rgba(37, 99, 235, 0.16);
     --color-text-main: #0F172A;
-    --color-text-muted: #64748B;
+    --color-text-muted: #475569;
   }
-
-  /* Theme 3: Rose & Blush (Inspired by What to Expect, Ovia & Glow Baby) */
-  [data-theme="blush"] {
-    --color-primary: #C24A66;
-    --color-primary-dark: #8F2B42;
-    --color-primary-light: rgba(194, 74, 102, 0.12);
-    --color-canvas: #FFF6F8;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(194, 74, 102, 0.18);
-    --color-text-main: #2A171C;
-    --color-text-muted: #7E5862;
-  }
-
-  /* Theme 4: Soft Mist Blue (Inspired by Huckleberry Pediatric) */
-  [data-theme="sky"] {
-    --color-primary: #386C94;
-    --color-primary-dark: #224765;
-    --color-primary-light: rgba(56, 108, 148, 0.12);
-    --color-canvas: #F4F8FA;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(56, 108, 148, 0.18);
-    --color-text-main: #16222B;
-    --color-text-muted: #576C7E;
-  }
-
-  /* Theme 5: Lavender Twilight (Inspired by Calm, Headspace & Moshi Sleep) */
-  [data-theme="lavender"] {
-    --color-primary: #6D5299;
-    --color-primary-dark: #4A3370;
-    --color-primary-light: rgba(109, 82, 153, 0.12);
-    --color-canvas: #F8F5FD;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(109, 82, 153, 0.18);
-    --color-text-main: #1D162B;
-    --color-text-muted: #6C5B83;
-  }
-
-  /* Theme 6: Warm Linen & Oatmeal (Inspired by Hatch Baby & Earth Tones) */
-  [data-theme="linen"] {
-    --color-primary: #855835;
-    --color-primary-dark: #5C381E;
-    --color-primary-light: rgba(133, 88, 53, 0.12);
-    --color-canvas: #FAF6EE;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(133, 88, 53, 0.18);
-    --color-text-main: #241D17;
-    --color-text-muted: #6B5E53;
-  }
-
-  /* Theme 7: Sunlit Honey & Amber (Warm Glow & Cozy Nursery) */
-  [data-theme="amber"] {
-    --color-primary: #B26514;
-    --color-primary-dark: #7F4207;
-    --color-primary-light: rgba(178, 101, 20, 0.12);
-    --color-canvas: #FFF9F2;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(178, 101, 20, 0.18);
-    --color-text-main: #2C1C0D;
-    --color-text-muted: #7E6047;
-  }
-
-  /* Theme 8: High-Contrast Nursery Night (Dark Green for 2 AM Feedings) */
-  [data-theme="midnight"], .dark:not([data-theme="oled"]), html.dark:not([data-theme="oled"]) {
+  .dark[data-theme="apple-health"], html.dark [data-theme="apple-health"] {
     color-scheme: dark;
-    --color-primary: #76C476;
-    --color-primary-dark: #9CE09C;
-    --color-primary-light: rgba(118, 196, 118, 0.22);
-    --color-canvas: #121714;
-    --color-card: #1B231F;
+    --color-primary: #60A5FA;
+    --color-primary-dark: #93C5FD;
+    --color-primary-light: rgba(96, 165, 250, 0.22);
+    --color-canvas: #0B0F19;
+    --color-card: #131B2E;
     --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F7FAF7;
-    --color-text-muted: #A3B5A5;
+    --color-text-main: #F8FAFC;
+    --color-text-muted: #94A3B8;
   }
 
-  /* Theme 9: Pure OLED Black (True Black #000000 for Zero Glare & OLED Battery Saving) */
-  [data-theme="oled"] {
+  /* ========================================================
+     THEME 5: Huckleberry Pediatric (Clinical Teal / Dusk Navy)
+     Inspired by Huckleberry Baby Tracker
+     ======================================================== */
+  [data-theme="huckleberry"] {
+    --color-primary: #1C6B7C;
+    --color-primary-dark: #124C58;
+    --color-primary-light: rgba(28, 107, 124, 0.12);
+    --color-canvas: #F4F9FA;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(28, 107, 124, 0.18);
+    --color-text-main: #122226;
+    --color-text-muted: #496369;
+  }
+  .dark[data-theme="huckleberry"], html.dark [data-theme="huckleberry"] {
     color-scheme: dark;
-    --color-primary: #38BDF8;
-    --color-primary-dark: #7DD3FC;
-    --color-primary-light: rgba(56, 189, 248, 0.22);
-    --color-canvas: #000000;
-    --color-card: #0A0A0A;
-    --color-card-border: rgba(255, 255, 255, 0.16);
-    --color-text-main: #FFFFFF;
-    --color-text-muted: #9CA3AF;
+    --color-primary: #52B5C8;
+    --color-primary-dark: #81D2E1;
+    --color-primary-light: rgba(82, 181, 200, 0.22);
+    --color-canvas: #0D1619;
+    --color-card: #162328;
+    --color-card-border: rgba(255, 255, 255, 0.14);
+    --color-text-main: #F2F8F9;
+    --color-text-muted: #8FAEB6;
+  }
+
+  /* ========================================================
+     THEME 6: Hatch Sleep & Calm (Bedtime Twilight Lilac)
+     Inspired by Hatch Baby & Calm Restful Tracking
+     ======================================================== */
+  [data-theme="hatch"] {
+    --color-primary: #684C95;
+    --color-primary-dark: #49316F;
+    --color-primary-light: rgba(104, 76, 149, 0.12);
+    --color-canvas: #F9F7FD;
+    --color-card: #FFFFFF;
+    --color-card-border: rgba(104, 76, 149, 0.18);
+    --color-text-main: #1D152B;
+    --color-text-muted: #5D4D73;
+  }
+  .dark[data-theme="hatch"], html.dark [data-theme="hatch"] {
+    color-scheme: dark;
+    --color-primary: #AF95DF;
+    --color-primary-dark: #CEBEED;
+    --color-primary-light: rgba(175, 149, 223, 0.22);
+    --color-canvas: #14101E;
+    --color-card: #1E182C;
+    --color-card-border: rgba(255, 255, 255, 0.14);
+    --color-text-main: #F9F7FD;
+    --color-text-muted: #A89CBF;
   }
 
   /* High contrast font and container adaptability in dark / night mode */
-  .dark .bg-white, [data-theme="midnight"] .bg-white {
-    background-color: #1B231F !important;
+  .dark .bg-white {
+    background-color: var(--color-card) !important;
   }
-  .dark .bg-white\/95, [data-theme="midnight"] .bg-white\/95 {
-    background-color: rgba(27, 35, 31, 0.95) !important;
+  .dark .bg-white\/95 {
+    background-color: var(--color-card) !important;
   }
-  .dark .bg-white\/90, [data-theme="midnight"] .bg-white\/90 {
-    background-color: rgba(27, 35, 31, 0.90) !important;
+  .dark .bg-white\/90 {
+    background-color: var(--color-card) !important;
   }
-  .dark .bg-\[\#FFF9F0\], .dark .bg-\[\#FFF9F0\]\/60,
-  [data-theme="midnight"] .bg-\[\#FFF9F0\], [data-theme="midnight"] .bg-\[\#FFF9F0\]\/60 {
-    background-color: #141B17 !important;
+  .dark .bg-\[\#FFF9F0\],
+  .dark .bg-\[\#FFF9F0\]\/60 {
+    background-color: rgba(255, 255, 255, 0.06) !important;
   }
 
-  /* OLED Pure Black Overrides */
-  [data-theme="oled"] .bg-white,
-  .dark[data-theme="oled"] .bg-white {
-    background-color: #0A0A0A !important;
-  }
-  [data-theme="oled"] .bg-white\/95,
-  .dark[data-theme="oled"] .bg-white\/95 {
-    background-color: rgba(10, 10, 10, 0.95) !important;
-  }
-  [data-theme="oled"] .bg-white\/90,
-  .dark[data-theme="oled"] .bg-white\/90 {
-    background-color: rgba(10, 10, 10, 0.90) !important;
-  }
-  [data-theme="oled"] .bg-\[\#FFF9F0\],
-  .dark[data-theme="oled"] .bg-\[\#FFF9F0\],
-  [data-theme="oled"] .bg-\[\#FAF8F3\] {
-    background-color: #000000 !important;
-  }
-  [data-theme="oled"] input,
-  [data-theme="oled"] select,
-  [data-theme="oled"] textarea {
-    background-color: #080808 !important;
-    color: #FFFFFF !important;
-    border-color: rgba(255, 255, 255, 0.22) !important;
-  }
-  .dark .text-[#303832], .dark .text-[#1D251F], .dark .text-[#1B241C],
-  [data-theme="midnight"] .text-\[\#303832\], [data-theme="midnight"] .text-\[\#1D251F\], [data-theme="midnight"] .text-\[\#1B241C\] {
-    color: #F7FAF7 !important;
-  }
-  .dark .text-\[\#6E7B6C\], .dark .text-\[\#58695A\], .dark .text-\[\#596B5B\],
-  [data-theme="midnight"] .text-\[\#6E7B6C\], [data-theme="midnight"] .text-\[\#58695A\], [data-theme="midnight"] .text-\[\#596B5B\] {
-    color: #A3B5A5 !important;
-  }
-  .dark .text-\[\#3D5939\], .dark .text-\[\#2F4F2D\],
-  [data-theme="midnight"] .text-\[\#3D5939\], [data-theme="midnight"] .text-\[\#2F4F2D\] {
-    color: #9CE09C !important;
-  }
-  .dark .border-\[\#91A98B\]\/20,
-  .dark .border-\[\#91A98B\]\/25,
-  .dark .border-\[\#91A98B\]\/30,
-  .dark .border-stone-200,
-  .dark .border-\[\#E2E9E0\],
-  [data-theme="midnight"] .border-\[\#91A98B\]\/20,
-  [data-theme="midnight"] .border-\[\#91A98B\]\/25,
-  [data-theme="midnight"] .border-\[\#91A98B\]\/30,
-  [data-theme="midnight"] .border-stone-200,
-  [data-theme="midnight"] .border-\[\#E2E9E0\] {
-    border-color: rgba(255, 255, 255, 0.14) !important;
-  }
-  .dark input, .dark select, .dark textarea,
-  [data-theme="midnight"] input, [data-theme="midnight"] select, [data-theme="midnight"] textarea {
-    background-color: #141A16 !important;
-    color: #F7FAF7 !important;
-    border-color: rgba(255, 255, 255, 0.22) !important;
+  .dark input, .dark select, .dark textarea {
+    background-color: var(--color-canvas) !important;
+    color: var(--color-text-main) !important;
+    border-color: rgba(255, 255, 255, 0.20) !important;
   }
 
   html, body, #root {

@@ -64,10 +64,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     return rawTable.filter((row) => row.month <= rangeMonths);
   }, [rawTable, rangeMonths]);
 
-  // SVG dimensions
+  // SVG dimensions - Larger height for commanding visual prominence
   const svgWidth = 800;
-  const svgHeight = 440;
-  const padding = { top: 30, right: 65, bottom: 50, left: 60 };
+  const svgHeight = 520;
+  const padding = { top: 28, right: 62, bottom: 48, left: 58 };
   const plotWidth = svgWidth - padding.left - padding.right;
   const plotHeight = svgHeight - padding.top - padding.bottom;
 
@@ -285,19 +285,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       </div>
 
       {/* SVG Interactive Canvas - 100% vector responsive with zero horizontal overflow */}
-      <div className="relative w-full pt-2">
+      <div className="relative w-full pt-1">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto block select-none touch-manipulation"
+          className="w-full h-auto min-h-[300px] sm:min-h-[420px] block select-none touch-manipulation"
         >
           <defs>
             {/* Shaded bands gradient */}
             <linearGradient id="bandCoreGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0d9488" stopOpacity="0.08" />
+              <stop offset="0%" stopColor="#0d9488" stopOpacity="0.09" />
               <stop offset="100%" stopColor="#0d9488" stopOpacity="0.04" />
             </linearGradient>
             <linearGradient id="bandOuterGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.06" />
               <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
             </linearGradient>
             {/* Baby glow filter */}
@@ -319,12 +319,13 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   stroke="#e7e5e4"
                   strokeDasharray="3 3"
                   strokeWidth="1"
+                  className="stroke-stone-200 dark:stroke-stone-800"
                 />
                 <text
                   x={padding.left - 10}
                   y={y + 4}
                   textAnchor="end"
-                  className="text-[11px] fill-stone-400 font-mono"
+                  className="text-[11px] fill-stone-500 dark:fill-stone-400 font-mono"
                 >
                   {tickVal}
                 </text>
@@ -344,12 +345,13 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   y2={svgHeight - padding.bottom}
                   stroke="#f5f5f4"
                   strokeWidth="1"
+                  className="stroke-stone-100 dark:stroke-stone-800/80"
                 />
                 <text
                   x={x}
                   y={svgHeight - padding.bottom + 18}
                   textAnchor="middle"
-                  className="text-[11px] fill-stone-500 font-medium"
+                  className="text-[11px] fill-stone-600 dark:fill-stone-300 font-medium"
                 >
                   {month}m
                 </text>
@@ -362,7 +364,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             x={svgWidth / 2}
             y={svgHeight - 12}
             textAnchor="middle"
-            className="text-[11px] fill-stone-400 font-medium tracking-wide uppercase"
+            className="text-[11px] fill-stone-500 dark:fill-stone-400 font-semibold tracking-wide uppercase"
           >
             Age (Months)
           </text>
@@ -371,7 +373,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             y={18}
             transform="rotate(-90)"
             textAnchor="middle"
-            className="text-[11px] fill-stone-400 font-medium tracking-wide uppercase"
+            className="text-[11px] fill-stone-500 dark:fill-stone-400 font-semibold tracking-wide uppercase"
           >
             {chartType === 'weight'
               ? `Weight (${unitLabel})`
@@ -386,28 +388,28 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           <path d={bandOuterHigh} fill="url(#bandOuterGrad)" />
 
           {/* Reference Curves */}
-          <path d={pathP3} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" />
-          <path d={pathP15} fill="none" stroke="#99f6e4" strokeWidth="1.2" />
-          <path d={pathP50} fill="none" stroke="#14b8a6" strokeWidth="2" strokeDasharray="6 3" />
-          <path d={pathP85} fill="none" stroke="#99f6e4" strokeWidth="1.2" />
-          <path d={pathP97} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" />
+          <path d={pathP3} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" className="stroke-stone-300 dark:stroke-stone-700" />
+          <path d={pathP15} fill="none" stroke="#99f6e4" strokeWidth="1.2" className="stroke-teal-300 dark:stroke-teal-700" />
+          <path d={pathP50} fill="none" stroke="#0d9488" strokeWidth="2.2" strokeDasharray="6 3" className="stroke-teal-600 dark:stroke-teal-400" />
+          <path d={pathP85} fill="none" stroke="#99f6e4" strokeWidth="1.2" className="stroke-teal-300 dark:stroke-teal-700" />
+          <path d={pathP97} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" className="stroke-stone-300 dark:stroke-stone-700" />
 
           {/* Percentile labels on the right edge */}
           {filteredTable.length > 0 && (() => {
             const lastRow = filteredTable[filteredTable.length - 1];
             const pList = [
-              { label: '97th', val: lastRow.p97, color: 'text-stone-400' },
-              { label: '85th', val: lastRow.p85, color: 'text-teal-600' },
-              { label: '50th', val: lastRow.p50, color: 'text-teal-700 font-semibold' },
-              { label: '15th', val: lastRow.p15, color: 'text-teal-600' },
-              { label: '3rd', val: lastRow.p3, color: 'text-stone-400' },
+              { label: '97th', val: lastRow.p97, cls: 'fill-stone-400 dark:fill-stone-500' },
+              { label: '85th', val: lastRow.p85, cls: 'fill-teal-700 dark:fill-teal-400' },
+              { label: '50th', val: lastRow.p50, cls: 'fill-teal-800 dark:fill-teal-300 font-bold' },
+              { label: '15th', val: lastRow.p15, cls: 'fill-teal-700 dark:fill-teal-400' },
+              { label: '3rd', val: lastRow.p3, cls: 'fill-stone-400 dark:fill-stone-500' },
             ];
             return pList.map((p, idx) => (
               <text
                 key={idx}
                 x={svgWidth - padding.right + 8}
                 y={getY(convertValue(p.val)) + 4}
-                className={`text-[10px] font-mono fill-stone-500`}
+                className={`text-[10px] font-mono ${p.cls}`}
               >
                 {p.label}
               </text>

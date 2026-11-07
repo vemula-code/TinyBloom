@@ -441,90 +441,75 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const palettes: {
     id: PaletteTheme;
     label: string;
+    category: 'nature' | 'apps';
     appInspiration: string;
     desc: string;
     color: string;
     border: string;
     badge?: string;
   }[] = [
+    // 3 Themes for New Parents (Tree Growth, Nature & Living Nursery)
     {
       id: 'sage',
       label: 'Botanical Sage',
-      appInspiration: 'Nara Baby Style',
-      desc: 'Fresh eucalyptus, calm botanical greens & warm cream',
-      color: '#4A7347',
-      border: '#D4E2D3',
-      badge: 'Popular',
+      category: 'nature',
+      appInspiration: 'Signature · Sprout Grow',
+      desc: 'Gentle eucalyptus sage, living sprout & warm oat canvas',
+      color: '#3D6A3B',
+      border: '#C8DEC6',
+      badge: 'Keep Sage',
     },
     {
-      id: 'slate',
-      label: 'Apple Slate',
-      appInspiration: 'iOS System & Apple Health',
-      desc: 'Minimalist system blue, crisp pearl gray & high contrast',
+      id: 'olive',
+      label: 'Forest Oak & Sprout',
+      category: 'nature',
+      appInspiration: 'Tree Grow & Living Earth',
+      desc: 'Deep forest oak, grounding moss & quiet nursery peace',
+      color: '#38583B',
+      border: '#C4D7C6',
+      badge: 'Tree Grow',
+    },
+    {
+      id: 'honey',
+      label: 'Warm Honey & Oat',
+      category: 'nature',
+      appInspiration: 'Cozy Nursery Glow',
+      desc: 'Soft golden honey, toasted oat milk & comforting warmth',
+      color: '#94571E',
+      border: '#EAD7C2',
+      badge: 'Cozy',
+    },
+
+    // 3 Themes Inspired by Top Mobile Apps
+    {
+      id: 'apple-health',
+      label: 'Apple Health',
+      category: 'apps',
+      appInspiration: 'iOS Health & Fitness',
+      desc: 'Precision system blue, pearl slate & clinical high contrast',
       color: '#2563EB',
       border: '#BFDBFE',
-      badge: 'Standard',
+      badge: 'Top App',
     },
     {
-      id: 'blush',
-      label: 'Rose & Blush',
-      appInspiration: 'What to Expect & Ovia Style',
-      desc: 'Warm petal rose, soft blush & comforting nursery tones',
-      color: '#C24A66',
-      border: '#FECDD3',
-      badge: 'Standard',
+      id: 'huckleberry',
+      label: 'Huckleberry Pediatric',
+      category: 'apps',
+      appInspiration: 'Pediatric Clinical Sky',
+      desc: 'Soothing pediatric teal, serene porcelain & trustworthy clarity',
+      color: '#1C6B7C',
+      border: '#BFE0E7',
+      badge: 'Top App',
     },
     {
-      id: 'sky',
-      label: 'Soft Mist Blue',
-      appInspiration: 'Huckleberry Pediatric Style',
-      desc: 'Classic pediatric sky blue, soothing calm porcelain tone',
-      color: '#386C94',
-      border: '#CCE0EE',
-      badge: 'Standard',
-    },
-    {
-      id: 'lavender',
-      label: 'Lavender Twilight',
-      appInspiration: 'Calm & Moshi Sleep Style',
-      desc: 'Soothing bedtime lilac & evening violet for restful routines',
-      color: '#6D5299',
-      border: '#DDD6FE',
-      badge: 'Bedtime',
-    },
-    {
-      id: 'linen',
-      label: 'Warm Linen & Oatmeal',
-      appInspiration: 'Hatch Baby & Earth Tones',
-      desc: 'Cashmere earth tones, warm sand, and zero eye strain',
-      color: '#855835',
-      border: '#E8DED1',
-    },
-    {
-      id: 'amber',
-      label: 'Sunlit Honey & Amber',
-      appInspiration: 'Warm Glow & Cozy Nursery',
-      desc: 'Golden honey and warm oat, cheerful & comforting',
-      color: '#B26514',
-      border: '#FED7AA',
-    },
-    {
-      id: 'midnight',
-      label: 'Nursery Night (High Contrast)',
-      appInspiration: '2 AM Feedings Gentle Glow',
-      desc: 'Deep soothing dark green with crystal-clear white text',
-      color: '#76C476',
-      border: '#334839',
-      badge: '2 AM Dark',
-    },
-    {
-      id: 'oled',
-      label: 'Pure OLED Black',
-      appInspiration: 'True Black (#000000) Screen',
-      desc: '100% pitch black for zero glare in pitch black rooms & battery saving',
-      color: '#38BDF8',
-      border: '#1E293B',
-      badge: 'True Black',
+      id: 'hatch',
+      label: 'Hatch Sleep & Calm',
+      category: 'apps',
+      appInspiration: 'Bedtime Rest & Twilight',
+      desc: 'Gentle evening twilight lilac, soothing bedtime routines',
+      color: '#684C95',
+      border: '#DCD0F0',
+      badge: 'Top App',
     },
   ];
 
@@ -908,12 +893,12 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </h3>
                 </div>
 
-                {/* Mode: Light vs Dark vs Midnight vs OLED */}
+                {/* Mode: Light vs Dark vs System */}
                 <div className="space-y-2">
-                  <span className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                  <span className="text-xs font-semibold block text-[var(--color-text-main)]">
                     Display Appearance
                   </span>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-3 gap-2">
                     <button
                       type="button"
                       onClick={() => onToggleThemeMode('system')}
@@ -929,14 +914,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => {
-                        onToggleThemeMode('light');
-                        if (paletteTheme === 'midnight' || paletteTheme === 'oled') {
-                          onChangePaletteTheme('sage');
-                        }
-                      }}
+                      onClick={() => onToggleThemeMode('light')}
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        themeMode === 'light' && paletteTheme !== 'midnight' && paletteTheme !== 'oled'
+                        themeMode === 'light'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
                           : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
@@ -947,12 +927,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                     <button
                       type="button"
-                      onClick={() => {
-                        onToggleThemeMode('dark');
-                        onChangePaletteTheme('midnight');
-                      }}
+                      onClick={() => onToggleThemeMode('dark')}
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        paletteTheme === 'midnight'
+                        themeMode === 'dark'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
                           : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                       }`}
@@ -960,90 +937,137 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <Moon className="w-4 h-4" />
                       <span>Nursery Dark</span>
                     </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        onToggleThemeMode('dark');
-                        onChangePaletteTheme('oled');
-                      }}
-                      className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
-                        paletteTheme === 'oled'
-                          ? 'bg-sky-500 text-white border-sky-400 shadow-xs'
-                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
-                      }`}
-                    >
-                      <div className="w-3.5 h-3.5 rounded-full bg-black border border-white/60 shrink-0" />
-                      <span>OLED Black</span>
-                    </button>
                   </div>
                 </div>
 
-                {/* Color Palette Choices */}
-                <div className="space-y-2.5 pt-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
-                      Color Palettes (Standard Mobile App Styles)
-                    </span>
-                    <span className="text-[10px] text-[var(--color-text-muted,#6E7B6C)] font-medium">
-                      {palettes.length} styles
-                    </span>
+                {/* Color Palette Choices - Exactly 6 Curated Themes */}
+                <div className="space-y-4 pt-2">
+                  {/* Category 1: Nature & Tree Growth for New Parents (3 themes) */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
+                        <span>🌱</span>
+                        <span>Nature &amp; Tree Growth (New Parents)</span>
+                      </span>
+                      <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
+                        3 styles
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 gap-2">
+                      {palettes
+                        .filter((p) => p.category === 'nature')
+                        .map((p) => {
+                          const isSelected = paletteTheme === p.id;
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => onChangePaletteTheme(p.id)}
+                              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 ring-2 ring-[var(--color-primary)]/30 shadow-xs'
+                                  : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className="w-7 h-7 rounded-xl shrink-0 shadow-2xs border border-white/80 dark:border-stone-700 flex items-center justify-center"
+                                  style={{ backgroundColor: p.color }}
+                                />
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-bold text-[var(--color-text-main)]">
+                                      {p.label}
+                                    </span>
+                                    <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                                      {p.appInspiration}
+                                    </span>
+                                    {p.badge && (
+                                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-amber-500/15 text-amber-800 dark:text-amber-300">
+                                        {p.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-[var(--color-text-muted)] block truncate mt-0.5">
+                                    {p.desc}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isSelected && (
+                                <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
+                                  <Check className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                    </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2.5">
-                    {palettes.map((p) => {
-                      const isSelected = paletteTheme === p.id;
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => {
-                            onChangePaletteTheme(p.id);
-                            if (p.id === 'midnight' || p.id === 'oled') {
-                              onToggleThemeMode('dark');
-                            } else if (themeMode === 'dark') {
-                              onToggleThemeMode('light');
-                            }
-                          }}
-                          className={`flex items-center justify-between p-3.5 rounded-2xl border text-left transition-all cursor-pointer ${
-                            isSelected
-                              ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-2 ring-[var(--color-primary,#91A98B)]/40 shadow-xs'
-                              : 'border-stone-200 dark:border-stone-700/80 bg-white dark:bg-[#1D241F] hover:border-[var(--color-primary,#91A98B)]/50'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3 min-w-0">
-                            <span
-                              className="w-7 h-7 rounded-xl shrink-0 shadow-2xs border border-white/80 dark:border-stone-700 flex items-center justify-center"
-                              style={{ backgroundColor: p.color }}
-                            />
-                            <div className="min-w-0">
-                              <div className="flex items-center gap-1.5 flex-wrap">
-                                <span className="text-xs font-bold text-[var(--color-text-main,#303832)]">
-                                  {p.label}
-                                </span>
-                                <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-stone-100 dark:bg-stone-800 text-stone-600 dark:text-stone-300">
-                                  {p.appInspiration}
-                                </span>
-                                {p.badge && (
-                                  <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
-                                    {p.badge}
-                                  </span>
-                                )}
-                              </div>
-                              <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block truncate mt-0.5">
-                                {p.desc}
-                              </span>
-                            </div>
-                          </div>
+                  {/* Category 2: Top Mobile Apps (3 themes) */}
+                  <div className="space-y-2 pt-1 border-t border-[var(--color-card-border)]/60">
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
+                        <span>📱</span>
+                        <span>Top Known Mobile Apps</span>
+                      </span>
+                      <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
+                        3 styles
+                      </span>
+                    </div>
 
-                          {isSelected && (
-                            <div className="w-5 h-5 rounded-full bg-[var(--color-primary,#5D7C57)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
-                              <Check className="w-3.5 h-3.5" />
-                            </div>
-                          )}
-                        </button>
-                      );
-                    })}
+                    <div className="grid grid-cols-1 gap-2">
+                      {palettes
+                        .filter((p) => p.category === 'apps')
+                        .map((p) => {
+                          const isSelected = paletteTheme === p.id;
+                          return (
+                            <button
+                              key={p.id}
+                              type="button"
+                              onClick={() => onChangePaletteTheme(p.id)}
+                              className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
+                                isSelected
+                                  ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 ring-2 ring-[var(--color-primary)]/30 shadow-xs'
+                                  : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40'
+                              }`}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <span
+                                  className="w-7 h-7 rounded-xl shrink-0 shadow-2xs border border-white/80 dark:border-stone-700 flex items-center justify-center"
+                                  style={{ backgroundColor: p.color }}
+                                />
+                                <div className="min-w-0">
+                                  <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-xs font-bold text-[var(--color-text-main)]">
+                                      {p.label}
+                                    </span>
+                                    <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-sky-500/10 text-sky-800 dark:text-sky-300">
+                                      {p.appInspiration}
+                                    </span>
+                                    {p.badge && (
+                                      <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                                        {p.badge}
+                                      </span>
+                                    )}
+                                  </div>
+                                  <span className="text-[11px] text-[var(--color-text-muted)] block truncate mt-0.5">
+                                    {p.desc}
+                                  </span>
+                                </div>
+                              </div>
+
+                              {isSelected && (
+                                <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
+                                  <Check className="w-3.5 h-3.5" />
+                                </div>
+                              )}
+                            </button>
+                          );
+                        })}
+                    </div>
                   </div>
                 </div>
               </div>
