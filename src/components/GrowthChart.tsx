@@ -178,7 +178,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
     const earliestDate = sortedEntries[0]?.date;
 
-    sortedEntries.forEach((entry) => {
+    sortedEntries.forEach((entry, idx) => {
       let val: number | undefined;
       if (chartType === 'weight') val = entry.weightKg;
       else if (chartType === 'height') val = entry.heightCm;
@@ -187,12 +187,23 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       if (val !== undefined && val > 0) {
         let plotAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
 
-        // If plotAge is 0 or invalid, but entry has a date after birthDate or earliest checkup
+        // If plotAge is 0 or invalid, but entry has a date
         if (plotAge <= 0 && entry.date) {
           if (babyBirthDate && entry.date > babyBirthDate) {
             plotAge = calculateAge(babyBirthDate, entry.date).exactMonths;
           } else if (earliestDate && entry.date > earliestDate) {
             plotAge = calculateAge(earliestDate, entry.date).exactMonths;
+          }
+        }
+
+        // If plotAge is still 0, but this is a subsequent entry (not the newborn baseline at index 0),
+        // prevent stacking dots on the Y-axis
+        if (plotAge <= 0 && idx > 0) {
+          const prevPt = pts[pts.length - 1];
+          if (prevPt) {
+            plotAge = prevPt.entry.ageMonths + 2;
+          } else {
+            plotAge = idx * 2;
           }
         }
 

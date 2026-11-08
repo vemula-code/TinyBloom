@@ -184,6 +184,19 @@ export default function App() {
     } catch {}
   };
 
+  // Preserve AI Studio session auth token across mobile PWA and external tabs
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location) {
+        const params = new URLSearchParams(window.location.search);
+        const token = params.get('__aistudio_auth_token');
+        if (token) {
+          localStorage.setItem('tinybloom_aistudio_token', token);
+        }
+      }
+    } catch {}
+  }, []);
+
   // Apply theme classes and attributes to root document
   useEffect(() => {
     const root = document.documentElement;

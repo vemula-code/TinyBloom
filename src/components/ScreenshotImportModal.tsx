@@ -311,12 +311,6 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     const origin = typeof window !== 'undefined' && window.location.origin && window.location.origin.startsWith('http')
       ? window.location.origin
       : '';
-    const candidateEndpoints = [
-      '/api/extract-growth-screenshot',
-      'api/extract-growth-screenshot',
-      origin ? `${origin}/api/extract-growth-screenshot` : '',
-      '/api/extract-screenshot',
-    ].filter(Boolean);
 
     try {
       for (let i = 0; i < selectedImages.length; i++) {
@@ -332,16 +326,24 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
           let response: Response | null = null;
           let lastFetchError: any = null;
 
-          // Attempt endpoints with same-origin credentials (avoids CORS wildcard rejection on mobile PWA)
-          for (const endpoint of candidateEndpoints) {
+          // Attempt direct /api/extract-growth-screenshot first, then fallback to origin
+          const endpointsToTry = ['/api/extract-growth-screenshot'];
+          if (origin && !endpointsToTry.includes(`${origin}/api/extract-growth-screenshot`)) {
+            endpointsToTry.push(`${origin}/api/extract-growth-screenshot`);
+          }
+
+          for (const ep of endpointsToTry) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), 60000);
             try {
-              response = await fetch(endpoint, {
+              response = await fetch(ep, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
-                credentials: 'same-origin',
+                credentials: 'include',
+                signal: controller.signal,
                 body: JSON.stringify({
                   imageBase64: img.base64,
                   mimeType: img.mimeType,
@@ -350,12 +352,13 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 }),
               });
 
-              // If endpoint was reached, break
               if (response.status !== 404) {
                 break;
               }
-            } catch (err: any) {
-              lastFetchError = err;
+            } catch (fetchErr: any) {
+              lastFetchError = fetchErr;
+            } finally {
+              clearTimeout(timer);
             }
           }
 
@@ -383,8 +386,8 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
               errorMsg = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
             } else if (response.status === 502 || response.status === 503 || response.status === 504) {
               errorMsg = 'AI Vision service is temporarily busy. Please wait a few moments and try scanning again.';
-            } else if (response.status === 404) {
-              errorMsg = 'Scanner service is temporarily unavailable. Please verify connection and retry.';
+            } else if (response.status === 404 || rawText.includes('<html') || rawText.includes('The page could not be found')) {
+              errorMsg = 'Scanner service connection was interrupted. Please retry scanning.';
             } else {
               errorMsg = `Server returned status ${response.status}. Please try again.`;
             }
@@ -430,7 +433,9 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   headCm = Math.round(entry.headCircumferenceIn * 2.54 * 10) / 10;
                 }
 
-                let ageMonths = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : undefined;
+                let ageMonths = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) && entry.ageMonths >= 0
+                  ? Math.round(entry.ageMonths * 10) / 10
+                  : undefined;
 
                 // Normalize date if needed (YYYY-MM-DD)
                 let entryDate = entry.date ? String(entry.date).trim() : '';
@@ -438,8 +443,9 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   const parsedTime = Date.parse(entryDate);
                   if (!isNaN(parsedTime)) {
                     entryDate = new Date(parsedTime).toISOString().split('T')[0];
-                  } else if (ageMonths !== undefined && birthDate) {
-                    const birthMs = new Date(birthDate).getTime();
+                  } else if (ageMonths !== undefined && (detectedBirthDate || birthDate)) {
+                    const bDate = detectedBirthDate || birthDate;
+                    const birthMs = new Date(bDate).getTime();
                     if (!isNaN(birthMs)) {
                       entryDate = new Date(birthMs + ageMonths * 30.4375 * 86400000).toISOString().split('T')[0];
                     } else {
@@ -450,23 +456,48 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   }
                 }
 
-                const isDup = existingEntries.some(
-                  (e) => e.date === entryDate && Math.abs((e.weightKg || 0) - (weightKg || 0)) < 0.05
+                // If ageMonths was missing but entryDate and birthDate are known
+                const refBirth = detectedBirthDate || (birthDate !== '2026-04-15' ? birthDate : '');
+                if (ageMonths === undefined && refBirth && entryDate >= refBirth) {
+                  const ageCalc = calculateAge(refBirth, entryDate);
+                  if (ageCalc.exactMonths >= 0) {
+                    ageMonths = Math.round(ageCalc.exactMonths * 10) / 10;
+                  }
+                }
+
+                // Unify measurements for the same visit (same date or same ageMonths)
+                const existingIdx = aggregatedEntries.findIndex(
+                  (item) => (entryDate && item.date === entryDate) || (ageMonths !== undefined && item.ageMonths === ageMonths)
                 );
 
-                aggregatedEntries.push({
-                  id: `extracted-${Date.now()}-${i}-${aggregatedEntries.length}-${Math.random().toString(36).substring(2, 7)}`,
-                  selected: true,
-                  date: entryDate,
-                  ageMonths,
-                  weightKg,
-                  heightCm,
-                  headCircumferenceCm: headCm,
-                  notes: entry.notes || (data.sourceDetected ? `Imported from ${data.sourceDetected}` : `From screenshot ${i + 1}`),
-                  sourceApp: entry.sourceApp || data.sourceDetected || `Screenshot ${i + 1}`,
-                  confidence: entry.confidence || 'high',
-                  isDuplicate: isDup,
-                });
+                if (existingIdx >= 0) {
+                  const target = aggregatedEntries[existingIdx];
+                  if (target.weightKg === undefined && weightKg !== undefined) target.weightKg = weightKg;
+                  if (target.heightCm === undefined && heightCm !== undefined) target.heightCm = heightCm;
+                  if (target.headCircumferenceCm === undefined && headCm !== undefined) target.headCircumferenceCm = headCm;
+                  if (target.ageMonths === undefined && ageMonths !== undefined) target.ageMonths = ageMonths;
+                  if (entry.notes && !target.notes?.includes(entry.notes)) {
+                    target.notes = target.notes ? `${target.notes} | ${entry.notes}` : entry.notes;
+                  }
+                } else {
+                  const isDup = existingEntries.some(
+                    (e) => e.date === entryDate && Math.abs((e.weightKg || 0) - (weightKg || 0)) < 0.05
+                  );
+
+                  aggregatedEntries.push({
+                    id: `extracted-${Date.now()}-${i}-${aggregatedEntries.length}-${Math.random().toString(36).substring(2, 7)}`,
+                    selected: true,
+                    date: entryDate,
+                    ageMonths,
+                    weightKg,
+                    heightCm,
+                    headCircumferenceCm: headCm,
+                    notes: entry.notes || (data.sourceDetected ? `Imported from ${data.sourceDetected}` : `From screenshot ${i + 1}`),
+                    sourceApp: entry.sourceApp || data.sourceDetected || `Screenshot ${i + 1}`,
+                    confidence: entry.confidence || 'high',
+                    isDuplicate: isDup,
+                  });
+                }
               }
             }
           }
@@ -564,64 +595,93 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
     }
   };
 
+  // Age in months edit
+  const handleAgeChange = (id: string, valStr: string) => {
+    const val = parseFloat(valStr);
+    if (isNaN(val) || val < 0) {
+      handleItemFieldChange(id, 'ageMonths', undefined);
+      return;
+    }
+    handleItemFieldChange(id, 'ageMonths', Math.round(val * 10) / 10);
+  };
+
   // Final confirm import
   const handleConfirmImport = () => {
     const selected = extractedItems.filter((item) => item.selected);
     if (selected.length === 0) return;
 
-    // Sort selected items chronologically
-    const sortedSelected = [...selected].sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    );
+    // Sort selected items chronologically by date or age
+    const sortedSelected = [...selected].sort((a, b) => {
+      const timeA = new Date(a.date).getTime();
+      const timeB = new Date(b.date).getTime();
+      if (!isNaN(timeA) && !isNaN(timeB) && timeA !== timeB) {
+        return timeA - timeB;
+      }
+      return (a.ageMonths ?? 0) - (b.ageMonths ?? 0);
+    });
     const earliestDate = sortedSelected[0]?.date;
 
     let effectiveBirthDate = (applyDetectedProfile && detectedBirthDate) ? detectedBirthDate : birthDate;
 
-    // Check if effectiveBirthDate is invalid, in the future, or after the earliest checkup
+    // Check if effectiveBirthDate is placeholder 2026-04-15 or after earliest checkup
     const todayIso = new Date().toISOString().split('T')[0];
     const isBirthDateNeedsInference =
       !effectiveBirthDate ||
-      effectiveBirthDate >= earliestDate ||
+      (earliestDate && effectiveBirthDate > earliestDate) ||
       effectiveBirthDate >= todayIso ||
       effectiveBirthDate === '2026-04-15';
 
-    if (isBirthDateNeedsInference && earliestDate) {
-      if (detectedBirthDate && detectedBirthDate < earliestDate) {
+    if (isBirthDateNeedsInference) {
+      if (detectedBirthDate && (!earliestDate || detectedBirthDate <= earliestDate)) {
         effectiveBirthDate = detectedBirthDate;
       } else {
-        // Look for an entry with an explicit age in months
+        // Look for an entry with an explicit age in months and a valid date
         const entryWithAge = sortedSelected.find(
-          (it) => typeof it.ageMonths === 'number' && it.ageMonths > 0
+          (it) => typeof it.ageMonths === 'number' && it.ageMonths > 0 && it.date && /^\d{4}-\d{2}-\d{2}$/.test(it.date)
         );
         if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
           const birthTime =
             new Date(entryWithAge.date).getTime() -
             entryWithAge.ageMonths * 30.4375 * 86400000;
           effectiveBirthDate = new Date(birthTime).toISOString().split('T')[0];
-        } else {
-          // Default earliest record as newborn 0m baseline
+        } else if (earliestDate && /^\d{4}-\d{2}-\d{2}$/.test(earliestDate)) {
+          // If earliest record is newborn (0m), that date is birth date
           effectiveBirthDate = earliestDate;
+        } else {
+          effectiveBirthDate = new Date(Date.now() - 180 * 86400000).toISOString().split('T')[0];
         }
       }
     }
 
     const formattedEntries: GrowthEntry[] = sortedSelected.map((item, idx) => {
-      let finalAgeMonths = typeof item.ageMonths === 'number' ? item.ageMonths : undefined;
-      const calc = calculateAge(effectiveBirthDate, item.date);
+      let finalAgeMonths: number;
 
-      if (calc.exactMonths > 0) {
-        finalAgeMonths = calc.exactMonths;
-      } else if (finalAgeMonths === undefined || finalAgeMonths <= 0) {
-        if (earliestDate && item.date > earliestDate) {
+      // 1. If explicit age in months was extracted or set by user, ALWAYS prioritize it!
+      if (typeof item.ageMonths === 'number' && !isNaN(item.ageMonths) && item.ageMonths >= 0) {
+        finalAgeMonths = item.ageMonths;
+      } else {
+        // 2. Otherwise calculate from effective birth date and item date
+        const calc = calculateAge(effectiveBirthDate, item.date);
+        if (calc.exactMonths >= 0) {
+          finalAgeMonths = calc.exactMonths;
+        } else if (earliestDate && item.date > earliestDate) {
           finalAgeMonths = calculateAge(earliestDate, item.date).exactMonths;
         } else {
-          finalAgeMonths = 0;
+          // If all dates are identical or newborn, distribute across visits (0m, 2m, 4m...)
+          finalAgeMonths = idx === 0 ? 0 : idx * 2;
         }
       }
 
+      // Ensure valid calendar date
+      let entryDate = item.date;
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(entryDate)) {
+        const entryMs = new Date(effectiveBirthDate).getTime() + finalAgeMonths * 30.4375 * 86400000;
+        entryDate = new Date(entryMs).toISOString().split('T')[0];
+      }
+
       return {
-        id: `entry-${item.date}-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
-        date: item.date,
+        id: `entry-${entryDate}-${Date.now()}-${idx}-${Math.random().toString(36).substring(2, 6)}`,
+        date: entryDate,
         ageMonths: Math.round(finalAgeMonths * 10) / 10,
         weightKg: item.weightKg,
         heightCm: item.heightCm,
@@ -630,7 +690,8 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         isPediatricianVisit:
           item.notes?.toLowerCase().includes('doctor') ||
           item.notes?.toLowerCase().includes('visit') ||
-          item.notes?.toLowerCase().includes('clinic'),
+          item.notes?.toLowerCase().includes('clinic') ||
+          item.notes?.toLowerCase().includes('pediatric'),
       };
     });
 
@@ -959,7 +1020,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                       </div>
 
                       {/* Editable Inputs Grid */}
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
                         {/* Date */}
                         <div>
                           <label className="block text-[10px] font-bold text-[var(--color-text-muted)] mb-0.5">
@@ -969,6 +1030,24 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                             type="date"
                             value={item.date}
                             onChange={(e) => handleItemFieldChange(item.id, 'date', e.target.value)}
+                            className="w-full text-xs font-semibold px-2 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-stone-50 dark:bg-stone-800 text-[var(--color-text-main)]"
+                          />
+                        </div>
+
+                        {/* Age in Months */}
+                        <div>
+                          <label className="block text-[10px] font-bold text-[var(--color-text-muted)] mb-0.5">
+                            Age (Mo)
+                          </label>
+                          <input
+                            key={`${item.id}-age`}
+                            type="number"
+                            step="0.1"
+                            min="0"
+                            max="60"
+                            placeholder="e.g. 4"
+                            value={item.ageMonths !== undefined ? item.ageMonths : ''}
+                            onChange={(e) => handleAgeChange(item.id, e.target.value)}
                             className="w-full text-xs font-semibold px-2 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-stone-50 dark:bg-stone-800 text-[var(--color-text-main)]"
                           />
                         </div>

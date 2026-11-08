@@ -14,6 +14,40 @@ async function startServer() {
   // Dev server and backend must always run on port 3000 where nginx proxies requests
   const PORT = 3000;
 
+  // Auto-verify that Nginx has the direct /api/ bypass so mobile PWA standalone calls never hit auth redirects
+  try {
+    const fs = await import('fs');
+    const { execSync } = await import('child_process');
+    const nginxConfPath = '/etc/nginx/nginx.conf';
+    if (fs.existsSync(nginxConfPath)) {
+      const conf = fs.readFileSync(nginxConfPath, 'utf8');
+      if (!conf.includes('location /api/ {')) {
+        const target = '        # Serve the app for all other paths.\n        location / {';
+        const replacement = `        # Direct API proxy to Express backend (avoids auth bridge redirects for mobile PWA)
+        location /api/ {
+            client_max_body_size 50M;
+            proxy_pass http://localhost:3000;
+            proxy_set_header Host localhost:3000;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_read_timeout 120s;
+            proxy_connect_timeout 10s;
+        }
+
+        # Serve the app for all other paths.
+        location / {`;
+        if (conf.includes(target)) {
+          fs.writeFileSync(nginxConfPath, conf.replace(target, replacement));
+          execSync('nginx -t && nginx -s reload', { stdio: 'ignore' });
+        }
+      }
+    }
+  } catch {
+    // Non-fatal if running in environment where nginx is managed externally
+  }
+
   // Allow larger payload for screenshot images from phone and web
   app.use(express.json({ limit: '50mb' }));
   app.use(express.urlencoded({ extended: true, limit: '50mb' }));
@@ -130,7 +164,7 @@ CRITICAL MEASUREMENT EXTRACTION RULES:
 Return strictly structured JSON matching the schema.`;
 
       // Candidate models: start with gemini-3.1-flash-lite for instant, high-availability OCR, followed by flash fallbacks
-      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest'];
       let responseText: string | undefined;
       let lastError: any = null;
 
@@ -225,6 +259,60 @@ Return strictly structured JSON matching the schema.`;
       }
 
       const parsedData = JSON.parse(cleanText || '{}');
+
+      // Post-process & consolidate entries: Ensure weight, height, and head circumference for the same checkup are combined
+      if (Array.isArray(parsedData.entries)) {
+        const unifiedMap = new Map<string, any>();
+        let currentEffectiveBirthDate = parsedData.detectedBirthDate || babyBirthDate;
+
+        for (let idx = 0; idx < parsedData.entries.length; idx++) {
+          const entry = parsedData.entries[idx];
+          if (!entry) continue;
+
+          // Normalize numeric values
+          let ageMo = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : undefined;
+          let entryDate = entry.date ? String(entry.date).trim() : '';
+
+          // Deduce birth date if both date and age are present
+          if (entryDate && /^\d{4}-\d{2}-\d{2}$/.test(entryDate) && typeof ageMo === 'number' && ageMo > 0 && !currentEffectiveBirthDate) {
+            const bMs = new Date(entryDate).getTime() - ageMo * 30.4375 * 86400000;
+            currentEffectiveBirthDate = new Date(bMs).toISOString().split('T')[0];
+            if (!parsedData.detectedBirthDate) {
+              parsedData.detectedBirthDate = currentEffectiveBirthDate;
+            }
+          }
+
+          // Group key: prefer explicit date, then ageMonths, else fallback index
+          const groupKey = (entryDate && entryDate !== 'Unknown' && /^\d{4}-\d{2}-\d{2}$/.test(entryDate))
+            ? `date-${entryDate}`
+            : (typeof ageMo === 'number' ? `age-${ageMo}` : `visit-${idx}`);
+
+          if (!unifiedMap.has(groupKey)) {
+            unifiedMap.set(groupKey, {
+              ...entry,
+              date: entryDate,
+              ageMonths: ageMo,
+            });
+          } else {
+            const existing = unifiedMap.get(groupKey);
+            if (existing.weightKg === undefined && entry.weightKg !== undefined) existing.weightKg = entry.weightKg;
+            if (existing.weightLbs === undefined && entry.weightLbs !== undefined) existing.weightLbs = entry.weightLbs;
+            if (existing.weightOz === undefined && entry.weightOz !== undefined) existing.weightOz = entry.weightOz;
+            if (existing.heightCm === undefined && entry.heightCm !== undefined) existing.heightCm = entry.heightCm;
+            if (existing.heightIn === undefined && entry.heightIn !== undefined) existing.heightIn = entry.heightIn;
+            if (existing.headCircumferenceCm === undefined && entry.headCircumferenceCm !== undefined) existing.headCircumferenceCm = entry.headCircumferenceCm;
+            if (existing.headCircumferenceIn === undefined && entry.headCircumferenceIn !== undefined) existing.headCircumferenceIn = entry.headCircumferenceIn;
+            if (existing.ageMonths === undefined && ageMo !== undefined) existing.ageMonths = ageMo;
+            if (!existing.date && entryDate) existing.date = entryDate;
+            if (entry.notes && !existing.notes?.includes(entry.notes)) {
+              existing.notes = existing.notes ? `${existing.notes} | ${entry.notes}` : entry.notes;
+            }
+          }
+        }
+
+        parsedData.entries = Array.from(unifiedMap.values());
+      }
+
       return res.json({
         success: true,
         data: parsedData,
