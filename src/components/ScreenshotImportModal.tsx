@@ -323,26 +323,29 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         setProcessingStatus(`Scanning screenshot ${i + 1} of ${selectedImages.length} (${img.name})...`);
 
         try {
-          let response: Response | null = null;
-          let lastFetchError: any = null;
+          let parsedDataResult: any = null;
+          let lastErrorMessage = '';
 
-          // Attempt direct /api/extract-growth-screenshot first, then fallback to origin
-          const endpointsToTry = ['/api/extract-growth-screenshot'];
-          if (origin && !endpointsToTry.includes(`${origin}/api/extract-growth-screenshot`)) {
-            endpointsToTry.push(`${origin}/api/extract-growth-screenshot`);
+          const devBackendUrl = 'https://ais-dev-aqz7o4tyrwgxpak7f2uxxd-732291586868.us-west2.run.app/api/extract-growth-screenshot';
+          const candidateEndpoints: string[] = ['/api/extract-growth-screenshot', '/api/extract-screenshot', devBackendUrl];
+          if (origin && !origin.includes('localhost') && !origin.includes('127.0.0.1')) {
+            const cleanOrigin = origin.replace('ais-pre', 'ais-dev');
+            candidateEndpoints.unshift(`${cleanOrigin}/api/extract-growth-screenshot`);
           }
 
-          for (const ep of endpointsToTry) {
+          // Deduplicate candidate endpoints
+          const uniqueEndpoints = Array.from(new Set(candidateEndpoints));
+
+          for (const ep of uniqueEndpoints) {
             const controller = new AbortController();
             const timer = setTimeout(() => controller.abort(), 60000);
             try {
-              response = await fetch(ep, {
+              const response = await fetch(ep, {
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
                   'Accept': 'application/json',
                 },
-                credentials: 'include',
                 signal: controller.signal,
                 body: JSON.stringify({
                   imageBase64: img.base64,
@@ -352,54 +355,50 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 }),
               });
 
-              if (response.status !== 404) {
+              if (response.status === 404) {
+                // Try next candidate
+                continue;
+              }
+
+              const rawText = await response.text();
+              let resData: any = null;
+              try {
+                resData = JSON.parse(rawText);
+              } catch {
+                resData = null;
+              }
+
+              if (response.ok && resData && resData.success) {
+                parsedDataResult = resData.data;
+                break;
+              }
+
+              if (resData && resData.error) {
+                lastErrorMessage = formatErrorMessage(resData.error);
+                if (response.status === 400 || response.status === 413 || response.status === 503) {
+                  // Definitive response from backend
+                  break;
+                }
+              } else if (response.status === 413) {
+                lastErrorMessage = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
                 break;
               }
             } catch (fetchErr: any) {
-              lastFetchError = fetchErr;
+              lastErrorMessage = formatErrorMessage(fetchErr);
             } finally {
               clearTimeout(timer);
             }
           }
 
-          if (!response) {
-            const cleanFetchErr = formatErrorMessage(lastFetchError);
-            throw new Error(cleanFetchErr || 'Could not connect to server. Please check your network connection.');
-          }
-
-          // Safely parse text first to prevent "Unexpected token T... is not valid JSON" if gateway returns HTML
-          const rawText = await response.text();
-          let resData: any = null;
-          try {
-            resData = JSON.parse(rawText);
-          } catch {
-            resData = null;
-          }
-
-          if (!response.ok || !resData || !resData.success) {
-            let errorMsg = 'Failed to extract growth records.';
-            if (resData?.error) {
-              errorMsg = formatErrorMessage(resData.error);
-            } else if (resData?.message) {
-              errorMsg = formatErrorMessage(resData.message);
-            } else if (response.status === 413) {
-              errorMsg = `Screenshot "${img.name}" is too large. Please crop or select a smaller image.`;
-            } else if (response.status === 502 || response.status === 503 || response.status === 504) {
-              errorMsg = 'AI Vision service is temporarily busy. Please wait a few moments and try scanning again.';
-            } else if (response.status === 404 || rawText.includes('<html') || rawText.includes('The page could not be found')) {
-              errorMsg = 'Scanner service connection was interrupted. Please retry scanning.';
-            } else {
-              errorMsg = `Server returned status ${response.status}. Please try again.`;
-            }
-
-            if (resData?.needsKey) {
-              throw new Error(errorMsg || 'Gemini API key is required on the server to read screenshots.');
+          if (!parsedDataResult) {
+            let errorMsg = lastErrorMessage || 'Could not connect to AI Vision scanner. Please check your network connection and retry.';
+            if (errorMsg.includes('404') || errorMsg.includes('The page could not be found')) {
+              errorMsg = 'Could not reach the AI Vision scanner. Please verify your internet connection or reload the app.';
             }
             throw new Error(errorMsg);
           }
 
-          if (resData.success && resData.data) {
-            const data = resData.data;
+          const data = parsedDataResult;
             if (data.sourceDetected && !detectedApp) {
               detectedApp = data.sourceDetected;
             }
@@ -500,7 +499,6 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 }
               }
             }
-          }
         } catch (innerErr: any) {
           console.warn(`Extraction error for screenshot ${img.name}:`, innerErr);
           failedImagesCount++;

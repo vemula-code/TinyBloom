@@ -164,7 +164,7 @@ CRITICAL MEASUREMENT EXTRACTION RULES:
 Return strictly structured JSON matching the schema.`;
 
       // Candidate models: start with gemini-3.1-flash-lite for instant, high-availability OCR, followed by flash fallbacks
-      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-3.1-flash-lite', 'gemini-3.8-flash', 'gemini-flash-latest'];
       let responseText: string | undefined;
       let lastError: any = null;
 
@@ -262,6 +262,23 @@ Return strictly structured JSON matching the schema.`;
 
       // Post-process & consolidate entries: Ensure weight, height, and head circumference for the same checkup are combined
       if (Array.isArray(parsedData.entries)) {
+        // Forward fill missing date/ageMonths if model returned measurements as separate rows for the same visit
+        let lastKnownDate = '';
+        let lastKnownAge: number | undefined = undefined;
+        for (const entry of parsedData.entries) {
+          const d = entry.date ? String(entry.date).trim() : '';
+          if (d && /^\d{4}-\d{2}-\d{2}$/.test(d)) {
+            lastKnownDate = d;
+          } else if (lastKnownDate && (!d || d === 'Unknown' || d === '')) {
+            entry.date = lastKnownDate;
+          }
+          if (typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths)) {
+            lastKnownAge = entry.ageMonths;
+          } else if (lastKnownAge !== undefined && (entry.ageMonths === undefined || isNaN(entry.ageMonths))) {
+            entry.ageMonths = lastKnownAge;
+          }
+        }
+
         const unifiedMap = new Map<string, any>();
         let currentEffectiveBirthDate = parsedData.detectedBirthDate || babyBirthDate;
 

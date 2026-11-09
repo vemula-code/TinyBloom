@@ -184,6 +184,16 @@ export default function App() {
     } catch {}
   };
 
+  // Redirect any legacy or bookmarked ais-pre domain to active ais-dev server
+  useEffect(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location && window.location.hostname.includes('ais-pre')) {
+        const targetUrl = window.location.href.replace('ais-pre', 'ais-dev');
+        window.location.replace(targetUrl);
+      }
+    } catch {}
+  }, []);
+
   // Preserve AI Studio session auth token across mobile PWA and external tabs
   useEffect(() => {
     try {
@@ -195,6 +205,17 @@ export default function App() {
         }
       }
     } catch {}
+  }, []);
+
+  // Proactively check and update service worker on mobile PWA so users never run stale versions
+  useEffect(() => {
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.update().catch(() => {});
+        }
+      });
+    }
   }, []);
 
   // Apply theme classes and attributes to root document

@@ -12,9 +12,9 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ className = 
   const [showModal, setShowModal] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const sharedProductionUrl = 'https://ais-pre-aqz7o4tyrwgxpak7f2uxxd-732291586868.us-west2.run.app';
+  const sharedProductionUrl = 'https://ais-dev-aqz7o4tyrwgxpak7f2uxxd-732291586868.us-west2.run.app';
   const currentUrl = typeof window !== 'undefined' ? window.location.href : sharedProductionUrl;
-  const appUrl = (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1') || currentUrl.includes('webcontainer'))
+  const appUrl = (currentUrl.includes('localhost') || currentUrl.includes('127.0.0.1') || currentUrl.includes('webcontainer') || currentUrl.includes('ais-pre'))
     ? sharedProductionUrl
     : currentUrl;
 

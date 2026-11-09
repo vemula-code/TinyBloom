@@ -55,6 +55,12 @@ export default defineConfig(() => {
             {
               urlPattern: ({ url }) => url.pathname.includes('/api/'),
               handler: 'NetworkOnly',
+              method: 'POST',
+            },
+            {
+              urlPattern: ({ url }) => url.pathname.includes('/api/'),
+              handler: 'NetworkOnly',
+              method: 'GET',
             },
           ],
           globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg}'],
