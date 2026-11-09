@@ -1078,6 +1078,7 @@ export default function App() {
               <GrowthChart
                 entries={entries}
                 chartType={activeChartType}
+                onChangeChartType={setActiveChartType}
                 gender={profile.gender}
                 unit={unit}
                 babyName={profile.name}
@@ -1088,6 +1089,7 @@ export default function App() {
                   setEditingEntry(null);
                   setIsLogModalOpen(true);
                 }}
+                onEditEntry={handleEditEntry}
                 onOpenSettings={() => setIsSettingsOpen(true)}
               />
             </div>
@@ -1247,11 +1249,19 @@ export default function App() {
             <GrowthChart
               entries={entries}
               chartType={activeChartType}
+              onChangeChartType={setActiveChartType}
               gender={profile.gender}
               unit={unit}
               babyName={profile.name}
               babyAgeMonths={currentAge.exactMonths}
               babyBirthDate={profile.birthDate}
+              timelineRange={chartTimelineRange}
+              onOpenAddModal={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+              onEditEntry={handleEditEntry}
+              onOpenSettings={() => setIsSettingsOpen(true)}
             />
           </div>
         )}

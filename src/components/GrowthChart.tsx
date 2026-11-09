@@ -1,11 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
-import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, formatOrdinal, calculateAge } from '../data/whoGrowthStandards';
-import { Plus } from 'lucide-react';
+import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, calculateAge } from '../data/whoGrowthStandards';
+import { X, Edit2 } from 'lucide-react';
 
 interface GrowthChartProps {
   entries: GrowthEntry[];
   chartType: ChartType;
+  onChangeChartType?: (type: ChartType) => void;
   gender: Gender;
   unit: MetricUnit;
   babyName: string;
@@ -14,11 +15,89 @@ interface GrowthChartProps {
   timelineRange?: 'auto' | 6 | 12 | 18 | 24;
   onOpenAddModal?: () => void;
   onOpenSettings?: () => void;
+  onEditEntry?: (entry: GrowthEntry) => void;
+}
+
+// Cubic spline smoothing for smooth, organic vector curves
+function getCubicBezierPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return '';
+  if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  if (points.length === 2) {
+    return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)} L ${points[1].x.toFixed(1)} ${points[1].y.toFixed(1)}`;
+  }
+
+  let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)];
+    const p1 = points[i];
+    const p2 = points[i + 1];
+    const p3 = points[Math.min(points.length - 1, i + 2)];
+
+    const cp1x = p1.x + (p2.x - p0.x) / 6;
+    const cp1y = p1.y + (p2.y - p0.y) / 6;
+    const cp2x = p2.x - (p3.x - p1.x) / 6;
+    const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+
+// Format detailed age string e.g. "6m 2w 2d" matching clean medical style
+function formatDetailedAge(birthDateStr?: string, entryDateStr?: string, fallbackMonths?: number): string {
+  if (!birthDateStr || !entryDateStr) {
+    const mo = Math.floor(fallbackMonths || 0);
+    return `${mo}m`;
+  }
+  const birth = new Date(birthDateStr).getTime();
+  const entry = new Date(entryDateStr).getTime();
+  if (isNaN(birth) || isNaN(entry) || entry < birth) {
+    const mo = Math.floor(fallbackMonths || 0);
+    return `${mo}m`;
+  }
+  const totalDays = Math.floor((entry - birth) / 86400000);
+  const months = Math.floor(totalDays / 30.4375);
+  const remainingDays = Math.max(0, Math.floor(totalDays - months * 30.4375));
+  const weeks = Math.floor(remainingDays / 7);
+  const days = remainingDays % 7;
+
+  if (months === 0 && weeks === 0) {
+    return `${days}d`;
+  }
+  if (months === 0) {
+    return `${weeks}w ${days}d`;
+  }
+  if (weeks === 0 && days === 0) {
+    return `${months}m`;
+  }
+  if (weeks === 0) {
+    return `${months}m ${days}d`;
+  }
+  return `${months}m ${weeks}w ${days}d`;
+}
+
+// Format friendly date e.g. "Oct 14, 2026"
+function formatCardDate(dateStr?: string): string {
+  if (!dateStr) return '';
+  try {
+    const [y, m, d] = dateStr.split('-').map(Number);
+    if (y && m && d) {
+      return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      });
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
 }
 
 export const GrowthChart: React.FC<GrowthChartProps> = ({
   entries,
   chartType,
+  onChangeChartType,
   gender,
   unit,
   babyName,
@@ -27,13 +106,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   timelineRange = 'auto',
   onOpenAddModal,
   onOpenSettings,
+  onEditEntry,
 }) => {
-  // Automatic age range according to user rule:
-  // - If baby under 3 months: 0–6m
-  // - Till 10 months: 0–12m
-  // - Later (> 10 months): 0–24m
-  // Can also be customized in Settings
-  const rangeMonths = useMemo<6 | 12 | 18 | 24>(() => {
+  // Timeline range: Default to 9–10 months for babies under 10m (matching the reference),
+  // up to 18m or 24m for older toddlers
+  const rangeMonths = useMemo<number>(() => {
     if (timelineRange && timelineRange !== 'auto') {
       return timelineRange;
     }
@@ -43,31 +120,24 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     const maxEntryAge = validEntryAges.length > 0 ? Math.max(...validEntryAges) : 0;
     const effectiveAge = Math.max(babyAgeMonths || 0, maxEntryAge);
 
-    if (effectiveAge < 3) return 6;
-    if (effectiveAge <= 10) return 12;
-    if (effectiveAge <= 18) return 18;
+    if (effectiveAge <= 2) return 6;
+    if (effectiveAge <= 8) return 9;
+    if (effectiveAge <= 11) return 12;
+    if (effectiveAge <= 17) return 18;
     return 24;
   }, [timelineRange, babyAgeMonths, entries]);
 
-  const [hoveredPoint, setHoveredPoint] = useState<{
-    entry: GrowthEntry;
-    x: number;
-    y: number;
-    valStr: string;
-    percentileStr: string;
-  } | null>(null);
-
   const rawTable = useMemo(() => getWHOTable(chartType, gender), [chartType, gender]);
 
-  // Filter table by selected max age (6, 12, 18, or 24 months)
+  // Filter table by selected max age (including month 0 up to rangeMonths)
   const filteredTable = useMemo(() => {
     return rawTable.filter((row) => row.month <= rangeMonths);
   }, [rawTable, rangeMonths]);
 
-  // SVG dimensions - Larger height for commanding visual prominence
+  // SVG dimensions: generous 800x600 for vertical breathing room
   const svgWidth = 800;
-  const svgHeight = 520;
-  const padding = { top: 28, right: 62, bottom: 48, left: 58 };
+  const svgHeight = 580;
+  const padding = { top: 32, right: 64, bottom: 48, left: 56 };
   const plotWidth = svgWidth - padding.left - padding.right;
   const plotHeight = svgHeight - padding.top - padding.bottom;
 
@@ -80,12 +150,12 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   };
 
   const unitLabel = useMemo(() => {
-    if (chartType === 'weight') return unit === 'imperial' ? 'lbs' : 'kg';
+    if (chartType === 'weight') return unit === 'imperial' ? 'lb' : 'kg';
     return unit === 'imperial' ? 'in' : 'cm';
   }, [chartType, unit]);
 
-  // Determine Y-axis min and max
-  const { minY, maxY } = useMemo(() => {
+  // Determine Y-axis min and max with neat integer steps matching reference style
+  const { minY, maxY, yTicks } = useMemo(() => {
     let min = Infinity;
     let max = -Infinity;
 
@@ -107,66 +177,79 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       }
     });
 
-    // Add 10% breathing room
-    const range = max - min || 10;
-    const roundedMin = Math.max(0, Math.floor(min - range * 0.1));
-    const roundedMax = Math.ceil(max + range * 0.1);
-    return { minY: roundedMin, maxY: roundedMax };
+    // Step size based on metric/imperial and measurement type
+    let step = 2;
+    if (chartType === 'weight') {
+      step = unit === 'imperial' ? 2 : 1;
+    } else if (chartType === 'height') {
+      step = unit === 'imperial' ? 2 : 5;
+    } else {
+      step = unit === 'imperial' ? 1 : 2;
+    }
+
+    const roundedMin = Math.max(0, Math.floor(min / step) * step - step);
+    const roundedMax = Math.ceil(max / step) * step + step;
+
+    const ticks: number[] = [];
+    for (let v = roundedMin; v <= roundedMax; v += step) {
+      ticks.push(v);
+    }
+
+    return { minY: roundedMin, maxY: roundedMax, yTicks: ticks };
   }, [filteredTable, entries, chartType, unit, rangeMonths]);
 
   // Coordinate mappers
-  const getX = (month: number) => padding.left + (month / rangeMonths) * plotWidth;
+  const getX = (month: number) => padding.left + (month / (rangeMonths || 1)) * plotWidth;
   const getY = (val: number) => padding.top + plotHeight - ((val - minY) / (maxY - minY || 1)) * plotHeight;
 
-  // Build SVG path string from an array of [x, y] coordinates
-  const buildLinePath = (coords: { x: number; y: number }[]): string => {
-    if (coords.length === 0) return '';
-    return coords.reduce((acc, curr, idx) => {
-      return idx === 0 ? `M ${curr.x} ${curr.y}` : `${acc} L ${curr.x} ${curr.y}`;
-    }, '');
-  };
+  // 9 smooth golden WHO curves matching the reference design
+  const percentileCurves = useMemo(() => {
+    const defs = [
+      { key: 'p98', label: '98%', getValue: (r: WHOPercentileRow) => r.p97 * 1.025, isMedian: false },
+      { key: 'p95', label: '95%', getValue: (r: WHOPercentileRow) => r.p85 + (r.p97 - r.p85) * 0.83, isMedian: false },
+      { key: 'p90', label: '90%', getValue: (r: WHOPercentileRow) => r.p85 + (r.p97 - r.p85) * 0.42, isMedian: false },
+      { key: '75', label: '75%', getValue: (r: WHOPercentileRow) => r.p50 + (r.p85 - r.p50) * 0.71, isMedian: false },
+      { key: 'p50', label: '50%', getValue: (r: WHOPercentileRow) => r.p50, isMedian: true },
+      { key: 'p25', label: '25%', getValue: (r: WHOPercentileRow) => r.p15 + (r.p50 - r.p15) * 0.29, isMedian: false },
+      { key: 'p10', label: '10%', getValue: (r: WHOPercentileRow) => r.p3 + (r.p15 - r.p3) * 0.58, isMedian: false },
+      { key: 'p5', label: '5%', getValue: (r: WHOPercentileRow) => r.p3 + (r.p15 - r.p3) * 0.22, isMedian: false },
+      { key: 'p2', label: '2%', getValue: (r: WHOPercentileRow) => r.p3 * 0.975, isMedian: false },
+    ];
 
-  // Build filled band polygon path between two percentile keys
-  const buildBandPath = (keyBottom: keyof WHOPercentileRow, keyTop: keyof WHOPercentileRow): string => {
-    const topPoints = filteredTable.map((row) => ({
-      x: getX(row.month),
-      y: getY(convertValue(row[keyTop])),
-    }));
-    const bottomPoints = filteredTable.map((row) => ({
-      x: getX(row.month),
-      y: getY(convertValue(row[keyBottom])),
-    })).reverse();
+    return defs.map((def) => {
+      const points = filteredTable.map((r) => ({
+        x: getX(r.month),
+        y: getY(convertValue(def.getValue(r))),
+      }));
 
-    if (topPoints.length === 0) return '';
-    const first = topPoints[0];
-    let path = `M ${first.x} ${first.y}`;
-    for (let i = 1; i < topPoints.length; i++) {
-      path += ` L ${topPoints[i].x} ${topPoints[i].y}`;
-    }
-    for (const pt of bottomPoints) {
-      path += ` L ${pt.x} ${pt.y}`;
-    }
-    path += ' Z';
-    return path;
-  };
+      const lastPt = points[points.length - 1];
 
-  // Paths for reference curves
-  const pathP3 = useMemo(() => buildLinePath(filteredTable.map((r) => ({ x: getX(r.month), y: getY(convertValue(r.p3)) }))), [filteredTable, minY, maxY, unit]);
-  const pathP15 = useMemo(() => buildLinePath(filteredTable.map((r) => ({ x: getX(r.month), y: getY(convertValue(r.p15)) }))), [filteredTable, minY, maxY, unit]);
-  const pathP50 = useMemo(() => buildLinePath(filteredTable.map((r) => ({ x: getX(r.month), y: getY(convertValue(r.p50)) }))), [filteredTable, minY, maxY, unit]);
-  const pathP85 = useMemo(() => buildLinePath(filteredTable.map((r) => ({ x: getX(r.month), y: getY(convertValue(r.p85)) }))), [filteredTable, minY, maxY, unit]);
-  const pathP97 = useMemo(() => buildLinePath(filteredTable.map((r) => ({ x: getX(r.month), y: getY(convertValue(r.p97)) }))), [filteredTable, minY, maxY, unit]);
-
-  // Shaded area bands
-  const bandOuterLow = useMemo(() => buildBandPath('p3', 'p15'), [filteredTable, minY, maxY, unit]);
-  const bandCore = useMemo(() => buildBandPath('p15', 'p85'), [filteredTable, minY, maxY, unit]);
-  const bandOuterHigh = useMemo(() => buildBandPath('p85', 'p97'), [filteredTable, minY, maxY, unit]);
+      return {
+        key: def.key,
+        label: def.label,
+        isMedian: def.isMedian,
+        path: getCubicBezierPath(points),
+        labelX: svgWidth - padding.right + 10,
+        labelY: lastPt ? lastPt.y + 4 : 0,
+      };
+    });
+  }, [filteredTable, minY, maxY, unit, rangeMonths]);
 
   // Baby's plotted points
   const babyPoints = useMemo(() => {
-    const pts: { entry: GrowthEntry; x: number; y: number; rawVal: number; convVal: number }[] = [];
+    const pts: {
+      entry: GrowthEntry;
+      x: number;
+      y: number;
+      rawVal: number;
+      convVal: number;
+      valStr: string;
+      percentile: number;
+      percentileStr: string;
+      ageStr: string;
+    }[] = [];
 
-    // Sort entries chronologically to ensure accurate trajectory
+    // Sort entries chronologically
     const sortedEntries = entries.slice().sort((a, b) => {
       const timeA = new Date(a.date).getTime();
       const timeB = new Date(b.date).getTime();
@@ -187,7 +270,6 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       if (val !== undefined && val > 0) {
         let plotAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
 
-        // If plotAge is 0 or invalid, but entry has a date
         if (plotAge <= 0 && entry.date) {
           if (babyBirthDate && entry.date > babyBirthDate) {
             plotAge = calculateAge(babyBirthDate, entry.date).exactMonths;
@@ -196,8 +278,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           }
         }
 
-        // If plotAge is still 0, but this is a subsequent entry (not the newborn baseline at index 0),
-        // prevent stacking dots on the Y-axis
+        // Prevent stacking dots on Y-axis for subsequent entries
         if (plotAge <= 0 && idx > 0) {
           const prevPt = pts[pts.length - 1];
           if (prevPt) {
@@ -209,459 +290,334 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
         if (plotAge <= rangeMonths) {
           const convVal = convertValue(val);
+          const percentileInfo = calculatePercentile(chartType, val, plotAge, gender);
+
+          let valStr = '';
+          if (chartType === 'weight') {
+            if (unit === 'imperial') {
+              const { displayStr } = kgToLbsOz(val);
+              valStr = `Weight ${displayStr}`;
+            } else {
+              valStr = `Weight ${val.toFixed(2)} kg`;
+            }
+          } else if (chartType === 'height') {
+            if (unit === 'imperial') {
+              valStr = `Height ${cmToInches(val).toFixed(1)} in`;
+            } else {
+              valStr = `Height ${val.toFixed(1)} cm`;
+            }
+          } else {
+            if (unit === 'imperial') {
+              valStr = `Head Size ${cmToInches(val).toFixed(1)} in`;
+            } else {
+              valStr = `Head Size ${val.toFixed(1)} cm`;
+            }
+          }
+
           pts.push({
             entry: { ...entry, ageMonths: plotAge },
             x: getX(plotAge),
             y: getY(convVal),
             rawVal: val,
             convVal,
+            valStr,
+            percentile: percentileInfo.percentile,
+            percentileStr: `${gender === 'boy' ? 'Boys' : 'Girls'} Percentile ${percentileInfo.percentile}%`,
+            ageStr: `Age ${formatDetailedAge(babyBirthDate, entry.date, plotAge)}`,
           });
         }
       }
     });
 
     return pts;
-  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate]);
+  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gender]);
 
+  // Smooth spline trajectory for baby's measurements
   const babyLinePath = useMemo(() => {
-    return buildLinePath(babyPoints.map((p) => ({ x: p.x, y: p.y })));
+    return getCubicBezierPath(babyPoints.map((p) => ({ x: p.x, y: p.y })));
   }, [babyPoints]);
 
-  // Y-axis grid lines (5 to 6 ticks)
-  const yTicks = useMemo(() => {
-    const count = 5;
-    const step = (maxY - minY) / count;
-    const ticks: number[] = [];
-    for (let i = 0; i <= count; i++) {
-      ticks.push(Math.round((minY + i * step) * 10) / 10);
-    }
-    return ticks;
-  }, [minY, maxY]);
+  // Selected point: defaults to latest entry (as in reference screenshot)
+  const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
 
-  // X-axis month ticks
+  const activePoint = useMemo(() => {
+    if (babyPoints.length === 0) return null;
+    if (selectedPointId === 'none') return null;
+    if (selectedPointId) {
+      const found = babyPoints.find((p) => p.entry.id === selectedPointId);
+      if (found) return found;
+    }
+    // Default to the latest point
+    return babyPoints[babyPoints.length - 1];
+  }, [babyPoints, selectedPointId]);
+
+  // X-axis month ticks: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ...
   const xTicks = useMemo(() => {
     const ticks: number[] = [];
-    const step = rangeMonths <= 6 ? 1 : rangeMonths <= 12 ? 1 : 2;
+    const step = rangeMonths <= 12 ? 1 : 2;
     for (let m = 0; m <= rangeMonths; m += step) {
       ticks.push(m);
     }
     return ticks;
   }, [rangeMonths]);
 
-  // Format value label
-  const formatValWithUnit = (rawVal: number) => {
-    if (chartType === 'weight') {
-      if (unit === 'imperial') {
-        const { displayStr } = kgToLbsOz(rawVal);
-        return displayStr;
-      }
-      return `${rawVal.toFixed(2)} kg`;
-    }
-    if (unit === 'imperial') {
-      return `${cmToInches(rawVal).toFixed(1)} in`;
-    }
-    return `${rawVal.toFixed(1)} cm`;
-  };
-
   return (
-    <div className="bg-white dark:bg-[#1A221D] rounded-3xl border border-[var(--color-card-border,#E2E9E0)] shadow-2xs p-3.5 sm:p-5 transition-all text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
-      {/* Chart Top Bar Controls - Clean and compact */}
-      <div className="flex flex-row items-center justify-between gap-2 pb-3 border-b border-[var(--color-card-border,#E2E9E0)]">
-        <div className="truncate">
-          <div className="flex items-center gap-1.5 truncate">
-            <h3 className="text-sm sm:text-base font-bold font-heading text-[var(--color-text-main)] tracking-tight truncate">
-              {chartType === 'weight'
-                ? 'Weight'
-                : chartType === 'height'
-                ? 'Length'
-                : 'Head Size'} · {gender === 'boy' ? 'Boys' : 'Girls'}
-            </h3>
-            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] uppercase shrink-0">
-              WHO
-            </span>
-          </div>
-        </div>
-
-        {/* Timeline Range Indicator (Auto-selected based on baby's age, adjustable in Settings) */}
-        <div className="flex items-center gap-1.5 shrink-0">
+    <div className="bg-white dark:bg-[#18201B] rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-xs p-3.5 sm:p-6 transition-all text-[#2A4356] dark:text-[#E0ECF5] w-full max-w-full overflow-hidden">
+      
+      {/* 1. Clean Segmented Header Controls: Weight | Height | Head Size */}
+      <div className="w-full max-w-md mx-auto mb-4 sm:mb-6">
+        <div className="bg-[#EFE8DC] dark:bg-[#252E27] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
           <button
             type="button"
-            onClick={onOpenSettings}
-            className="flex items-center gap-1 px-2.5 py-1 rounded-xl bg-[var(--color-primary)]/10 hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/25 text-xs font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] transition-all cursor-pointer shadow-2xs"
-            title="Auto-adjusted based on baby's age. Tap to adjust timeline in Settings."
+            onClick={() => onChangeChartType?.('weight')}
+            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              chartType === 'weight'
+                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
+                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
+            }`}
           >
-            <span>Timeline: 0–{rangeMonths}m</span>
+            Weight
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangeChartType?.('height')}
+            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              chartType === 'height'
+                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
+                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
+            }`}
+          >
+            Height
+          </button>
+          <button
+            type="button"
+            onClick={() => onChangeChartType?.('head')}
+            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              chartType === 'head'
+                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
+                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
+            }`}
+          >
+            Head Size
           </button>
         </div>
       </div>
 
-      {/* SVG Interactive Canvas - 100% vector responsive with zero horizontal overflow */}
-      <div className="relative w-full pt-1">
+      {/* 2. Vector Canvas with Golden Curves & Floating Detail Card */}
+      <div className="relative w-full">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto min-h-[300px] sm:min-h-[420px] block select-none touch-manipulation"
+          className="w-full h-auto min-h-[360px] sm:min-h-[480px] block select-none touch-manipulation"
         >
-          <defs>
-            {/* Shaded bands gradient */}
-            <linearGradient id="bandCoreGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#0d9488" stopOpacity="0.09" />
-              <stop offset="100%" stopColor="#0d9488" stopOpacity="0.04" />
-            </linearGradient>
-            <linearGradient id="bandOuterGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f59e0b" stopOpacity="0.06" />
-              <stop offset="100%" stopColor="#f59e0b" stopOpacity="0.02" />
-            </linearGradient>
-            {/* Baby glow filter */}
-            <filter id="babyGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#f97316" floodOpacity="0.3" />
-            </filter>
-          </defs>
-
-          {/* Background grid horizontal ticks & lines */}
-          {yTicks.map((tickVal, i) => {
+          {/* Y-Axis floating numbers on the left */}
+          {yTicks.map((tickVal, idx) => {
             const y = getY(tickVal);
+            const isTopTick = idx === yTicks.length - 1;
+            const labelStr = isTopTick ? `${tickVal} ${unitLabel}` : `${tickVal}`;
             return (
-              <g key={`y-${i}`}>
-                <line
-                  x1={padding.left}
-                  y1={y}
-                  x2={svgWidth - padding.right}
-                  y2={y}
-                  stroke="#e7e5e4"
-                  strokeDasharray="3 3"
-                  strokeWidth="1"
-                  className="stroke-stone-200 dark:stroke-stone-800"
-                />
-                <text
-                  x={padding.left - 10}
-                  y={y + 4}
-                  textAnchor="end"
-                  className="text-[11px] fill-stone-500 dark:fill-stone-400 font-mono"
-                >
-                  {tickVal}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Background grid vertical month ticks & lines */}
-          {xTicks.map((month) => {
-            const x = getX(month);
-            return (
-              <g key={`x-${month}`}>
-                <line
-                  x1={x}
-                  y1={padding.top}
-                  x2={x}
-                  y2={svgHeight - padding.bottom}
-                  stroke="#f5f5f4"
-                  strokeWidth="1"
-                  className="stroke-stone-100 dark:stroke-stone-800/80"
-                />
-                <text
-                  x={x}
-                  y={svgHeight - padding.bottom + 18}
-                  textAnchor="middle"
-                  className="text-[11px] fill-stone-600 dark:fill-stone-300 font-medium"
-                >
-                  {month}m
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Axis Labels */}
-          <text
-            x={svgWidth / 2}
-            y={svgHeight - 12}
-            textAnchor="middle"
-            className="text-[11px] fill-stone-500 dark:fill-stone-400 font-semibold tracking-wide uppercase"
-          >
-            Age (Months)
-          </text>
-          <text
-            x={-(svgHeight / 2)}
-            y={18}
-            transform="rotate(-90)"
-            textAnchor="middle"
-            className="text-[11px] fill-stone-500 dark:fill-stone-400 font-semibold tracking-wide uppercase"
-          >
-            {chartType === 'weight'
-              ? `Weight (${unitLabel})`
-              : chartType === 'height'
-              ? `Length / Height (${unitLabel})`
-              : `Head Circumference (${unitLabel})`}
-          </text>
-
-          {/* WHO Shaded Envelopes */}
-          <path d={bandOuterLow} fill="url(#bandOuterGrad)" />
-          <path d={bandCore} fill="url(#bandCoreGrad)" />
-          <path d={bandOuterHigh} fill="url(#bandOuterGrad)" />
-
-          {/* Reference Curves */}
-          <path d={pathP3} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" className="stroke-stone-300 dark:stroke-stone-700" />
-          <path d={pathP15} fill="none" stroke="#99f6e4" strokeWidth="1.2" className="stroke-teal-300 dark:stroke-teal-700" />
-          <path d={pathP50} fill="none" stroke="#0d9488" strokeWidth="2.2" strokeDasharray="6 3" className="stroke-teal-600 dark:stroke-teal-400" />
-          <path d={pathP85} fill="none" stroke="#99f6e4" strokeWidth="1.2" className="stroke-teal-300 dark:stroke-teal-700" />
-          <path d={pathP97} fill="none" stroke="#d6d3d1" strokeWidth="1" strokeDasharray="4 4" className="stroke-stone-300 dark:stroke-stone-700" />
-
-          {/* Percentile labels on the right edge */}
-          {filteredTable.length > 0 && (() => {
-            const lastRow = filteredTable[filteredTable.length - 1];
-            const pList = [
-              { label: '97th', val: lastRow.p97, cls: 'fill-stone-400 dark:fill-stone-500' },
-              { label: '85th', val: lastRow.p85, cls: 'fill-teal-700 dark:fill-teal-400' },
-              { label: '50th', val: lastRow.p50, cls: 'fill-teal-800 dark:fill-teal-300 font-bold' },
-              { label: '15th', val: lastRow.p15, cls: 'fill-teal-700 dark:fill-teal-400' },
-              { label: '3rd', val: lastRow.p3, cls: 'fill-stone-400 dark:fill-stone-500' },
-            ];
-            return pList.map((p, idx) => (
               <text
-                key={idx}
-                x={svgWidth - padding.right + 8}
-                y={getY(convertValue(p.val)) + 4}
-                className={`text-[10px] font-mono ${p.cls}`}
+                key={`ytick-${tickVal}`}
+                x={padding.left - 12}
+                y={y + 4}
+                textAnchor="end"
+                className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
               >
-                {p.label}
+                {labelStr}
               </text>
-            ));
-          })()}
+            );
+          })}
+
+          {/* Golden WHO Percentile Curves */}
+          {percentileCurves.map((curve) => (
+            <g key={curve.key}>
+              <path
+                d={curve.path}
+                fill="none"
+                stroke={curve.isMedian ? '#E29B18' : '#EBB844'}
+                strokeWidth={curve.isMedian ? 2.5 : 1.2}
+                strokeOpacity={curve.isMedian ? 1 : 0.85}
+                className={curve.isMedian ? 'dark:stroke-[#F5BA42]' : 'dark:stroke-[#F0C35B]'}
+              />
+              {/* Right edge percentile label */}
+              <text
+                x={curve.labelX}
+                y={curve.labelY}
+                textAnchor="start"
+                className={`text-[11px] font-sans ${
+                  curve.isMedian
+                    ? 'font-bold fill-[#E29B18] dark:fill-[#F5BA42]'
+                    : 'font-medium fill-[#2A4356] dark:fill-[#9FB4C7]'
+                }`}
+              >
+                {curve.label}
+              </text>
+            </g>
+          ))}
 
           {/* Baby's Trajectory Line */}
           {babyLinePath && (
             <path
               d={babyLinePath}
               fill="none"
-              stroke="#ea580c"
-              strokeWidth="3.5"
+              stroke="#244B66"
+              strokeWidth={2.4}
               strokeLinecap="round"
               strokeLinejoin="round"
-              filter="url(#babyGlow)"
+              className="dark:stroke-[#68A4CC]"
             />
           )}
 
-          {/* Baby's Data Points */}
-          {babyPoints.map((pt, i) => {
-            const isHovered = hoveredPoint?.entry.id === pt.entry.id;
-            const percentileInfo = calculatePercentile(chartType, pt.rawVal, pt.entry.ageMonths, gender);
+          {/* Baby's Measurement Dots */}
+          {babyPoints.map((pt) => {
+            const isSelected = activePoint?.entry.id === pt.entry.id;
+
             return (
               <g
                 key={pt.entry.id}
-                className="cursor-pointer group"
-                onMouseEnter={() =>
-                  setHoveredPoint({
-                    entry: pt.entry,
-                    x: pt.x,
-                    y: pt.y,
-                    valStr: formatValWithUnit(pt.rawVal),
-                    percentileStr: percentileInfo.displayStr,
-                  })
-                }
-                onMouseLeave={() => setHoveredPoint(null)}
-                onClick={() =>
-                  setHoveredPoint({
-                    entry: pt.entry,
-                    x: pt.x,
-                    y: pt.y,
-                    valStr: formatValWithUnit(pt.rawVal),
-                    percentileStr: percentileInfo.displayStr,
-                  })
-                }
+                className="cursor-pointer"
+                onClick={() => setSelectedPointId(pt.entry.id)}
               >
-                {/* Hit area */}
+                {/* Generous touch target */}
                 <circle cx={pt.x} cy={pt.y} r={18} fill="transparent" />
-                {/* Outer ring */}
+
+                {/* If selected: hollow indicator ring around the dot matching reference image */}
+                {isSelected && (
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={9.5}
+                    fill="white"
+                    stroke="#244B66"
+                    strokeWidth={2}
+                    className="dark:fill-[#18201B] dark:stroke-[#68A4CC] transition-all"
+                  />
+                )}
+
+                {/* Solid Navy Dot */}
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={isHovered ? 8 : 6}
-                  fill="#ffffff"
-                  stroke="#3D5939"
-                  strokeWidth={isHovered ? 3 : 2.5}
-                  className="transition-all duration-150"
+                  r={isSelected ? 4 : 4.5}
+                  fill="#244B66"
+                  className="dark:fill-[#68A4CC]"
                 />
-                {/* Center dot */}
-                <circle cx={pt.x} cy={pt.y} r={3} fill="#5D7C57" />
-                {/* Doctor visit icon marker */}
+
+                {/* Small indicator if doctor visit */}
                 {pt.entry.isPediatricianVisit && (
                   <circle
-                    cx={pt.x + 6}
-                    cy={pt.y - 6}
-                    r={3}
-                    fill="#326180"
-                    stroke="#ffffff"
-                    strokeWidth="1"
+                    cx={pt.x + 5}
+                    cy={pt.y - 5}
+                    r={2.5}
+                    fill="#3B82F6"
+                    stroke="white"
+                    strokeWidth={0.8}
                   />
                 )}
               </g>
             );
           })}
+
+          {/* X-Axis month numbers at bottom */}
+          {xTicks.map((month) => {
+            const x = getX(month);
+            return (
+              <text
+                key={`xtick-${month}`}
+                x={x}
+                y={svgHeight - padding.bottom + 22}
+                textAnchor="middle"
+                className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+              >
+                {month}
+              </text>
+            );
+          })}
+
+          {/* "months" label at bottom right */}
+          <text
+            x={svgWidth - padding.right + 2}
+            y={svgHeight - padding.bottom + 22}
+            textAnchor="start"
+            className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+          >
+            months
+          </text>
         </svg>
 
-        {/* Hover / Click Floating Tooltip with smart edge-clamping */}
-        {hoveredPoint && (() => {
-          const xPct = (hoveredPoint.x / svgWidth) * 100;
-          const yPct = (hoveredPoint.y / svgHeight) * 100;
-          const isNearTop = yPct < 32;
-          const isNearLeft = xPct < 25;
-          const isNearRight = xPct > 75;
-
-          const transformY = isNearTop ? 'translateY(12px)' : 'translateY(calc(-100% - 12px))';
-          const posStyle: React.CSSProperties = {
-            top: `${yPct}%`,
-          };
-
-          if (isNearLeft) {
-            posStyle.left = '8px';
-            posStyle.transform = transformY;
-          } else if (isNearRight) {
-            posStyle.right = '8px';
-            posStyle.left = 'auto';
-            posStyle.transform = transformY;
-          } else {
-            posStyle.left = `${xPct}%`;
-            posStyle.transform = `translateX(-50%) ${transformY}`;
-          }
-
-          return (
-            <div
-              className="absolute z-30 pointer-events-none bg-[#1A231D] text-white rounded-2xl px-3.5 py-2.5 shadow-2xl text-xs border border-[var(--color-primary)]/40 min-w-[170px] max-w-[240px] animate-in fade-in duration-150"
-              style={posStyle}
-            >
-              <div className="flex items-center justify-between gap-2 border-b border-white/15 pb-1 mb-1.5">
-                <span className="font-bold text-stone-200">
-                  {hoveredPoint.entry.ageMonths === 0 ? 'Birth / Newborn' : `${hoveredPoint.entry.ageMonths.toFixed(1)} mo`}
-                </span>
-                <span className="text-[10px] text-stone-300 font-mono">
-                  {hoveredPoint.entry.date}
-                </span>
+        {/* 3. Floating Detail Inspection Card (Matching Screenshot Design) */}
+        {activePoint && (
+          <div className="absolute bottom-5 sm:bottom-6 right-3 sm:right-6 w-56 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-[#1E2621] text-xs animate-in fade-in zoom-in-95 duration-150">
+            {/* Header: Warm beige banner */}
+            <div className="bg-[#EFE8DC] dark:bg-[#2A342D] px-3.5 py-2.5 flex items-center justify-between text-[#2A4356] dark:text-[#D4E4F0]">
+              <div className="flex items-center gap-2">
+                <span className="font-semibold">{formatCardDate(activePoint.entry.date)}</span>
+                <span className="text-stone-400">|</span>
+                <button
+                  type="button"
+                  onClick={() => onEditEntry?.(activePoint.entry)}
+                  className="font-bold underline hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1"
+                >
+                  <Edit2 className="w-3 h-3" />
+                  <span>Edit</span>
+                </button>
               </div>
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-sm font-extrabold text-[#F5D77A] font-mono">
-                  {hoveredPoint.valStr}
-                </span>
-                <span className="text-[11px] text-emerald-300 font-bold">
-                  {hoveredPoint.percentileStr}
-                </span>
-              </div>
-              {hoveredPoint.entry.notes && (
-                <p className="mt-1 pt-1 border-t border-white/10 text-[10px] text-stone-300 line-clamp-2 italic">
-                  &ldquo;{hoveredPoint.entry.notes}&rdquo;
-                </p>
-              )}
+
+              <button
+                type="button"
+                onClick={() => setSelectedPointId('none')}
+                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors cursor-pointer text-[#2A4356] dark:text-[#D4E4F0]"
+                title="Close"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
             </div>
-          );
-        })()}
-      </div>
 
-      {/* Selected Data Point Mobile Inspection Card - 100% visible, never cut off */}
-      {hoveredPoint && (
-        <div className="mt-2.5 p-3 rounded-2xl bg-[var(--color-primary)]/10 dark:bg-[var(--color-primary)]/15 border border-[var(--color-primary)]/30 flex items-center justify-between gap-2.5 animate-in slide-in-from-top-1 duration-150">
-          <div className="flex items-center gap-2.5 min-w-0">
-            <span className="w-8 h-8 rounded-xl bg-[var(--color-primary)] text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-2xs">
-              {hoveredPoint.entry.ageMonths === 0 ? '0m' : `${hoveredPoint.entry.ageMonths.toFixed(0)}m`}
-            </span>
-            <div className="min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="text-xs font-bold text-[var(--color-text-main)]">
-                  {hoveredPoint.valStr}
-                </span>
-                <span className="text-[11px] font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] px-2 py-0.2 rounded-full bg-[var(--color-primary)]/20">
-                  {hoveredPoint.percentileStr}
-                </span>
-                {hoveredPoint.entry.isPediatricianVisit && (
-                  <span className="text-[10px] text-blue-700 dark:text-blue-300 font-semibold">
-                    Pediatrician Visit
-                  </span>
-                )}
+            {/* Card Body */}
+            <div className="p-3.5 space-y-1 bg-white dark:bg-[#1E2621] text-[#2A4356] dark:text-[#D4E4F0]">
+              <div className="font-bold text-sm text-[#1E3A52] dark:text-white">
+                {activePoint.valStr}
               </div>
-              <div className="text-[11px] text-[var(--color-text-muted)] truncate mt-0.5">
-                Recorded on {hoveredPoint.entry.date} {hoveredPoint.entry.notes ? `· "${hoveredPoint.entry.notes}"` : ''}
+              <div className="text-[12px] text-[#2A4356] dark:text-[#C5D7E5] font-medium">
+                {activePoint.percentileStr}
+              </div>
+              <div className="text-[12px] text-[#2A4356] dark:text-[#C5D7E5] font-medium">
+                {activePoint.ageStr}
+              </div>
+              {activePoint.entry.notes && (
+                <div className="text-[11px] text-stone-500 dark:text-stone-400 pt-0.5 italic line-clamp-2">
+                  &ldquo;{activePoint.entry.notes}&rdquo;
+                </div>
+              )}
+              <div className="pt-2 text-[10px] text-stone-400 dark:text-stone-500">
+                Source: WHO
               </div>
             </div>
           </div>
+        )}
+      </div>
 
+      {/* 4. Subtle Controls & Legend */}
+      <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2.5 text-xs text-stone-500 dark:text-stone-400">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-1.5">
+            <span className="w-3 h-3 rounded-full bg-[#244B66] dark:bg-[#68A4CC] inline-block" />
+            <span className="font-semibold text-[#1E3A52] dark:text-white">{babyName}&rsquo;s Growth</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-4 h-1 bg-[#E29B18] rounded-full inline-block" />
+            <span>50% (WHO Median)</span>
+          </div>
+        </div>
+
+        {onOpenSettings && (
           <button
             type="button"
-            onClick={() => setHoveredPoint(null)}
-            className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 transition-colors shrink-0 cursor-pointer"
-            title="Dismiss selection"
-            aria-label="Dismiss selection"
+            onClick={onOpenSettings}
+            className="text-[11px] font-semibold text-[#244B66] dark:text-[#68A4CC] hover:underline cursor-pointer"
           >
-            <span className="text-xs font-bold px-1 select-none">✕</span>
+            Timeline: 0–{rangeMonths}m
           </button>
-        </div>
-      )}
-
-      {/* Chart Footer Legend */}
-      <div className="mt-3.5 pt-3 border-t border-[var(--color-card-border,#E2E9E0)] flex flex-wrap items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-[#ea580c] rounded-full inline-block" />
-            <span className="font-bold text-[var(--color-text-main)]">{babyName}’s Growth</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-[#5284A6] rounded-full inline-block" />
-            <span>WHO 50th % (Median)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 bg-[#0d9488]/15 border border-[#0d9488]/40 rounded-xs inline-block" />
-            <span>15th – 85th % (Core)</span>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2 h-2 rounded-full bg-[#326180] inline-block" />
-            <span>Doctor Visit</span>
-          </div>
-        </div>
-
-        <span className="text-[11px] text-[var(--color-text-muted)] italic">
-          Tap data points to inspect
-        </span>
-      </div>
-
-      {/* Detailed Post-Chart WHO Guide & Reassurance */}
-      <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-[var(--color-primary)]/8 dark:bg-white/5 border border-[var(--color-primary)]/20 text-xs space-y-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xl select-none">🌱</span>
-          <h4 className="font-bold text-[var(--color-text-main)] text-xs sm:text-sm">
-            Official WHO Standards · Detailed Guide for Parents
-          </h4>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 text-xs">
-          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
-            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
-              1. Not a Test or Contest
-            </span>
-            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-              Higher is <strong>not better</strong>, and lower is <strong>not worse</strong>. A baby on the 15th percentile is just as healthy, happy, and thriving as one on the 85th.
-            </p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
-            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
-              2. Consistency Over Numbers
-            </span>
-            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-              Pediatricians look for <strong>steady progress</strong> along your child&apos;s own curve over time, rather than any single checkup number.
-            </p>
-          </div>
-
-          <div className="p-3 rounded-xl bg-white dark:bg-[#141B17] border border-[var(--color-card-border)] space-y-1">
-            <span className="font-bold text-[var(--color-primary-dark,#2F4F2D)] dark:text-[var(--color-primary)] block">
-              3. Genetics &amp; Uniqueness
-            </span>
-            <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
-              Every baby inherits unique family genetics and natural body types. Never compare your child to siblings or peers.
-            </p>
-          </div>
-        </div>
-
-        <div className="pt-1 text-[11px] text-[var(--color-text-muted)] leading-relaxed border-t border-[var(--color-primary)]/15">
-          <p>
-            <strong>About the bands:</strong> The shaded green area represents the WHO 15th to 85th percentile core zone where 70% of healthy babies naturally track. The outer bounds (P3 to P97) represent the full clinical spectrum recognized worldwide by the World Health Organization.
-          </p>
-        </div>
+        )}
       </div>
     </div>
   );
