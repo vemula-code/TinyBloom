@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef } from 'react';
 import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
 import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, calculateAge } from '../data/whoGrowthStandards';
-import { X, Edit2 } from 'lucide-react';
+import { X, Edit2, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 
 interface GrowthChartProps {
   entries: GrowthEntry[];
@@ -340,6 +340,19 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   // Selected point: defaults to latest entry (as in reference screenshot)
   const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
 
+  // Zoom & Pan state
+  const [zoom, setZoom] = useState<number>(1);
+  const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
+  const dragStartRef = useRef<{ mouseX: number; mouseY: number; panX: number; panY: number; moved: boolean }>({
+    mouseX: 0,
+    mouseY: 0,
+    panX: 0,
+    panY: 0,
+    moved: false,
+  });
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
   const activePoint = useMemo(() => {
     if (babyPoints.length === 0) return null;
     if (selectedPointId === 'none') return null;
@@ -361,16 +374,143 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     return ticks;
   }, [rangeMonths]);
 
+  // ViewBox dimensions based on zoom & pan
+  const currentWidth = svgWidth / zoom;
+  const currentHeight = svgHeight / zoom;
+  const maxPanX = Math.max(0, svgWidth - currentWidth);
+  const maxPanY = Math.max(0, svgHeight - currentHeight);
+  const clampedPanX = Math.min(Math.max(0, pan.x), maxPanX);
+  const clampedPanY = Math.min(Math.max(0, pan.y), maxPanY);
+
+  const viewBoxStr = `${clampedPanX} ${clampedPanY} ${currentWidth} ${currentHeight}`;
+
+  const handleZoomIn = () => {
+    setZoom((prevZoom) => {
+      const nextZoom = Math.min(2.5, Number((prevZoom + 0.3).toFixed(1)));
+      const targetFocusX = activePoint ? activePoint.x : svgWidth / 2;
+      const targetFocusY = activePoint ? activePoint.y : svgHeight / 2;
+      const nextW = svgWidth / nextZoom;
+      const nextH = svgHeight / nextZoom;
+      const nextMaxPanX = Math.max(0, svgWidth - nextW);
+      const nextMaxPanY = Math.max(0, svgHeight - nextH);
+
+      setPan({
+        x: Math.min(Math.max(0, targetFocusX - nextW / 2), nextMaxPanX),
+        y: Math.min(Math.max(0, targetFocusY - nextH / 2), nextMaxPanY),
+      });
+      return nextZoom;
+    });
+  };
+
+  const handleZoomOut = () => {
+    setZoom((prevZoom) => {
+      const nextZoom = Math.max(1, Number((prevZoom - 0.3).toFixed(1)));
+      if (nextZoom === 1) {
+        setPan({ x: 0, y: 0 });
+      } else {
+        const nextW = svgWidth / nextZoom;
+        const nextH = svgHeight / nextZoom;
+        const nextMaxPanX = Math.max(0, svgWidth - nextW);
+        const nextMaxPanY = Math.max(0, svgHeight - nextH);
+        setPan((prevPan) => ({
+          x: Math.min(Math.max(0, prevPan.x), nextMaxPanX),
+          y: Math.min(Math.max(0, prevPan.y), nextMaxPanY),
+        }));
+      }
+      return nextZoom;
+    });
+  };
+
+  const handleResetZoom = () => {
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
+  };
+
+  const handleMouseDown = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (zoom <= 1) return;
+    dragStartRef.current = {
+      mouseX: e.clientX,
+      mouseY: e.clientY,
+      panX: clampedPanX,
+      panY: clampedPanY,
+      moved: false,
+    };
+    setIsDragging(true);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
+    if (!isDragging || zoom <= 1 || !svgRef.current) return;
+    const dx = e.clientX - dragStartRef.current.mouseX;
+    const dy = e.clientY - dragStartRef.current.mouseY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragStartRef.current.moved = true;
+    }
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const scaleFactorX = currentWidth / svgRect.width;
+    const scaleFactorY = currentHeight / svgRect.height;
+
+    setPan({
+      x: Math.min(Math.max(0, dragStartRef.current.panX - dx * scaleFactorX), maxPanX),
+      y: Math.min(Math.max(0, dragStartRef.current.panY - dy * scaleFactorY), maxPanY),
+    });
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
+  const handleTouchStart = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (zoom <= 1 || e.touches.length === 0) return;
+    const t = e.touches[0];
+    dragStartRef.current = {
+      mouseX: t.clientX,
+      mouseY: t.clientY,
+      panX: clampedPanX,
+      panY: clampedPanY,
+      moved: false,
+    };
+    setIsDragging(true);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<SVGSVGElement>) => {
+    if (!isDragging || zoom <= 1 || !svgRef.current || e.touches.length === 0) return;
+    const t = e.touches[0];
+    const dx = t.clientX - dragStartRef.current.mouseX;
+    const dy = t.clientY - dragStartRef.current.mouseY;
+
+    if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+      dragStartRef.current.moved = true;
+    }
+
+    const svgRect = svgRef.current.getBoundingClientRect();
+    const scaleFactorX = currentWidth / svgRect.width;
+    const scaleFactorY = currentHeight / svgRect.height;
+
+    setPan({
+      x: Math.min(Math.max(0, dragStartRef.current.panX - dx * scaleFactorX), maxPanX),
+      y: Math.min(Math.max(0, dragStartRef.current.panY - dy * scaleFactorY), maxPanY),
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
+  };
+
   return (
     <div className="bg-white dark:bg-[#18201B] rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-xs p-3.5 sm:p-6 transition-all text-[#2A4356] dark:text-[#E0ECF5] w-full max-w-full overflow-hidden">
       
-      {/* 1. Clean Segmented Header Controls: Weight | Height | Head Size */}
-      <div className="w-full max-w-md mx-auto mb-4 sm:mb-6">
-        <div className="bg-[#EFE8DC] dark:bg-[#252E27] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
+      {/* 1. Clean Segmented Header Controls: Weight | Height | Head Size + Quick Zoom/Reset */}
+      <div className="w-full max-w-xl mx-auto mb-4 sm:mb-6 flex flex-col sm:flex-row items-center justify-between gap-2.5">
+        <div className="w-full sm:w-auto flex-1 max-w-sm bg-[#EFE8DC] dark:bg-[#252E27] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
           <button
             type="button"
-            onClick={() => onChangeChartType?.('weight')}
-            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+            onClick={() => {
+              handleResetZoom();
+              onChangeChartType?.('weight');
+            }}
+            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
               chartType === 'weight'
                 ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
                 : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
@@ -380,8 +520,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => onChangeChartType?.('height')}
-            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+            onClick={() => {
+              handleResetZoom();
+              onChangeChartType?.('height');
+            }}
+            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
               chartType === 'height'
                 ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
                 : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
@@ -391,8 +534,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           </button>
           <button
             type="button"
-            onClick={() => onChangeChartType?.('head')}
-            className={`flex-1 py-2 sm:py-2.5 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+            onClick={() => {
+              handleResetZoom();
+              onChangeChartType?.('head');
+            }}
+            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
               chartType === 'head'
                 ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
                 : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
@@ -401,13 +547,80 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             Head Size
           </button>
         </div>
+
+        {/* Zoom & Quick Reset Toolbar */}
+        <div className="flex items-center gap-1.5 self-end sm:self-auto bg-[#EFE8DC]/80 dark:bg-[#252E27] px-2 py-1 rounded-xl shadow-2xs border border-stone-200/50 dark:border-stone-700/50 text-[#1E3A52] dark:text-[#E0ECF5]">
+          <button
+            type="button"
+            onClick={handleZoomOut}
+            disabled={zoom <= 1}
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1A221D] disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+            title="Zoom Out (-)"
+            aria-label="Zoom Out"
+          >
+            <ZoomOut className="w-3.5 h-3.5" />
+          </button>
+
+          <span className="text-[11px] font-bold px-1 min-w-[32px] text-center select-none text-[#1E3A52] dark:text-white">
+            {zoom === 1 ? '1x' : `${zoom.toFixed(1)}x`}
+          </span>
+
+          <button
+            type="button"
+            onClick={handleZoomIn}
+            disabled={zoom >= 2.5}
+            className="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-white dark:hover:bg-[#1A221D] disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+            title="Zoom In (+)"
+            aria-label="Zoom In"
+          >
+            <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+
+          <div className="w-[1px] h-4 bg-stone-300 dark:bg-stone-700 mx-0.5" />
+
+          {/* Quick Reset Button */}
+          <button
+            type="button"
+            onClick={handleResetZoom}
+            disabled={zoom === 1 && pan.x === 0 && pan.y === 0}
+            className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              zoom > 1 || pan.x !== 0 || pan.y !== 0
+                ? 'bg-[#244B66] text-white dark:bg-[#68A4CC] dark:text-[#101713] hover:opacity-90 shadow-2xs'
+                : 'opacity-40 cursor-default hover:bg-transparent text-stone-500'
+            }`}
+            title="Quick Reset View (100%)"
+            aria-label="Quick Reset View"
+          >
+            <RotateCcw className="w-3 h-3" />
+            <span>Reset</span>
+          </button>
+        </div>
       </div>
 
       {/* 2. Vector Canvas with Golden Curves & Floating Detail Card */}
       <div className="relative w-full">
+        {/* Subtle helper badge when zoomed */}
+        {zoom > 1 && (
+          <div className="absolute top-2 left-2 sm:left-3 z-10 pointer-events-none flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/95 dark:bg-[#1E2621]/95 backdrop-blur-xs border border-stone-200/80 dark:border-stone-700 text-[10px] sm:text-[11px] font-medium text-[#2A4356] dark:text-[#C5D7E5] shadow-xs">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E29B18] animate-pulse" />
+            <span>Zoomed {zoom.toFixed(1)}x &bull; Drag to pan &bull; Double-click to reset</span>
+          </div>
+        )}
+
         <svg
-          viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto min-h-[360px] sm:min-h-[480px] block select-none touch-manipulation"
+          ref={svgRef}
+          viewBox={viewBoxStr}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          onTouchStart={handleTouchStart}
+          onTouchMove={handleTouchMove}
+          onTouchEnd={handleTouchEnd}
+          onDoubleClick={handleResetZoom}
+          className={`w-full h-auto min-h-[360px] sm:min-h-[480px] block select-none ${
+            zoom > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab touch-none') : 'touch-manipulation'
+          }`}
         >
           {/* Y-Axis floating numbers on the left */}
           {yTicks.map((tickVal, idx) => {
@@ -475,7 +688,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <g
                 key={pt.entry.id}
                 className="cursor-pointer"
-                onClick={() => setSelectedPointId(pt.entry.id)}
+                onClick={() => {
+                  if (!dragStartRef.current.moved) {
+                    setSelectedPointId(pt.entry.id);
+                  }
+                }}
               >
                 {/* Generous touch target */}
                 <circle cx={pt.x} cy={pt.y} r={18} fill="transparent" />
