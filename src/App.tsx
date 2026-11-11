@@ -1199,52 +1199,7 @@ export default function App() {
             TAB 2: WHO INTERACTIVE GROWTH CHARTS
            ======================================================== */}
         {activeTab === 'growth' && (
-          <div className="space-y-4">
-            {/* Chart Submenu Bar */}
-            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-4 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs flex flex-wrap items-center justify-between gap-3 text-[var(--color-text-main)]">
-              <div className="flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setActiveChartType('weight')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeChartType === 'weight'
-                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
-                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
-                  }`}
-                >
-                  <Scale className="w-3.5 h-3.5" />
-                  <span>Weight-for-Age</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartType('height')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeChartType === 'height'
-                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
-                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
-                  }`}
-                >
-                  <Ruler className="w-3.5 h-3.5" />
-                  <span>Length-for-Age</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveChartType('head')}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
-                    activeChartType === 'head'
-                      ? 'bg-[var(--color-primary)] text-white shadow-2xs'
-                      : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border border-[var(--color-card-border,#E2E9E0)] hover:bg-[var(--color-primary)]/10'
-                  }`}
-                >
-                  <CircleDot className="w-3.5 h-3.5" />
-                  <span>Head Circumference</span>
-                </button>
-              </div>
-
-              <span className="text-xs text-[var(--color-text-muted)]">
-                Official WHO Standards (0–24 Months)
-              </span>
-            </div>
+          <div className="space-y-3">
 
             <GrowthChart
               entries={entries}
