@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
 import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, calculateAge } from '../data/whoGrowthStandards';
 import { X, Edit2 } from 'lucide-react';
@@ -104,10 +104,41 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   babyAgeMonths,
   babyBirthDate,
   timelineRange = 'auto',
-  onOpenAddModal,
   onOpenSettings,
   onEditEntry,
 }) => {
+  // Measure container width so SVG coordinate space matches 1:1 CSS pixels (zero letterboxing/empty space)
+  const chartBoxRef = useRef<HTMLDivElement | null>(null);
+  const [containerWidth, setContainerWidth] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      return Math.min(760, Math.max(320, window.innerWidth - 40));
+    }
+    return 380;
+  });
+
+  useEffect(() => {
+    const el = chartBoxRef.current;
+    if (!el) return;
+    const updateWidth = () => {
+      const w = el.clientWidth;
+      if (w > 100) {
+        setContainerWidth(Math.round(w));
+      }
+    };
+    updateWidth();
+    if (typeof ResizeObserver !== 'undefined') {
+      const ro = new ResizeObserver((entriesList) => {
+        for (const item of entriesList) {
+          if (item.contentRect.width > 100) {
+            setContainerWidth(Math.round(item.contentRect.width));
+          }
+        }
+      });
+      ro.observe(el);
+      return () => ro.disconnect();
+    }
+  }, []);
+
   // Timeline range: Default to 9–10 months for babies under 10m (matching the reference),
   // up to 18m or 24m for older toddlers
   const rangeMonths = useMemo<number>(() => {
@@ -134,13 +165,18 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     return rawTable.filter((row) => row.month <= rangeMonths);
   }, [rawTable, rangeMonths]);
 
-  // SVG dimensions: generous 800x620 for full-bleed vertical presence
-  const svgWidth = 800;
-  const svgHeight = 620;
-  // Compact top padding so the top tick & curves start right under headers
-  const padding = { top: 18, right: 62, bottom: 44, left: 52 };
-  const plotWidth = svgWidth - padding.left - padding.right;
-  const plotHeight = svgHeight - padding.top - padding.bottom;
+  // 1:1 CSS pixel SVG dimensions tailored to viewport: tall & readable on mobile, spacious on desktop
+  const isCompact = containerWidth < 520;
+  const svgWidth = containerWidth;
+  const svgHeight = isCompact
+    ? Math.max(430, Math.min(520, Math.round(svgWidth * 1.25)))
+    : Math.max(460, Math.min(540, Math.round(svgWidth * 0.72)));
+
+  const padding = isCompact
+    ? { top: 14, right: 38, bottom: 30, left: 46 }
+    : { top: 16, right: 46, bottom: 34, left: 52 };
+  const plotWidth = Math.max(180, svgWidth - padding.left - padding.right);
+  const plotHeight = Math.max(260, svgHeight - padding.top - padding.bottom);
 
   // Convert raw value according to metric/imperial unit
   const convertValue = (valInMetric: number): number => {
@@ -155,7 +191,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     return unit === 'imperial' ? 'in' : 'cm';
   }, [chartType, unit]);
 
-  // Determine Y-axis min and max tightly matching reference style (no huge empty top space)
+  // Determine Y-axis min and max tightly matching reference style (no wasted top/bottom gap)
   const { minY, maxY, yTicks } = useMemo(() => {
     let min = Infinity;
     let max = -Infinity;
@@ -194,12 +230,12 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
     // Tight integer bounds: utilize the full vertical space without empty top gap
     let roundedMin = Math.max(0, Math.floor(min / step) * step);
-    if (min - roundedMin < 0.25 * step && roundedMin > 0) {
+    if (min - roundedMin < 0.1 * step && roundedMin > 0) {
       roundedMin = Math.max(0, roundedMin - step);
     }
 
     let roundedMax = Math.ceil(max / step) * step;
-    if (roundedMax - max < 0.25 * step) {
+    if (roundedMax - max < 0.1 * step) {
       roundedMax += step;
     }
 
@@ -255,11 +291,11 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         label: def.label,
         isMedian: def.isMedian,
         path: getCubicBezierPath(points),
-        labelX: svgWidth - padding.right + 10,
+        labelX: svgWidth - padding.right + 6,
         labelY: lastPt ? lastPt.y + 4 : 0,
       };
     });
-  }, [filteredTable, minY, maxY, unit, rangeMonths]);
+  }, [filteredTable, minY, maxY, unit, rangeMonths, svgWidth, svgHeight]);
 
   // Baby's plotted points
   const babyPoints = useMemo(() => {
@@ -356,7 +392,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     });
 
     return pts;
-  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gender]);
+  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gender, svgWidth, svgHeight]);
 
   // Smooth spline trajectory for baby's measurements
   const babyLinePath = useMemo(() => {
@@ -388,10 +424,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   }, [rangeMonths]);
 
   return (
-    <div className="bg-white dark:bg-[#18201B] rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-xs p-2.5 sm:p-5 transition-all text-[#2A4356] dark:text-[#E0ECF5] w-full max-w-full overflow-hidden">
+    <div className="bg-white dark:bg-[#18201B] rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-all text-[#2A4356] dark:text-[#E0ECF5] w-full max-w-full overflow-hidden">
       
       {/* 1. Clean Segmented Header Controls: Weight | Height | Head Size */}
-      <div className="w-full max-w-sm mx-auto mb-1.5 sm:mb-2.5">
+      <div className="w-full max-w-sm mx-auto mb-1 sm:mb-2">
         <div className="bg-[#EFE8DC] dark:bg-[#252E27] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
           <button
             type="button"
@@ -430,10 +466,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       </div>
 
       {/* 2. Vector Canvas with Golden Curves & Floating Detail Card */}
-      <div className="relative w-full">
+      <div ref={chartBoxRef} className="relative w-full">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto min-h-[440px] sm:min-h-[560px] block select-none touch-manipulation"
+          className="w-full h-auto block select-none touch-manipulation"
         >
           {/* Y-Axis floating numbers on the left */}
           {yTicks.map((tickVal, idx) => {
@@ -443,10 +479,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             return (
               <text
                 key={`ytick-${tickVal}`}
-                x={padding.left - 12}
+                x={padding.left - 8}
                 y={y + 4}
                 textAnchor="end"
-                className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+                className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
               >
                 {labelStr}
               </text>
@@ -550,21 +586,21 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <text
                 key={`xtick-${month}`}
                 x={x}
-                y={svgHeight - padding.bottom + 22}
+                y={svgHeight - padding.bottom + 20}
                 textAnchor="middle"
-                className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+                className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
               >
                 {month}
               </text>
             );
           })}
 
-          {/* "months" label at bottom right */}
+          {/* "months" label cleanly positioned above the right-edge ticks */}
           <text
-            x={svgWidth - padding.right + 2}
-            y={svgHeight - padding.bottom + 22}
-            textAnchor="start"
-            className="text-[12px] sm:text-[13px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+            x={svgWidth - padding.right}
+            y={svgHeight - padding.bottom + 4}
+            textAnchor="end"
+            className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
           >
             months
           </text>
@@ -572,7 +608,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
         {/* 3. Floating Detail Inspection Card (Matching Screenshot Design) */}
         {activePoint && (
-          <div className="absolute bottom-5 sm:bottom-6 right-3 sm:right-6 w-56 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-[#1E2621] text-xs animate-in fade-in zoom-in-95 duration-150">
+          <div className="absolute bottom-9 sm:bottom-10 right-2 sm:right-5 w-52 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-[#1E2621] text-xs animate-in fade-in zoom-in-95 duration-150">
             {/* Header: Warm beige banner */}
             <div className="bg-[#EFE8DC] dark:bg-[#2A342D] px-3.5 py-2.5 flex items-center justify-between text-[#2A4356] dark:text-[#D4E4F0]">
               <div className="flex items-center gap-2">
