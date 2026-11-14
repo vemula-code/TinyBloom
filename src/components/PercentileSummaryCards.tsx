@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { BabyProfile, GrowthEntry, MetricUnit, ChartType } from '../types/growth';
-import { calculatePercentile, cmToInches, kgToLbsOz } from '../data/whoGrowthStandards';
-import { Scale, Ruler, CircleDot, TrendingUp, TrendingDown } from 'lucide-react';
+import { calculatePercentile, cmToInches, getCorrectedAgeMonths, kgToLbsOz } from '../data/whoGrowthStandards';
+import { Scale, Ruler, CircleDot } from 'lucide-react';
 
 interface PercentileSummaryCardsProps {
   entries: GrowthEntry[];
@@ -29,7 +29,8 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
   const weightData = useMemo(() => {
     if (!latest?.weightKg) return null;
     const currentVal = latest.weightKg;
-    const pInfo = calculatePercentile('weight', currentVal, latest.ageMonths, profile.gender);
+    const effAge = getCorrectedAgeMonths(latest.ageMonths, profile.gestationalWeeks);
+    const pInfo = calculatePercentile('weight', currentVal, effAge, profile.gender);
 
     let displayVal = `${currentVal.toFixed(2)} kg`;
     let gainStr = '';
@@ -66,7 +67,8 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
   const heightData = useMemo(() => {
     if (!latest?.heightCm) return null;
     const currentVal = latest.heightCm;
-    const pInfo = calculatePercentile('height', currentVal, latest.ageMonths, profile.gender);
+    const effAge = getCorrectedAgeMonths(latest.ageMonths, profile.gestationalWeeks);
+    const pInfo = calculatePercentile('height', currentVal, effAge, profile.gender);
 
     let displayVal = `${currentVal.toFixed(1)} cm`;
     let gainStr = '';
@@ -102,7 +104,8 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
   const headData = useMemo(() => {
     if (!latest?.headCircumferenceCm) return null;
     const currentVal = latest.headCircumferenceCm;
-    const pInfo = calculatePercentile('head', currentVal, latest.ageMonths, profile.gender);
+    const effAge = getCorrectedAgeMonths(latest.ageMonths, profile.gestationalWeeks);
+    const pInfo = calculatePercentile('head', currentVal, effAge, profile.gender);
 
     let displayVal = `${currentVal.toFixed(1)} cm`;
     let gainStr = '';

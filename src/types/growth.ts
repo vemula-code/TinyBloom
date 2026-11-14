@@ -16,11 +16,18 @@ export interface BabyProfile {
   name: string;
   gender: Gender;
   birthDate: string; // YYYY-MM-DD
+  gestationalWeeks?: number; // e.g., 32 for preterm (default full term >= 37)
   birthWeightKg?: number;
   birthHeightCm?: number;
   birthHeadCircumferenceCm?: number;
   avatarUrl?: string;
   notes?: string;
+}
+
+export interface StoredBabyWorkspace {
+  profile: BabyProfile;
+  entries: GrowthEntry[];
+  unit?: MetricUnit;
 }
 
 export interface GrowthEntry {

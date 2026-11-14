@@ -22,6 +22,7 @@ interface OnboardingModalProps {
   onClose: () => void;
   onCompleteSetup: (newProfile: BabyProfile, initialWeightKg?: number, initialHeightCm?: number) => void;
   onChooseSampleData: () => void;
+  startInFormMode?: boolean;
 }
 
 export const OnboardingModal: React.FC<OnboardingModalProps> = ({
@@ -29,16 +30,30 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
   onClose,
   onCompleteSetup,
   onChooseSampleData,
+  startInFormMode = false,
 }) => {
-  const [mode, setMode] = useState<'form' | 'choose'>('choose');
+  const [mode, setMode] = useState<'form' | 'choose'>(startInFormMode ? 'form' : 'choose');
   const [name, setName] = useState('');
   const [gender, setGender] = useState<Gender>('boy');
   const [birthDate, setBirthDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [gestationalWeeks, setGestationalWeeks] = useState<number>(40);
   const [avatarUrl, setAvatarUrl] = useState(DEFAULT_AVATAR);
   const [birthWeightInput, setBirthWeightInput] = useState('');
   const [birthHeightInput, setBirthHeightInput] = useState('');
   const [unit, setUnit] = useState<MetricUnit>('metric');
   const [notes, setNotes] = useState('');
+
+  React.useEffect(() => {
+    if (isOpen) {
+      setMode(startInFormMode ? 'form' : 'choose');
+      if (startInFormMode) {
+        setName('');
+        setBirthWeightInput('');
+        setBirthHeightInput('');
+        setGestationalWeeks(40);
+      }
+    }
+  }, [isOpen, startInFormMode]);
 
   if (!isOpen) return null;
 
@@ -67,6 +82,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       name: cleanName,
       gender,
       birthDate,
+      gestationalWeeks: gestationalWeeks < 37 ? gestationalWeeks : undefined,
       birthWeightKg: weightKg,
       birthHeightCm: heightCm,
       avatarUrl,
@@ -289,6 +305,30 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
                     className="w-full px-3 py-1.5 text-xs bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-medium text-[var(--color-text-main)]"
                   />
                 </div>
+              </div>
+
+              {/* Optional Preterm / Gestational Age */}
+              <div className="p-3 bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <label className="text-xs font-semibold text-[var(--color-text-main)] block">
+                    Born Early? (Optional Corrected Age)
+                  </label>
+                  <span className="text-[10px] text-[var(--color-text-muted)]">
+                    Adjusts WHO percentiles automatically for preterm babies (&lt;37 wks)
+                  </span>
+                </div>
+                <select
+                  value={gestationalWeeks}
+                  onChange={(e) => setGestationalWeeks(Number(e.target.value))}
+                  className="px-2.5 py-1.5 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main)]"
+                >
+                  <option value={40}>Full Term (37–42 wks)</option>
+                  {[36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24].map((w) => (
+                    <option key={w} value={w}>
+                      {w} weeks ({40 - w} wks early)
+                    </option>
+                  ))}
+                </select>
               </div>
 
               {/* Optional starting measurements */}

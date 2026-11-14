@@ -1,19 +1,33 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
-import { ChartType, Gender, GrowthEntry, MetricUnit, WHOPercentileRow } from '../types/growth';
-import { getWHOTable, kgToLbsOz, cmToInches, calculatePercentile, calculateAge } from '../data/whoGrowthStandards';
-import { X, Edit2 } from 'lucide-react';
+import { ChartType, Gender, GrowthEntry, MetricUnit } from '../types/growth';
+import {
+  getWHOTable,
+  kgToLbsOz,
+  cmToInches,
+  calculatePercentile,
+  calculateAge,
+  getCorrectedAgeMonths,
+  isPretermProfile,
+  formatAgeMonthsLabel,
+} from '../data/whoGrowthStandards';
+import { X, Edit2, Stethoscope } from 'lucide-react';
 
 interface GrowthChartProps {
   entries: GrowthEntry[];
   chartType: ChartType;
   onChangeChartType?: (type: ChartType) => void;
   showMetricSwitcher?: boolean;
+  showTimelineControls?: boolean;
   gender: Gender;
   unit: MetricUnit;
   babyName: string;
   babyAgeMonths?: number;
   babyBirthDate?: string;
+  gestationalWeeks?: number;
   timelineRange?: 'auto' | 6 | 12 | 18 | 24;
+  onChangeTimelineRange?: (range: 'auto' | 6 | 12 | 18 | 24) => void;
+  clinicOnlyFilter?: boolean;
+  onToggleClinicOnly?: (val: boolean) => void;
   onOpenAddModal?: () => void;
   onOpenSettings?: () => void;
   onEditEntry?: (entry: GrowthEntry) => void;
@@ -128,15 +142,21 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   chartType,
   onChangeChartType,
   showMetricSwitcher = true,
+  showTimelineControls = false,
   gender,
   unit,
   babyName,
   babyAgeMonths,
   babyBirthDate,
+  gestationalWeeks,
   timelineRange = 'auto',
+  onChangeTimelineRange,
+  clinicOnlyFilter = false,
+  onToggleClinicOnly,
   onOpenSettings,
   onEditEntry,
 }) => {
+  const isPreterm = isPretermProfile(gestationalWeeks);
   // Measure container width so SVG coordinate space matches 1:1 CSS pixels (zero letterboxing/empty space)
   const chartBoxRef = useRef<HTMLDivElement | null>(null);
   const [containerWidth, setContainerWidth] = useState<number>(() => {
@@ -327,7 +347,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     });
   }, [filteredTable, minY, maxY, unit, rangeMonths, svgWidth, svgHeight]);
 
-  // Baby's plotted points
+  // Baby's plotted points (with optional clinic-only filter and preterm corrected age)
   const babyPoints = useMemo(() => {
     const pts: {
       entry: GrowthEntry;
@@ -339,10 +359,15 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       percentile: number;
       percentileStr: string;
       ageStr: string;
+      correctedAgeNote: string | null;
     }[] = [];
 
+    const visibleEntries = clinicOnlyFilter
+      ? entries.filter((e) => Boolean(e.isPediatricianVisit))
+      : entries;
+
     // Sort entries chronologically
-    const sortedEntries = entries.slice().sort((a, b) => {
+    const sortedEntries = visibleEntries.slice().sort((a, b) => {
       const timeA = new Date(a.date).getTime();
       const timeB = new Date(b.date).getTime();
       if (!isNaN(timeA) && !isNaN(timeB) && timeA !== timeB) {
@@ -360,29 +385,31 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       else if (chartType === 'head') val = entry.headCircumferenceCm;
 
       if (val !== undefined && val > 0) {
-        let plotAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
+        let rawAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
 
-        if (plotAge <= 0 && entry.date) {
+        if (rawAge <= 0 && entry.date) {
           if (babyBirthDate && entry.date > babyBirthDate) {
-            plotAge = calculateAge(babyBirthDate, entry.date).exactMonths;
+            rawAge = calculateAge(babyBirthDate, entry.date).exactMonths;
           } else if (earliestDate && entry.date > earliestDate) {
-            plotAge = calculateAge(earliestDate, entry.date).exactMonths;
+            rawAge = calculateAge(earliestDate, entry.date).exactMonths;
           }
         }
 
         // Prevent stacking dots on Y-axis for subsequent entries
-        if (plotAge <= 0 && idx > 0) {
+        if (rawAge <= 0 && idx > 0) {
           const prevPt = pts[pts.length - 1];
           if (prevPt) {
-            plotAge = prevPt.entry.ageMonths + 2;
+            rawAge = prevPt.entry.ageMonths + 2;
           } else {
-            plotAge = idx * 2;
+            rawAge = idx * 2;
           }
         }
 
-        if (plotAge <= rangeMonths) {
+        const effectiveAge = getCorrectedAgeMonths(rawAge, gestationalWeeks);
+
+        if (effectiveAge <= rangeMonths) {
           const convVal = convertValue(val);
-          const percentileInfo = calculatePercentile(chartType, val, plotAge, gender);
+          const percentileInfo = calculatePercentile(chartType, val, effectiveAge, gender);
 
           let valStr = '';
           if (chartType === 'weight') {
@@ -407,22 +434,23 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
           }
 
           pts.push({
-            entry: { ...entry, ageMonths: plotAge },
-            x: getX(plotAge),
+            entry: { ...entry, ageMonths: rawAge },
+            x: getX(effectiveAge),
             y: getY(convVal),
             rawVal: val,
             convVal,
             valStr,
             percentile: percentileInfo.percentile,
             percentileStr: `${gender === 'boy' ? 'Boys' : 'Girls'} Percentile ${percentileInfo.percentile}%`,
-            ageStr: `Age ${formatDetailedAge(babyBirthDate, entry.date, plotAge)}`,
+            ageStr: `Age ${formatDetailedAge(babyBirthDate, entry.date, rawAge)}`,
+            correctedAgeNote: isPreterm && rawAge < 24 ? `Corrected: ${formatAgeMonthsLabel(effectiveAge)}` : null,
           });
         }
       }
     });
 
     return pts;
-  }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gender, svgWidth, svgHeight]);
+  }, [entries, clinicOnlyFilter, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gestationalWeeks, isPreterm, gender, svgWidth, svgHeight]);
 
   // Crisp segment path for baby's measurements
   const babyLinePath = useMemo(() => {
@@ -501,6 +529,69 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               Head Size
             </button>
           </div>
+        </div>
+      )}
+
+      {/* Optional WHO Chart Quick Controls (Timeline Horizon + Clinic-Only Toggle) */}
+      {showTimelineControls && (
+        <div className="flex flex-wrap items-center justify-between gap-2 px-1 pb-2 mb-1 border-b border-[var(--color-card-border)]/70 text-[11px]">
+          {/* Timeline Horizon Pills */}
+          {onChangeTimelineRange && (
+            <div className="flex items-center gap-1 bg-[var(--color-surface)] p-0.5 rounded-xl">
+              {(['auto', 6, 12, 24] as const).map((r) => (
+                <button
+                  key={String(r)}
+                  type="button"
+                  onClick={() => {
+                    setSelectedPointId(null);
+                    onChangeTimelineRange(r);
+                  }}
+                  className={`px-2 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                    timelineRange === r
+                      ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-2xs'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                  }`}
+                >
+                  {r === 'auto' ? 'Auto' : `${r}m`}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Clinic Only vs All Logs Filter */}
+          {onToggleClinicOnly && (
+            <div className="flex items-center gap-1 bg-[var(--color-surface)] p-0.5 rounded-xl">
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPointId(null);
+                  onToggleClinicOnly(false);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                  !clinicOnlyFilter
+                    ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-2xs'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                }`}
+              >
+                All Logs
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setSelectedPointId(null);
+                  onToggleClinicOnly(true);
+                }}
+                className={`px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                  clinicOnlyFilter
+                    ? 'bg-[var(--color-card)] text-[var(--color-primary)] shadow-2xs'
+                    : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                }`}
+              >
+                <Stethoscope className="w-3 h-3" />
+                <span>Clinic Only</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -619,6 +710,18 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 {/* Generous touch target */}
                 <circle cx={pt.x} cy={pt.y} r={18} fill="transparent" />
 
+                {/* Distinct Clinic Visit Double-Ring Halo */}
+                {pt.entry.isPediatricianVisit && !isSelected && (
+                  <circle
+                    cx={pt.x}
+                    cy={pt.y}
+                    r={7.2}
+                    fill="var(--color-card)"
+                    stroke="var(--color-primary)"
+                    strokeWidth={1.75}
+                  />
+                )}
+
                 {/* If selected: hollow indicator ring around the dot */}
                 {isSelected && (
                   <circle
@@ -635,21 +738,9 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={isSelected ? 4.2 : 4.5}
-                  fill="var(--color-chart-line, #244B66)"
+                  r={isSelected ? 4.2 : pt.entry.isPediatricianVisit ? 4.0 : 4.2}
+                  fill={pt.entry.isPediatricianVisit ? 'var(--color-primary)' : 'var(--color-chart-line, #244B66)'}
                 />
-
-                {/* Small indicator if doctor visit */}
-                {pt.entry.isPediatricianVisit && (
-                  <circle
-                    cx={pt.x + 5}
-                    cy={pt.y - 5}
-                    r={2.5}
-                    fill="var(--color-primary)"
-                    stroke="var(--color-card)"
-                    strokeWidth={0.9}
-                  />
-                )}
               </g>
             );
           })}
@@ -711,8 +802,20 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
             {/* Card Body */}
             <div className="p-3.5 space-y-1 bg-[var(--color-card)] text-[var(--color-text-main)]">
-              <div className="font-bold text-sm text-[var(--color-text-main)]">
-                {activePoint.valStr}
+              <div className="flex items-center justify-between gap-2">
+                <div className="font-bold text-sm text-[var(--color-text-main)]">
+                  {activePoint.valStr}
+                </div>
+                {activePoint.entry.isPediatricianVisit ? (
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-[9px] font-bold shrink-0">
+                    <Stethoscope className="w-2.5 h-2.5" />
+                    <span>Clinic</span>
+                  </span>
+                ) : (
+                  <span className="text-[9px] font-semibold text-[var(--color-text-muted)] shrink-0">
+                    Home Log
+                  </span>
+                )}
               </div>
               <div className="text-[12px] text-[var(--color-text-muted)] font-medium">
                 {activePoint.percentileStr}
@@ -720,13 +823,18 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <div className="text-[12px] text-[var(--color-text-muted)] font-medium">
                 {activePoint.ageStr}
               </div>
+              {activePoint.correctedAgeNote && (
+                <div className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                  {activePoint.correctedAgeNote} (WHO plot)
+                </div>
+              )}
               {activePoint.entry.notes && (
                 <div className="text-[11px] text-[var(--color-text-muted)] pt-0.5 italic line-clamp-2">
                   &ldquo;{activePoint.entry.notes}&rdquo;
                 </div>
               )}
               <div className="pt-2 text-[10px] text-[var(--color-text-muted)] opacity-80">
-                Source: WHO
+                Source: WHO {isPreterm ? '· Corrected Age' : ''}
               </div>
             </div>
           </div>
@@ -735,10 +843,16 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
       {/* 4. Subtle Controls & Legend */}
       <div className="mt-3 pt-2.5 border-t border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[var(--color-chart-line,#244B66)] inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-chart-line,#244B66)] inline-block" />
             <span className="font-semibold text-[var(--color-text-main)]">{babyName}&rsquo;s Growth</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="w-3.5 h-3.5 rounded-full border-2 border-[var(--color-primary)] bg-[var(--color-card)] inline-flex items-center justify-center">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]" />
+            </span>
+            <span>Clinic Visit</span>
           </div>
           <div className="flex items-center gap-1.5">
             <span className="w-4 h-1 bg-[var(--color-chart-median,#E29B18)] rounded-full inline-block" />

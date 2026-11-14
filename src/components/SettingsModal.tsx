@@ -97,6 +97,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [name, setName] = useState(profile.name);
   const [gender, setGender] = useState<Gender>(profile.gender);
   const [birthDate, setBirthDate] = useState(profile.birthDate);
+  const [gestationalWeeks, setGestationalWeeks] = useState<number>(profile.gestationalWeeks || 40);
   const [avatarUrl, setAvatarUrl] = useState(profile.avatarUrl || DEFAULT_AVATAR);
   const [statusMsg, setStatusMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -137,6 +138,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     setName(profile.name);
     setGender(profile.gender);
     setBirthDate(profile.birthDate);
+    setGestationalWeeks(profile.gestationalWeeks || 40);
     setAvatarUrl(profile.avatarUrl || DEFAULT_AVATAR);
   }, [profile]);
 
@@ -154,6 +156,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       name: name.trim() || 'My Baby',
       gender,
       birthDate,
+      gestationalWeeks: gestationalWeeks < 37 ? gestationalWeeks : undefined,
       avatarUrl,
     };
 
@@ -705,6 +708,32 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
                       required
                     />
+                  </div>
+
+                  {/* Gestational Age at Birth (Optional Preterm Corrected Age) */}
+                  <div className="space-y-1">
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                        Gestational Age at Birth (Corrected Age)
+                      </label>
+                      {gestationalWeeks < 37 && (
+                        <span className="text-[10px] font-bold text-[var(--color-primary)]">
+                          Preterm Mode Active
+                        </span>
+                      )}
+                    </div>
+                    <select
+                      value={gestationalWeeks}
+                      onChange={(e) => setGestationalWeeks(Number(e.target.value))}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                    >
+                      <option value={40}>Full Term (37–42 weeks · Standard WHO Age)</option>
+                      {[36, 35, 34, 33, 32, 31, 30, 29, 28, 27, 26, 25, 24].map((w) => (
+                        <option key={w} value={w}>
+                          {w} weeks ({40 - w} weeks early · Plot corrected age)
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   {/* Unit Preferences */}

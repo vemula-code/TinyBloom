@@ -288,3 +288,56 @@ export function calculateAge(birthDateStr: string, targetDateStr: string = new D
     displayStr,
   };
 }
+
+// Check if baby qualifies for preterm corrected age (< 37 gestational weeks)
+export function isPretermProfile(gestationalWeeks?: number): boolean {
+  return typeof gestationalWeeks === 'number' && !isNaN(gestationalWeeks) && gestationalWeeks >= 22 && gestationalWeeks < 37;
+}
+
+// AAP/WHO Corrected Age in months (subtract missing weeks to 40 wks up to 24 months)
+export function getCorrectedAgeMonths(rawAgeMonths: number, gestationalWeeks?: number): number {
+  if (!isPretermProfile(gestationalWeeks) || rawAgeMonths >= 24) {
+    return Math.max(0, rawAgeMonths);
+  }
+  const weeksEarly = 40 - (gestationalWeeks as number);
+  const monthsToSubtract = (weeksEarly * 7) / 30.4375;
+  return Math.max(0, Math.round((rawAgeMonths - monthsToSubtract) * 10) / 10);
+}
+
+export function formatAgeMonthsLabel(ageMonths: number): string {
+  const safe = Math.max(0, ageMonths);
+  if (safe < 1) {
+    const wks = Math.max(0, Math.round(safe * 4.345));
+    return wks === 0 ? 'Newborn' : `${wks} wk`;
+  }
+  if (safe < 24) {
+    return `${safe.toFixed(safe % 1 === 0 ? 0 : 1)} mo`;
+  }
+  const yr = Math.floor(safe / 12);
+  const rem = Math.round(safe % 12);
+  return rem > 0 ? `${yr} yr ${rem} mo` : `${yr} yr`;
+}
+
+// Standard AAP / pediatric well-child checkup schedule up to 36 months
+export function getNextWellChildCheckup(ageMonths: number): {
+  title: string;
+  targetMonths: number;
+  checklist: string[];
+} {
+  const schedule: { targetMonths: number; title: string; checklist: string[] }[] = [
+    { targetMonths: 1, title: '1-Month Well Visit', checklist: ['Feeding latch & weight regain check', 'Sleep safety & tummy time'] },
+    { targetMonths: 2, title: '2-Month Well Visit', checklist: ['First routine vaccines', 'Social smiles & head lift during tummy time'] },
+    { targetMonths: 4, title: '4-Month Well Visit', checklist: ['Steady head control & rolling prep', 'Routine vaccines & sleep stretches'] },
+    { targetMonths: 6, title: '6-Month Well Visit', checklist: ['Readiness for solid foods & allergens', 'Sitting with support & iron check'] },
+    { targetMonths: 9, title: '9-Month Well Visit', checklist: ['Finger foods, pincer grasp & crawling', 'Developmental screening questionnaire'] },
+    { targetMonths: 12, title: '12-Month Well Visit', checklist: ['Transition to whole milk/cup & first words', 'Anemia screening & 1-year vaccines'] },
+    { targetMonths: 15, title: '15-Month Well Visit', checklist: ['Independent walking & utensil play', 'Follow-up immunizations'] },
+    { targetMonths: 18, title: '18-Month Well Visit', checklist: ['Vocabulary burst (10–20+ words)', 'Routine developmental & autism screen'] },
+    { targetMonths: 24, title: '24-Month Well Visit', checklist: ['Two-word phrases & jumping', 'BMI/growth channel check'] },
+    { targetMonths: 30, title: '30-Month Well Visit', checklist: ['Speech clarity & social play', 'Dental & vision readiness'] },
+    { targetMonths: 36, title: '3-Year Well Visit', checklist: ['Preschool readiness & toilet habits', 'Annual height & blood pressure check'] },
+  ];
+
+  const found = schedule.find((s) => s.targetMonths >= Math.max(0, ageMonths - 0.3));
+  return found || schedule[schedule.length - 1];
+}

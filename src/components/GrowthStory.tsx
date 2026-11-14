@@ -5,7 +5,8 @@ import {
   kgToLbsOz,
   cmToInches,
   calculateAge,
-  formatOrdinal
+  formatOrdinal,
+  getCorrectedAgeMonths
 } from '../data/whoGrowthStandards';
 import {
   Scale,
@@ -97,8 +98,9 @@ export const GrowthStory: React.FC<GrowthStoryProps> = ({
 
   // Percentiles
   const latestAge = latest ? calculateAge(profile.birthDate, latest.date) : null;
+  const latestEffAge = latest ? getCorrectedAgeMonths(latest.ageMonths, profile.gestationalWeeks) : 0;
   const latestPercentile = latest
-    ? calculatePercentile(selectedMetric, latestVal, latest.ageMonths, profile.gender)
+    ? calculatePercentile(selectedMetric, latestVal, latestEffAge, profile.gender)
     : null;
 
   // Formatting strings

@@ -3,15 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
-import { BabyProfile, ChartType, GrowthEntry, MetricUnit, ThemeMode, PaletteTheme } from './types/growth';
+import React, { useState, useEffect, useRef } from 'react';
+import {
+  BabyProfile,
+  ChartType,
+  GrowthEntry,
+  MetricUnit,
+  ThemeMode,
+  PaletteTheme,
+  StoredBabyWorkspace,
+} from './types/growth';
 import { DEFAULT_PROFILE, DEFAULT_GROWTH_ENTRIES, DEFAULT_AVATAR } from './data/defaultData';
-import { calculateAge } from './data/whoGrowthStandards';
+import {
+  calculateAge,
+  isPretermProfile,
+  getCorrectedAgeMonths,
+  formatAgeMonthsLabel,
+} from './data/whoGrowthStandards';
 import { GrowthChart } from './components/GrowthChart';
 import { PercentileSummaryCards } from './components/PercentileSummaryCards';
 import { GrowthStory } from './components/GrowthStory';
 import { MeasurementHistory } from './components/MeasurementHistory';
 import { NextStepsGuide } from './components/NextStepsGuide';
+import { GrowthInsightsCard } from './components/GrowthInsightsCard';
+import { CheckupPrepCard } from './components/CheckupPrepCard';
 import { QuickLogModal } from './components/QuickLogModal';
 import { PrintDoctorReport } from './components/PrintDoctorReport';
 import { SettingsModal } from './components/SettingsModal';
@@ -29,29 +44,22 @@ import { decodeSyncUrl } from './utils/syncPayload';
 import {
   Plus,
   Settings,
-  Printer,
   Sparkles,
-  Scale,
-  Ruler,
-  CircleDot,
   Heart,
-  Upload,
   ShieldCheck,
   CheckCircle2,
   Calendar,
   BookOpen,
   ArrowRight,
   TrendingUp,
-  Activity,
-  Layers,
   Baby,
-  Sun,
-  Moon,
-  Palette,
   Home as HomeIcon,
-  Camera,
   Edit3,
-  Share2
+  Share2,
+  ChevronDown,
+  Check,
+  ListChecks,
+  Clock
 } from 'lucide-react';
 
 // Helper: concise developmental stage summary for top header
@@ -129,6 +137,23 @@ export default function App() {
   // Navigation tab states: 'home' | 'growth' | 'story' | 'history' | 'nextsteps'
   const [activeTab, setActiveTab] = useState<'home' | 'growth' | 'story' | 'history' | 'nextsteps'>('home');
   const [activeChartType, setActiveChartType] = useState<ChartType>('weight');
+  const [growthSubView, setGrowthSubView] = useState<'chart' | 'history'>('chart');
+  const [clinicOnlyFilter, setClinicOnlyFilter] = useState<boolean>(false);
+
+  // Saved multi-baby workspaces for instant child switching
+  const [workspaces, setWorkspaces] = useState<StoredBabyWorkspace[]>(() => {
+    try {
+      const saved = localStorage.getItem('tinybloom_workspaces_v1');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      }
+    } catch {}
+    return [];
+  });
+  const [isProfileSwitcherOpen, setIsProfileSwitcherOpen] = useState(false);
+  const [isAddingChildModal, setIsAddingChildModal] = useState(false);
+  const switcherRef = useRef<HTMLDivElement | null>(null);
 
   // Appearance & Themes
   const [themeMode, setThemeMode] = useState<ThemeMode>(() => {
@@ -350,7 +375,7 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 4500);
   };
 
-  // Sync to local storage whenever state changes (100% on-device)
+  // Sync active baby into multi-child workspaces store
   useEffect(() => {
     try {
       localStorage.setItem('tinybloom_profile', JSON.stringify(profile));
@@ -374,6 +399,45 @@ export default function App() {
       console.error(e);
     }
   }, [unit]);
+
+  // Keep workspaces list synced with active profile & entries (excluding demo placeholder once user has real profiles)
+  useEffect(() => {
+    if (!profile?.id) return;
+    setWorkspaces((prev) => {
+      const filtered = prev.filter((w) => w.profile.id !== profile.id);
+      const isCurrentDemo = profile.id === 'demo-sample-baby' && prev.length > 0;
+      const next = isCurrentDemo
+        ? prev
+        : [{ profile, entries, unit }, ...filtered.filter((w) => w.profile.id !== 'demo-sample-baby')];
+      try {
+        localStorage.setItem('tinybloom_workspaces_v1', JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  }, [profile, entries, unit]);
+
+  // Close profile switcher popover on outside click
+  useEffect(() => {
+    if (!isProfileSwitcherOpen) return;
+    const handleOutside = (e: MouseEvent) => {
+      if (switcherRef.current && !switcherRef.current.contains(e.target as Node)) {
+        setIsProfileSwitcherOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutside);
+    return () => document.removeEventListener('mousedown', handleOutside);
+  }, [isProfileSwitcherOpen]);
+
+  const handleSwitchChild = (workspace: StoredBabyWorkspace) => {
+    setProfile(workspace.profile);
+    setEntries(workspace.entries || []);
+    if (workspace.unit) {
+      setUnit(workspace.unit);
+    }
+    setIsProfileSwitcherOpen(false);
+    setToastMessage(`Switched to ${workspace.profile.name}`);
+    setTimeout(() => setToastMessage(null), 2500);
+  };
 
   // Auto-heal check on initial load for previously imported entries where ageMonths was stuck at 0
   useEffect(() => {
@@ -617,9 +681,11 @@ export default function App() {
     };
     try {
       localStorage.setItem('tinybloom_profile', JSON.stringify(freshProfile));
+      localStorage.removeItem('tinybloom_workspaces_v1');
     } catch (e) {
       console.error(e);
     }
+    setWorkspaces([]);
     setProfile(freshProfile);
     setEntries([]);
     setToastMessage('🧹 All baby records wiped from device. Starting fresh!');
@@ -810,20 +876,26 @@ export default function App() {
   };
 
   const currentAge = calculateAge(profile.birthDate);
+  const pretermActive = isPretermProfile(profile.gestationalWeeks);
+  const correctedAgeMonths = getCorrectedAgeMonths(currentAge.exactMonths, profile.gestationalWeeks);
+
+  const recentThreeEntries = [...entries]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
 
   return (
     <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24 transition-colors duration-250">
       {/* ========================================================
           STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full max-w-full overflow-x-hidden">
+      <header className="sticky top-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full max-w-full">
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:flex-initial">
             <button
               type="button"
               onClick={() => setActiveTab('home')}
-              className="flex items-center text-left transition-opacity hover:opacity-90 shrink min-w-0"
+              className="flex items-center text-left transition-opacity hover:opacity-90 shrink min-w-0 cursor-pointer"
             >
               <TinyBloomLogo size={32} showText={true} />
             </button>
@@ -841,7 +913,7 @@ export default function App() {
             </button>
           </div>
 
-          {/* Right Header: Baby Details, Sync & Settings */}
+          {/* Right Header: Sync & Quick Baby Switcher Popover */}
           <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
             {/* Quick Partner Sync Button */}
             <button
@@ -855,16 +927,87 @@ export default function App() {
               <span className="hidden xs:inline font-bold">Sync</span>
             </button>
 
-            {/* Quick Profile & Settings */}
-            <button
-              type="button"
-              onClick={() => setIsSettingsOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-primary,#91A98B)]/10 hover:bg-[var(--color-primary,#91A98B)]/20 border border-[var(--color-primary,#91A98B)]/25 text-xs font-semibold text-[var(--color-text-main,#303832)] active:scale-95 transition-all cursor-pointer shrink-0"
-              title="Manage baby profile, themes, export, and settings"
-            >
-              <Baby className="w-3.5 h-3.5 text-[var(--color-primary,#91A98B)] shrink-0" />
-              <span className="font-bold truncate max-w-[85px] xs:max-w-[120px] sm:max-w-[160px]">{profile.name}</span>
-            </button>
+            {/* Quick Baby Switcher & Profile Menu */}
+            <div ref={switcherRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setIsProfileSwitcherOpen((v) => !v)}
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-primary)]/12 hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/25 text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-all cursor-pointer shrink-0"
+                title="Switch child profile or open settings"
+              >
+                <Baby className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
+                <span className="font-bold truncate max-w-[80px] xs:max-w-[115px] sm:max-w-[155px]">{profile.name}</span>
+                <ChevronDown className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform ${isProfileSwitcherOpen ? 'rotate-180' : ''}`} />
+              </button>
+
+              {isProfileSwitcherOpen && (
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
+                    Child Profiles
+                  </div>
+
+                  {workspaces.map((ws) => {
+                    const isCurrent = ws.profile.id === profile.id;
+                    const wsAge = calculateAge(ws.profile.birthDate);
+                    return (
+                      <button
+                        key={ws.profile.id}
+                        type="button"
+                        onClick={() => handleSwitchChild(ws)}
+                        className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl text-left transition-colors cursor-pointer ${
+                          isCurrent
+                            ? 'bg-[var(--color-primary-light)] text-[var(--color-text-main)]'
+                            : 'hover:bg-[var(--color-surface)] text-[var(--color-text-main)]'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          <BabyAvatar
+                            avatarUrl={ws.profile.avatarUrl || DEFAULT_AVATAR}
+                            name={ws.profile.name}
+                            gender={ws.profile.gender}
+                            size="sm"
+                          />
+                          <div className="min-w-0">
+                            <div className="text-xs font-bold truncate">{ws.profile.name}</div>
+                            <div className="text-[10px] text-[var(--color-text-muted)] truncate">
+                              {wsAge.displayStr} · {ws.entries?.length || 0} logs
+                            </div>
+                          </div>
+                        </div>
+                        {isCurrent && <Check className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />}
+                      </button>
+                    );
+                  })}
+
+                  <div className="pt-1 mt-1 border-t border-[var(--color-card-border)] space-y-1">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileSwitcherOpen(false);
+                        setIsAddingChildModal(true);
+                        setIsOnboardingOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Add Another Child / Twin</span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsProfileSwitcherOpen(false);
+                        setIsSettingsOpen(true);
+                      }}
+                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      <span>Profile, Themes &amp; Backups</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>
@@ -940,11 +1083,16 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* Neatly Aligned Age & Birthdate */}
+                    {/* Neatly Aligned Age, Corrected Preterm Tag & Birthdate */}
                     <div className="flex flex-wrap items-center gap-1.5 text-xs mt-0.5">
                       <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded-lg text-[11px]">
                         {currentAge.displayStr} old
                       </span>
+                      {pretermActive && (
+                        <span className="font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-lg text-[10px]">
+                          Corrected: {formatAgeMonthsLabel(correctedAgeMonths)}
+                        </span>
+                      )}
                       <span className="text-[var(--color-text-muted)] text-[11px] flex items-center gap-1">
                         <Calendar className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
                         <span>Born {(() => {
@@ -1081,6 +1229,7 @@ export default function App() {
                 babyName={profile.name}
                 babyAgeMonths={currentAge.exactMonths}
                 babyBirthDate={profile.birthDate}
+                gestationalWeeks={profile.gestationalWeeks}
                 timelineRange={chartTimelineRange}
                 onOpenAddModal={() => {
                   setEditingEntry(null);
@@ -1091,130 +1240,167 @@ export default function App() {
               />
             </div>
 
-            {/* 3. Reassuring Progress & Growth Journey (Zero-Anxiety Parenting) */}
-            <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-xl bg-[var(--color-primary)]/15 text-[var(--color-primary)] flex items-center justify-center shrink-0">
-                    <Sparkles className="w-4 h-4" />
-                  </span>
-                  <div>
-                    <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
-                      How {profile.name} is Progressing ({activeChartType === 'weight' ? 'Weight' : activeChartType === 'height' ? 'Length / Height' : 'Head Size'})
-                    </h3>
-                    <p className="text-xs text-[var(--color-text-muted)]">
-                      Gentle developmental trajectory and clinical perspective
-                    </p>
+            {/* 2b. Compact Recent Logs Strip (1-Tap Edit or View All History) */}
+            {recentThreeEntries.length > 0 && (
+              <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] p-3 sm:p-4 shadow-2xs space-y-2">
+                <div className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 font-bold text-[var(--color-text-main)]">
+                    <Clock className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                    <span>Recent Measurements</span>
                   </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setActiveTab('story')}
-                  className="text-xs font-bold text-[var(--color-primary)] hover:underline self-start sm:self-auto flex items-center gap-1"
-                >
-                  <span>Detailed Analysis</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Crucial Gentle Reassurance Banner - Don't Worry Message */}
-              <div className="p-4 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-2">
-                <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
-                  <Heart className="w-4 h-4 text-rose-500 fill-rose-500 shrink-0" />
-                  <span>A Reminder for Parents: Growth is a Journey, Not a Race</span>
-                </div>
-                <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
-                  Every single baby is beautifully unique and grows at their own pace. A percentile is simply a statistical reference curve across thousands of infants—it is <strong>never a grade, a score, or a contest</strong>. Whether {profile.name} tracks along the 15th percentile or the 85th percentile, what pediatricians look for is steady, healthy progression along their own unique trajectory.
-                </p>
-                <p className="text-[11px] text-[var(--color-text-muted)] italic">
-                  Normal daily or weekly fluctuations happen with growth spurts, active crawling, teething, or illness. Trust your instincts, cherish the small moments, and speak with your pediatrician if you ever want individualized medical guidance.
-                </p>
-              </div>
-            </div>
-
-            {/* 4. Current Milestone Stage & What's Next */}
-            <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
-                <div className="flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
-                    <Calendar className="w-4 h-4" />
-                  </span>
-                  <div>
-                    <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
-                      Current Milestone Stage · {currentAge.displayStr} Old
-                    </h3>
-                    <p className="text-xs text-[var(--color-text-muted)]">
-                      Play activities, natural developmental windows, and checkup tips
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    onClick={() => setIsReportOpen(true)}
-                    className="px-3 py-1.5 rounded-xl border border-[var(--color-card-border,#E2E9E0)] text-xs font-semibold text-[var(--color-text-main)] hover:bg-[var(--color-canvas)] transition-colors"
+                    onClick={() => {
+                      setGrowthSubView('history');
+                      setActiveTab('growth');
+                    }}
+                    className="text-[11px] font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    Doctor Brief
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveTab('nextsteps')}
-                    className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary)] hover:underline"
-                  >
-                    <span>Universal Guide (0–36m)</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <span>View All ({entries.length})</span>
+                    <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs leading-relaxed text-[var(--color-text-muted)]">
-                <div className="p-3.5 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-1.5">
-                  <span className="font-bold text-[var(--color-text-main)] block">
-                    ✨ Things to Observe at this Stage
-                  </span>
-                  <p>
-                    Watch for rolling, supported sitting, babbling chains of syllables, transferring toys hand-to-hand, and tracking loved ones with joyful smiles.
-                  </p>
-                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  {recentThreeEntries.map((entry) => {
+                    const summaryVal =
+                      activeChartType === 'weight'
+                        ? entry.weightKg
+                          ? unit === 'imperial'
+                            ? `${(entry.weightKg * 2.20462).toFixed(1)} lb`
+                            : `${entry.weightKg.toFixed(2)} kg`
+                          : '—'
+                        : activeChartType === 'height'
+                        ? entry.heightCm
+                          ? unit === 'imperial'
+                            ? `${(entry.heightCm / 2.54).toFixed(1)} in`
+                            : `${entry.heightCm.toFixed(1)} cm`
+                          : '—'
+                        : entry.headCircumferenceCm
+                        ? unit === 'imperial'
+                          ? `${(entry.headCircumferenceCm / 2.54).toFixed(1)} in`
+                          : `${entry.headCircumferenceCm.toFixed(1)} cm`
+                        : '—';
 
-                <div className="p-3.5 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border,#E2E9E0)] space-y-1.5">
-                  <span className="font-bold text-[var(--color-text-main)] block">
-                    🧸 Bonding Play to Try Today
-                  </span>
-                  <p>
-                    Floor tummy time with mirrors, gentle peek-a-boo, exploring textured crinkle books, and conversational singing during daily diaper changes.
-                  </p>
+                    return (
+                      <button
+                        key={entry.id}
+                        type="button"
+                        onClick={() => handleEditEntry(entry)}
+                        className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] hover:border-[var(--color-primary)]/50 text-left transition-colors cursor-pointer"
+                      >
+                        <div className="min-w-0">
+                          <div className="text-[11px] font-bold text-[var(--color-text-main)] truncate">
+                            {entry.date}
+                          </div>
+                          <div className="text-[10px] text-[var(--color-text-muted)]">
+                            {entry.isPediatricianVisit ? 'Clinic Visit' : 'Home Log'}
+                          </div>
+                        </div>
+                        <span className="text-xs font-mono font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] shrink-0">
+                          {summaryVal}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
-            </div>
+            )}
+
+            {/* 3. Live Personalized Progress & Growth Pace Insights */}
+            <GrowthInsightsCard
+              profile={profile}
+              entries={entries}
+              activeChartType={activeChartType}
+              unit={unit}
+              onOpenDetailedAnalysis={() => setActiveTab('story')}
+              onOpenHistory={() => {
+                setGrowthSubView('history');
+                setActiveTab('growth');
+              }}
+            />
+
+            {/* 4. Checkup Prep & Doctor Questions (Synced directly to Doctor Brief PDF) */}
+            <CheckupPrepCard
+              ageMonths={currentAge.exactMonths}
+              babyName={profile.name}
+              onOpenReport={() => setIsReportOpen(true)}
+              onOpenUniversalGuide={() => setActiveTab('nextsteps')}
+            />
           </div>
         )}
 
         {/* ========================================================
-            TAB 2: WHO INTERACTIVE GROWTH CHARTS
+            TAB 2: WHO INTERACTIVE GROWTH CHARTS + 1-TAP HISTORY
            ======================================================== */}
         {activeTab === 'growth' && (
           <div className="space-y-3">
+            {/* Top Segmented Sub-View: Chart vs History List */}
+            <div className="flex items-center justify-between gap-2 bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-card-border)] shadow-2xs">
+              <div className="flex items-center flex-1 gap-1 bg-[var(--color-surface)] p-1 rounded-xl">
+                <button
+                  type="button"
+                  onClick={() => setGrowthSubView('chart')}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    growthSubView === 'chart'
+                      ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  <span>WHO Graph</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setGrowthSubView('history')}
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                    growthSubView === 'history'
+                      ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                  }`}
+                >
+                  <ListChecks className="w-3.5 h-3.5" />
+                  <span>History List ({entries.length})</span>
+                </button>
+              </div>
+            </div>
 
-            <GrowthChart
-              entries={entries}
-              chartType={activeChartType}
-              onChangeChartType={setActiveChartType}
-              gender={profile.gender}
-              unit={unit}
-              babyName={profile.name}
-              babyAgeMonths={currentAge.exactMonths}
-              babyBirthDate={profile.birthDate}
-              timelineRange={chartTimelineRange}
-              onOpenAddModal={() => {
-                setEditingEntry(null);
-                setIsLogModalOpen(true);
-              }}
-              onEditEntry={handleEditEntry}
-              onOpenSettings={() => setIsSettingsOpen(true)}
-            />
+            {growthSubView === 'chart' ? (
+              <GrowthChart
+                entries={entries}
+                chartType={activeChartType}
+                onChangeChartType={setActiveChartType}
+                showTimelineControls={true}
+                gender={profile.gender}
+                unit={unit}
+                babyName={profile.name}
+                babyAgeMonths={currentAge.exactMonths}
+                babyBirthDate={profile.birthDate}
+                gestationalWeeks={profile.gestationalWeeks}
+                timelineRange={chartTimelineRange}
+                onChangeTimelineRange={handleSetChartTimelineRange}
+                clinicOnlyFilter={clinicOnlyFilter}
+                onToggleClinicOnly={setClinicOnlyFilter}
+                onOpenAddModal={() => {
+                  setEditingEntry(null);
+                  setIsLogModalOpen(true);
+                }}
+                onEditEntry={handleEditEntry}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+              />
+            ) : (
+              <MeasurementHistory
+                profile={profile}
+                entries={entries}
+                unit={unit}
+                onEditEntry={handleEditEntry}
+                onDeleteEntry={handleDeleteEntry}
+                onOpenAddModal={() => {
+                  setEditingEntry(null);
+                  setIsLogModalOpen(true);
+                }}
+              />
+            )}
           </div>
         )}
 
@@ -1326,7 +1512,10 @@ export default function App() {
         {/* Left 2: WHO Charts */}
         <button
           type="button"
-          onClick={() => setActiveTab('growth')}
+          onClick={() => {
+            setGrowthSubView('chart');
+            setActiveTab('growth');
+          }}
           className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
             activeTab === 'growth'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
@@ -1455,9 +1644,19 @@ export default function App() {
 
       <OnboardingModal
         isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
-        onCompleteSetup={handleCompleteOnboarding}
-        onChooseSampleData={handleChooseSampleData}
+        onClose={() => {
+          setIsOnboardingOpen(false);
+          setIsAddingChildModal(false);
+        }}
+        startInFormMode={isAddingChildModal}
+        onCompleteSetup={(newProf, wKg, hCm) => {
+          setIsAddingChildModal(false);
+          handleCompleteOnboarding(newProf, wKg, hCm);
+        }}
+        onChooseSampleData={() => {
+          setIsAddingChildModal(false);
+          handleChooseSampleData();
+        }}
       />
 
       <ImportPastDataModal

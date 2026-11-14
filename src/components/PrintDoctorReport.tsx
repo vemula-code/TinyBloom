@@ -1,6 +1,14 @@
 import React, { useState } from 'react';
 import { BabyProfile, GrowthEntry, MetricUnit } from '../types/growth';
-import { calculateAge, calculatePercentile, cmToInches, kgToLbsOz } from '../data/whoGrowthStandards';
+import {
+  calculateAge,
+  calculatePercentile,
+  cmToInches,
+  getCorrectedAgeMonths,
+  isPretermProfile,
+  formatAgeMonthsLabel,
+  kgToLbsOz,
+} from '../data/whoGrowthStandards';
 import { TinyBloomLogo } from './TinyBloomLogo';
 import { Printer, X, CheckSquare, Square, FileText, HelpCircle, Sparkles } from 'lucide-react';
 
@@ -22,6 +30,8 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
   );
 
   const latestAge = calculateAge(profile.birthDate);
+  const preterm = isPretermProfile(profile.gestationalWeeks);
+  const correctedMonthsNow = getCorrectedAgeMonths(latestAge.exactMonths, profile.gestationalWeeks);
   const latestEntry = sortedEntries[sortedEntries.length - 1];
 
   // Section visibility preferences
@@ -162,6 +172,11 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
               <div>
                 <span className="text-[#6E7B6C] font-semibold block uppercase text-[10px]">Age on Visit</span>
                 <span className="font-bold text-[#5D7C57]">{latestAge.displayStr}</span>
+                {preterm && (
+                  <span className="block text-[10px] text-[#303832] mt-0.5">
+                    Corrected: <strong>{formatAgeMonthsLabel(correctedMonthsNow)}</strong> ({profile.gestationalWeeks} wks)
+                  </span>
+                )}
               </div>
             </div>
           )}
@@ -189,7 +204,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                   </span>
                   {latestEntry.weightKg && (
                     <span className="block text-[10px] text-[#5D7C57] font-semibold mt-0.5">
-                      {calculatePercentile('weight', latestEntry.weightKg, latestEntry.ageMonths, profile.gender).displayStr}
+                      {calculatePercentile('weight', latestEntry.weightKg, getCorrectedAgeMonths(latestEntry.ageMonths, profile.gestationalWeeks), profile.gender).displayStr}
                     </span>
                   )}
                 </div>
@@ -206,7 +221,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                   </span>
                   {latestEntry.heightCm && (
                     <span className="block text-[10px] text-[#5D7C57] font-semibold mt-0.5">
-                      {calculatePercentile('height', latestEntry.heightCm, latestEntry.ageMonths, profile.gender).displayStr}
+                      {calculatePercentile('height', latestEntry.heightCm, getCorrectedAgeMonths(latestEntry.ageMonths, profile.gestationalWeeks), profile.gender).displayStr}
                     </span>
                   )}
                 </div>
@@ -223,7 +238,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                   </span>
                   {latestEntry.headCircumferenceCm && (
                     <span className="block text-[10px] text-[#5D7C57] font-semibold mt-0.5">
-                      {calculatePercentile('head', latestEntry.headCircumferenceCm, latestEntry.ageMonths, profile.gender).displayStr}
+                      {calculatePercentile('head', latestEntry.headCircumferenceCm, getCorrectedAgeMonths(latestEntry.ageMonths, profile.gestationalWeeks), profile.gender).displayStr}
                     </span>
                   )}
                 </div>
@@ -253,14 +268,15 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                   </thead>
                   <tbody className="divide-y divide-[#91A98B]/10">
                     {sortedEntries.map((entry) => {
+                      const effAge = getCorrectedAgeMonths(entry.ageMonths, profile.gestationalWeeks);
                       const wP = entry.weightKg
-                        ? calculatePercentile('weight', entry.weightKg, entry.ageMonths, profile.gender)
+                        ? calculatePercentile('weight', entry.weightKg, effAge, profile.gender)
                         : null;
                       const hP = entry.heightCm
-                        ? calculatePercentile('height', entry.heightCm, entry.ageMonths, profile.gender)
+                        ? calculatePercentile('height', entry.heightCm, effAge, profile.gender)
                         : null;
                       const hcP = entry.headCircumferenceCm
-                        ? calculatePercentile('head', entry.headCircumferenceCm, entry.ageMonths, profile.gender)
+                        ? calculatePercentile('head', entry.headCircumferenceCm, effAge, profile.gender)
                         : null;
 
                       let wStr = entry.weightKg ? `${entry.weightKg.toFixed(2)} kg` : '—';
