@@ -108,13 +108,13 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
       aria-modal="true"
       aria-labelledby="partner-sync-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-primary,#4A7347)]/30 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
         {/* Header Banner */}
-        <div className="relative bg-gradient-to-r from-[var(--color-primary)]/15 via-[#AFCDE0]/20 to-teal-500/15 p-4 sm:p-5 border-b border-[var(--color-primary)]/20 shrink-0">
+        <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-[var(--color-card)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -137,9 +137,9 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto max-h-[75vh] bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto max-h-[75vh] bg-[var(--color-canvas)]">
           {/* Quick Explanation */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2">
             <p className="text-xs text-[var(--color-text-main)] leading-relaxed">
               When you send this link, your partner opens it on her phone and <strong>gets {profile.name}’s records immediately</strong>:
             </p>
@@ -183,7 +183,7 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
             <button
               type="button"
               onClick={handleCopyLink}
-              className="w-full py-2.5 px-4 rounded-xl bg-white dark:bg-[#1B231F] hover:bg-stone-50 dark:hover:bg-[#252E27] text-[var(--color-text-main)] font-semibold text-xs border border-[var(--color-card-border)] flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer active:scale-98"
+              className="w-full py-2.5 px-4 rounded-xl bg-[var(--color-card)] hover:bg-[var(--color-surface)] text-[var(--color-text-main)] font-semibold text-xs border border-[var(--color-card-border)] flex items-center justify-center gap-2 transition-colors shadow-2xs cursor-pointer active:scale-98"
             >
               {copied ? (
                 <>
@@ -213,7 +213,7 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
             </button>
 
             {showQr && qrCodeDataUrl && (
-              <div className="mt-3 p-4 bg-white dark:bg-white rounded-2xl border border-stone-200 shadow-sm flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
+              <div className="mt-3 p-4 bg-white keep-white rounded-2xl border border-stone-200 shadow-sm flex flex-col items-center text-center animate-in fade-in zoom-in-95 duration-150">
                 <img
                   src={qrCodeDataUrl}
                   alt="Sync QR Code"
@@ -239,14 +239,14 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-white dark:bg-[#1B231F] flex items-center justify-between gap-3 shrink-0">
+        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between gap-3 shrink-0">
           <span className="text-[11px] text-[var(--color-text-muted)]">
             TinyBloom &middot; Private Offline Sync
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-stone-100 dark:bg-stone-800 hover:bg-stone-200 dark:hover:bg-stone-700 text-stone-800 dark:text-stone-200 text-xs font-bold rounded-xl transition-colors cursor-pointer"
+            className="px-4 py-2 bg-[var(--color-surface)] hover:opacity-85 text-[var(--color-text-main)] text-xs font-bold rounded-xl transition-opacity cursor-pointer"
           >
             Done
           </button>

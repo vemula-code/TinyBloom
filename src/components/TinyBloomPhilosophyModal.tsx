@@ -31,14 +31,14 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
       aria-modal="true"
       aria-labelledby="philosophy-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[var(--color-primary,#4A7347)]/30 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
         
         {/* Header Hero Banner */}
-        <div className="relative bg-gradient-to-r from-[var(--color-primary,#4A7347)]/15 via-[#F3C9B8]/25 to-[#AFCDE0]/20 p-4 sm:p-5 border-b border-[var(--color-primary,#4A7347)]/20 shrink-0">
+        <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-[var(--color-card)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -62,10 +62,10 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
         </div>
 
         {/* Story Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main,#1B241C)]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main)]">
           
           {/* Card 1: The First Baby & Confusing Lines */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2">
+          <div className="p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2">
             <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
               <Baby className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
               <span>Our First Baby &amp; Confusing Lines</span>
@@ -101,7 +101,7 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
           </div>
 
           {/* Card 3: Why We Built TinyBloom (Trimmed & Direct) */}
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2.5">
+          <div className="p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2.5">
             <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold text-xs uppercase tracking-wider">
               <Heart className="w-4 h-4 text-rose-500 fill-rose-500/30 shrink-0" />
               <span>Why We Built TinyBloom</span>
@@ -140,14 +140,14 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-white dark:bg-[#1B231F] flex items-center justify-between gap-3 shrink-0">
+        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between gap-3 shrink-0">
           <span className="text-[11px] text-[var(--color-text-muted)]">
             100% Free &middot; Zero Ads &middot; On-Device
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 bg-[var(--color-primary,#4A7347)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+            className="px-4 py-2 bg-[var(--color-primary)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
           >
             <span>Back to Baby&apos;s Growth</span>
             <ArrowRight className="w-3.5 h-3.5" />

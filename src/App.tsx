@@ -143,20 +143,18 @@ export default function App() {
     try {
       const saved = localStorage.getItem('tinybloom_palette') as string;
       const valid: PaletteTheme[] = [
-        'sage',
-        'olive',
-        'honey',
         'apple-health',
         'huckleberry',
-        'hatch',
+        'sage',
+        'honey',
       ];
       if (saved && valid.includes(saved as PaletteTheme)) {
         return saved as PaletteTheme;
       }
       // Smooth migration from older theme names
-      if (saved === 'slate') return 'apple-health';
+      if (saved === 'olive') return 'sage';
+      if (saved === 'hatch' || saved === 'lavender' || saved === 'slate') return 'apple-health';
       if (saved === 'sky') return 'huckleberry';
-      if (saved === 'lavender') return 'hatch';
       if (saved === 'linen' || saved === 'amber') return 'honey';
       return 'sage';
     } catch {
@@ -239,12 +237,10 @@ export default function App() {
       root.setAttribute('data-theme', paletteTheme);
 
       const themeColors: Record<PaletteTheme, { light: string; dark: string }> = {
-        sage: { light: '#3D6A3B', dark: '#121814' },
-        olive: { light: '#38583B', dark: '#111713' },
-        honey: { light: '#94571E', dark: '#18130E' },
-        'apple-health': { light: '#2563EB', dark: '#0B0F19' },
-        huckleberry: { light: '#1C6B7C', dark: '#0D1619' },
-        hatch: { light: '#684C95', dark: '#140E20' },
+        'apple-health': { light: '#1D63DC', dark: '#0B111E' },
+        huckleberry: { light: '#0E7490', dark: '#0A1518' },
+        sage: { light: '#3D6E41', dark: '#101712' },
+        honey: { light: '#B86B35', dark: '#17120E' },
       };
 
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -875,8 +871,8 @@ export default function App() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="bg-[#5D7C57] text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
-          <CheckCircle2 className="w-4 h-4 text-[#FFF9F0] shrink-0" />
+        <div className="bg-[var(--color-primary)] text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
+          <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
@@ -1079,6 +1075,7 @@ export default function App() {
                 entries={entries}
                 chartType={activeChartType}
                 onChangeChartType={setActiveChartType}
+                showMetricSwitcher={false}
                 gender={profile.gender}
                 unit={unit}
                 babyName={profile.name}
@@ -1095,7 +1092,7 @@ export default function App() {
             </div>
 
             {/* 3. Reassuring Progress & Growth Journey (Zero-Anxiety Parenting) */}
-            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs space-y-4">
+            <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-8 h-8 rounded-xl bg-[var(--color-primary)]/15 text-[var(--color-primary)] flex items-center justify-center shrink-0">
@@ -1137,7 +1134,7 @@ export default function App() {
             </div>
 
             {/* 4. Current Milestone Stage & What's Next */}
-            <div className="bg-white dark:bg-[#1A221D] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border,#E2E9E0)] shadow-2xs space-y-4">
+            <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border,#E2E9E0)] pb-3">
                 <div className="flex items-center gap-2">
                   <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">

@@ -7,6 +7,7 @@ interface GrowthChartProps {
   entries: GrowthEntry[];
   chartType: ChartType;
   onChangeChartType?: (type: ChartType) => void;
+  showMetricSwitcher?: boolean;
   gender: Gender;
   unit: MetricUnit;
   babyName: string;
@@ -18,29 +19,57 @@ interface GrowthChartProps {
   onEditEntry?: (entry: GrowthEntry) => void;
 }
 
-// Cubic spline smoothing for smooth, organic vector curves
-function getCubicBezierPath(points: { x: number; y: number }[]): string {
-  if (points.length === 0) return '';
-  if (points.length === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
-  if (points.length === 2) {
+// Monotone Cubic Hermite Spline (Fritsch-Carlson) for smooth WHO percentile curves without ripples or overshoot
+function getMonotoneSplinePath(points: { x: number; y: number }[]): string {
+  const n = points.length;
+  if (n === 0) return '';
+  if (n === 1) return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+  if (n === 2) {
     return `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)} L ${points[1].x.toFixed(1)} ${points[1].y.toFixed(1)}`;
   }
 
+  const dx: number[] = [];
+  const dy: number[] = [];
+  const slopes: number[] = [];
+  for (let i = 0; i < n - 1; i++) {
+    const deltaX = points[i + 1].x - points[i].x || 1;
+    const deltaY = points[i + 1].y - points[i].y;
+    dx.push(deltaX);
+    dy.push(deltaY);
+    slopes.push(deltaY / deltaX);
+  }
+
+  const tangents: number[] = [slopes[0]];
+  for (let i = 1; i < n - 1; i++) {
+    const m0 = slopes[i - 1];
+    const m1 = slopes[i];
+    if (m0 * m1 <= 0) {
+      tangents.push(0);
+    } else {
+      const common = dx[i - 1] + dx[i];
+      tangents.push((3 * common) / ((common + dx[i]) / m0 + (common + dx[i - 1]) / m1));
+    }
+  }
+  tangents.push(slopes[n - 2]);
+
   let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
-  for (let i = 0; i < points.length - 1; i++) {
-    const p0 = points[Math.max(0, i - 1)];
-    const p1 = points[i];
-    const p2 = points[i + 1];
-    const p3 = points[Math.min(points.length - 1, i + 2)];
-
-    const cp1x = p1.x + (p2.x - p0.x) / 6;
-    const cp1y = p1.y + (p2.y - p0.y) / 6;
-    const cp2x = p2.x - (p3.x - p1.x) / 6;
-    const cp2y = p2.y - (p3.y - p1.y) / 6;
-
-    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`;
+  for (let i = 0; i < n - 1; i++) {
+    const h = dx[i] / 3;
+    const cp1x = points[i].x + h;
+    const cp1y = points[i].y + tangents[i] * h;
+    const cp2x = points[i + 1].x - h;
+    const cp2y = points[i + 1].y - tangents[i + 1] * h;
+    d += ` C ${cp1x.toFixed(1)} ${cp1y.toFixed(1)}, ${cp2x.toFixed(1)} ${cp2y.toFixed(1)}, ${points[i + 1].x.toFixed(1)} ${points[i + 1].y.toFixed(1)}`;
   }
   return d;
+}
+
+// Crisp straight segments for measured child points (zero overshoot between close dates)
+function getLinearPath(points: { x: number; y: number }[]): string {
+  if (points.length === 0) return '';
+  return points
+    .map((p, idx) => `${idx === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
+    .join(' ');
 }
 
 // Format detailed age string e.g. "6m 2w 2d" matching clean medical style
@@ -98,6 +127,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   entries,
   chartType,
   onChangeChartType,
+  showMetricSwitcher = true,
   gender,
   unit,
   babyName,
@@ -290,7 +320,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
         key: def.key,
         label: def.label,
         isMedian: def.isMedian,
-        path: getCubicBezierPath(points),
+        path: getMonotoneSplinePath(points),
         labelX: svgWidth - padding.right + 6,
         labelY: lastPt ? lastPt.y + 4 : 0,
       };
@@ -394,23 +424,21 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     return pts;
   }, [entries, chartType, rangeMonths, unit, minY, maxY, babyBirthDate, gender, svgWidth, svgHeight]);
 
-  // Smooth spline trajectory for baby's measurements
+  // Crisp segment path for baby's measurements
   const babyLinePath = useMemo(() => {
-    return getCubicBezierPath(babyPoints.map((p) => ({ x: p.x, y: p.y })));
+    return getLinearPath(babyPoints.map((p) => ({ x: p.x, y: p.y })));
   }, [babyPoints]);
 
-  // Selected point: defaults to latest entry (as in reference screenshot)
+  // Selected point: hidden by default until user clicks a specific dot
   const [selectedPointId, setSelectedPointId] = useState<string | null>(null);
 
+  useEffect(() => {
+    setSelectedPointId(null);
+  }, [chartType]);
+
   const activePoint = useMemo(() => {
-    if (babyPoints.length === 0) return null;
-    if (selectedPointId === 'none') return null;
-    if (selectedPointId) {
-      const found = babyPoints.find((p) => p.entry.id === selectedPointId);
-      if (found) return found;
-    }
-    // Default to the latest point
-    return babyPoints[babyPoints.length - 1];
+    if (!selectedPointId || babyPoints.length === 0) return null;
+    return babyPoints.find((p) => p.entry.id === selectedPointId) || null;
   }, [babyPoints, selectedPointId]);
 
   // X-axis month ticks: 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 ...
@@ -424,54 +452,102 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   }, [rangeMonths]);
 
   return (
-    <div className="bg-white dark:bg-[#18201B] rounded-3xl border border-stone-200/80 dark:border-stone-800 shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-all text-[#2A4356] dark:text-[#E0ECF5] w-full max-w-full overflow-hidden">
+    <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-all text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
       
-      {/* 1. Clean Segmented Header Controls: Weight | Height | Head Size */}
-      <div className="w-full max-w-sm mx-auto mb-1 sm:mb-2">
-        <div className="bg-[#EFE8DC] dark:bg-[#252E27] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
-          <button
-            type="button"
-            onClick={() => onChangeChartType?.('weight')}
-            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
-              chartType === 'weight'
-                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
-                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
-            }`}
-          >
-            Weight
-          </button>
-          <button
-            type="button"
-            onClick={() => onChangeChartType?.('height')}
-            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
-              chartType === 'height'
-                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
-                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
-            }`}
-          >
-            Height
-          </button>
-          <button
-            type="button"
-            onClick={() => onChangeChartType?.('head')}
-            className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
-              chartType === 'head'
-                ? 'bg-white dark:bg-[#1A221D] text-[#1E3A52] dark:text-white shadow-xs'
-                : 'text-[#617482] dark:text-[#95A7B5] hover:text-[#1E3A52] dark:hover:text-white'
-            }`}
-          >
-            Head Size
-          </button>
+      {/* 1. Optional Segmented Header Controls (hidden on Home tab when summary cards above already switch) */}
+      {showMetricSwitcher && (
+        <div className="w-full max-w-sm mx-auto mb-1.5 sm:mb-2.5">
+          <div className="bg-[var(--color-surface)] p-1 rounded-2xl flex items-center justify-between shadow-2xs">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPointId(null);
+                onChangeChartType?.('weight');
+              }}
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+                chartType === 'weight'
+                  ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+              }`}
+            >
+              Weight
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPointId(null);
+                onChangeChartType?.('height');
+              }}
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+                chartType === 'height'
+                  ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+              }`}
+            >
+              Height
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedPointId(null);
+                onChangeChartType?.('head');
+              }}
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+                chartType === 'head'
+                  ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
+                  : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+              }`}
+            >
+              Head Size
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 2. Vector Canvas with Golden Curves & Floating Detail Card */}
+      {/* 2. Vector Canvas with Straight Grid Baselines, Golden Curves & Tap-Only Detail Card */}
       <div ref={chartBoxRef} className="relative w-full">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
           className="w-full h-auto block select-none touch-manipulation"
+          onClick={() => {
+            if (selectedPointId) setSelectedPointId(null);
+          }}
         >
-          {/* Y-Axis floating numbers on the left */}
+          {/* Crisp Straight Horizontal Baseline Guidelines aligned to every Y-axis tick */}
+          {yTicks.map((tickVal) => {
+            const y = getY(tickVal);
+            return (
+              <line
+                key={`ygrid-${tickVal}`}
+                x1={padding.left}
+                y1={y}
+                x2={svgWidth - padding.right}
+                y2={y}
+                stroke="var(--color-text-muted)"
+                strokeOpacity={0.14}
+                strokeWidth={0.8}
+              />
+            );
+          })}
+
+          {/* Crisp Straight Vertical Month Reference Guidelines */}
+          {xTicks.map((month) => {
+            const x = getX(month);
+            return (
+              <line
+                key={`xgrid-${month}`}
+                x1={x}
+                y1={padding.top}
+                x2={x}
+                y2={svgHeight - padding.bottom}
+                stroke="var(--color-text-muted)"
+                strokeOpacity={month === 0 ? 0.22 : 0.08}
+                strokeWidth={month === 0 ? 1 : 0.75}
+              />
+            );
+          })}
+
+          {/* Y-Axis numbers on the left */}
           {yTicks.map((tickVal, idx) => {
             const y = getY(tickVal);
             const isTopTick = idx === yTicks.length - 1;
@@ -482,7 +558,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 x={padding.left - 8}
                 y={y + 4}
                 textAnchor="end"
-                className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+                className="text-[11px] sm:text-[12px] fill-[var(--color-text-muted)] font-sans font-semibold"
               >
                 {labelStr}
               </text>
@@ -495,10 +571,9 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <path
                 d={curve.path}
                 fill="none"
-                stroke={curve.isMedian ? '#E29B18' : '#EBB844'}
-                strokeWidth={curve.isMedian ? 2.5 : 1.2}
+                stroke={curve.isMedian ? 'var(--color-chart-median, #E29B18)' : 'var(--color-chart-curve, #EBB844)'}
+                strokeWidth={curve.isMedian ? 2.4 : 1.15}
                 strokeOpacity={curve.isMedian ? 1 : 0.85}
-                className={curve.isMedian ? 'dark:stroke-[#F5BA42]' : 'dark:stroke-[#F0C35B]'}
               />
               {/* Right edge percentile label */}
               <text
@@ -507,8 +582,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 textAnchor="start"
                 className={`text-[11px] font-sans ${
                   curve.isMedian
-                    ? 'font-bold fill-[#E29B18] dark:fill-[#F5BA42]'
-                    : 'font-medium fill-[#2A4356] dark:fill-[#9FB4C7]'
+                    ? 'font-bold fill-[var(--color-chart-median,#E29B18)]'
+                    : 'font-semibold fill-[var(--color-text-muted)]'
                 }`}
               >
                 {curve.label}
@@ -521,11 +596,10 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <path
               d={babyLinePath}
               fill="none"
-              stroke="#244B66"
+              stroke="var(--color-chart-line, #244B66)"
               strokeWidth={2.4}
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="dark:stroke-[#68A4CC]"
             />
           )}
 
@@ -537,31 +611,32 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
               <g
                 key={pt.entry.id}
                 className="cursor-pointer"
-                onClick={() => setSelectedPointId(pt.entry.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setSelectedPointId(isSelected ? null : pt.entry.id);
+                }}
               >
                 {/* Generous touch target */}
                 <circle cx={pt.x} cy={pt.y} r={18} fill="transparent" />
 
-                {/* If selected: hollow indicator ring around the dot matching reference image */}
+                {/* If selected: hollow indicator ring around the dot */}
                 {isSelected && (
                   <circle
                     cx={pt.x}
                     cy={pt.y}
                     r={9.5}
-                    fill="white"
-                    stroke="#244B66"
-                    strokeWidth={2}
-                    className="dark:fill-[#18201B] dark:stroke-[#68A4CC] transition-all"
+                    fill="var(--color-card)"
+                    stroke="var(--color-chart-line, #244B66)"
+                    strokeWidth={2.2}
                   />
                 )}
 
-                {/* Solid Navy Dot */}
+                {/* Solid Dot */}
                 <circle
                   cx={pt.x}
                   cy={pt.y}
-                  r={isSelected ? 4 : 4.5}
-                  fill="#244B66"
-                  className="dark:fill-[#68A4CC]"
+                  r={isSelected ? 4.2 : 4.5}
+                  fill="var(--color-chart-line, #244B66)"
                 />
 
                 {/* Small indicator if doctor visit */}
@@ -570,9 +645,9 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                     cx={pt.x + 5}
                     cy={pt.y - 5}
                     r={2.5}
-                    fill="#3B82F6"
-                    stroke="white"
-                    strokeWidth={0.8}
+                    fill="var(--color-primary)"
+                    stroke="var(--color-card)"
+                    strokeWidth={0.9}
                   />
                 )}
               </g>
@@ -588,7 +663,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 x={x}
                 y={svgHeight - padding.bottom + 20}
                 textAnchor="middle"
-                className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+                className="text-[11px] sm:text-[12px] fill-[var(--color-text-muted)] font-sans font-semibold"
               >
                 {month}
               </text>
@@ -600,24 +675,24 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             x={svgWidth - padding.right}
             y={svgHeight - padding.bottom + 4}
             textAnchor="end"
-            className="text-[11px] sm:text-[12px] fill-[#2A4356] dark:fill-[#9FB4C7] font-sans font-medium"
+            className="text-[11px] sm:text-[12px] fill-[var(--color-text-muted)] font-sans font-semibold"
           >
             months
           </text>
         </svg>
 
-        {/* 3. Floating Detail Inspection Card (Matching Screenshot Design) */}
+        {/* 3. Floating Detail Inspection Card (Appears ONLY when a dot is clicked) */}
         {activePoint && (
-          <div className="absolute bottom-9 sm:bottom-10 right-2 sm:right-5 w-52 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-stone-200/80 dark:border-stone-700 bg-white dark:bg-[#1E2621] text-xs animate-in fade-in zoom-in-95 duration-150">
-            {/* Header: Warm beige banner */}
-            <div className="bg-[#EFE8DC] dark:bg-[#2A342D] px-3.5 py-2.5 flex items-center justify-between text-[#2A4356] dark:text-[#D4E4F0]">
+          <div className="absolute bottom-9 sm:bottom-10 right-2 sm:right-5 w-52 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-[var(--color-card-border)] bg-[var(--color-card)] text-xs animate-in fade-in zoom-in-95 duration-150 z-10">
+            {/* Header */}
+            <div className="bg-[var(--color-surface)] px-3.5 py-2.5 flex items-center justify-between text-[var(--color-text-main)] border-b border-[var(--color-card-border)]">
               <div className="flex items-center gap-2">
                 <span className="font-semibold">{formatCardDate(activePoint.entry.date)}</span>
-                <span className="text-stone-400">|</span>
+                <span className="text-[var(--color-text-muted)]">|</span>
                 <button
                   type="button"
                   onClick={() => onEditEntry?.(activePoint.entry)}
-                  className="font-bold underline hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1"
+                  className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] underline hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1"
                 >
                   <Edit2 className="w-3 h-3" />
                   <span>Edit</span>
@@ -626,8 +701,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
               <button
                 type="button"
-                onClick={() => setSelectedPointId('none')}
-                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 transition-colors cursor-pointer text-[#2A4356] dark:text-[#D4E4F0]"
+                onClick={() => setSelectedPointId(null)}
+                className="w-5 h-5 rounded-full flex items-center justify-center hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]"
                 title="Close"
               >
                 <X className="w-3.5 h-3.5" />
@@ -635,22 +710,22 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             </div>
 
             {/* Card Body */}
-            <div className="p-3.5 space-y-1 bg-white dark:bg-[#1E2621] text-[#2A4356] dark:text-[#D4E4F0]">
-              <div className="font-bold text-sm text-[#1E3A52] dark:text-white">
+            <div className="p-3.5 space-y-1 bg-[var(--color-card)] text-[var(--color-text-main)]">
+              <div className="font-bold text-sm text-[var(--color-text-main)]">
                 {activePoint.valStr}
               </div>
-              <div className="text-[12px] text-[#2A4356] dark:text-[#C5D7E5] font-medium">
+              <div className="text-[12px] text-[var(--color-text-muted)] font-medium">
                 {activePoint.percentileStr}
               </div>
-              <div className="text-[12px] text-[#2A4356] dark:text-[#C5D7E5] font-medium">
+              <div className="text-[12px] text-[var(--color-text-muted)] font-medium">
                 {activePoint.ageStr}
               </div>
               {activePoint.entry.notes && (
-                <div className="text-[11px] text-stone-500 dark:text-stone-400 pt-0.5 italic line-clamp-2">
+                <div className="text-[11px] text-[var(--color-text-muted)] pt-0.5 italic line-clamp-2">
                   &ldquo;{activePoint.entry.notes}&rdquo;
                 </div>
               )}
-              <div className="pt-2 text-[10px] text-stone-400 dark:text-stone-500">
+              <div className="pt-2 text-[10px] text-[var(--color-text-muted)] opacity-80">
                 Source: WHO
               </div>
             </div>
@@ -659,27 +734,34 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       </div>
 
       {/* 4. Subtle Controls & Legend */}
-      <div className="mt-4 pt-3 border-t border-stone-100 dark:border-stone-800 flex flex-wrap items-center justify-between gap-2.5 text-xs text-stone-500 dark:text-stone-400">
-        <div className="flex items-center gap-4">
+      <div className="mt-3 pt-2.5 border-t border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
+        <div className="flex items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-3 h-3 rounded-full bg-[#244B66] dark:bg-[#68A4CC] inline-block" />
-            <span className="font-semibold text-[#1E3A52] dark:text-white">{babyName}&rsquo;s Growth</span>
+            <span className="w-3 h-3 rounded-full bg-[var(--color-chart-line,#244B66)] inline-block" />
+            <span className="font-semibold text-[var(--color-text-main)]">{babyName}&rsquo;s Growth</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-4 h-1 bg-[#E29B18] rounded-full inline-block" />
-            <span>50% (WHO Median)</span>
+            <span className="w-4 h-1 bg-[var(--color-chart-median,#E29B18)] rounded-full inline-block" />
+            <span>50% Median</span>
           </div>
         </div>
 
-        {onOpenSettings && (
-          <button
-            type="button"
-            onClick={onOpenSettings}
-            className="text-[11px] font-semibold text-[#244B66] dark:text-[#68A4CC] hover:underline cursor-pointer"
-          >
-            Timeline: 0–{rangeMonths}m
-          </button>
-        )}
+        <div className="flex items-center gap-3">
+          {!activePoint && babyPoints.length > 0 && (
+            <span className="text-[11px] text-[var(--color-text-muted)]">
+              Tap any dot to view details
+            </span>
+          )}
+          {onOpenSettings && (
+            <button
+              type="button"
+              onClick={onOpenSettings}
+              className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] hover:underline cursor-pointer"
+            >
+              Timeline: 0–{rangeMonths}m
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

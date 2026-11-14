@@ -1134,7 +1134,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
   return (
     <div className="space-y-6">
       {/* Top Banner with Age Selector */}
-      <div className="bg-white dark:bg-[#1D241F] rounded-3xl p-5 sm:p-6 border border-[var(--color-primary,#91A98B)]/30 shadow-2xs">
+      <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-primary,#91A98B)]/30 shadow-2xs">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-semibold text-xs tracking-wider uppercase mb-1">
@@ -1177,7 +1177,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                       ? 'bg-[var(--color-primary,#91A98B)] text-white border-[var(--color-primary,#91A98B)] shadow-2xs scale-102'
                       : isCurrent
                       ? 'bg-[var(--color-primary,#91A98B)]/15 border-[var(--color-primary,#91A98B)] text-[var(--color-primary-dark,#3D5939)]'
-                      : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/20 text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                      : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/20 text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
                   }`}
                 >
                   <span>{s.ageLabel}</span>
@@ -1192,7 +1192,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
       </div>
 
       {/* Selected Stage Detail Card */}
-      <div className="bg-white dark:bg-[#1D241F] rounded-3xl p-5 sm:p-6 border border-[var(--color-primary,#91A98B)]/30 shadow-2xs space-y-6">
+      <div className="bg-[var(--color-card)] rounded-3xl p-5 sm:p-6 border border-[var(--color-primary,#91A98B)]/30 shadow-2xs space-y-6">
         {/* Stage Header */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-[var(--color-primary,#91A98B)]/20">
           <div>
@@ -1274,7 +1274,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
             {stage.milestoneCategories.map((cat, idx) => (
               <div
                 key={idx}
-                className="bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl p-4 border border-[var(--color-primary,#91A98B)]/20 flex flex-col justify-between space-y-3"
+                className="bg-[var(--color-canvas)] rounded-2xl p-4 border border-[var(--color-primary,#91A98B)]/20 flex flex-col justify-between space-y-3"
               >
                 <div>
                   <div className="flex items-center gap-2 mb-2 font-bold text-xs uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
@@ -1321,7 +1321,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
             {stage.playActivities.map((act, idx) => (
               <div
                 key={idx}
-                className="bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl p-4 border border-[var(--color-primary,#91A98B)]/20 space-y-2"
+                className="bg-[var(--color-canvas)] rounded-2xl p-4 border border-[var(--color-primary,#91A98B)]/20 space-y-2"
               >
                 <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
                   <Lightbulb className="w-4 h-4 text-[var(--color-primary,#91A98B)] shrink-0" />
@@ -1338,7 +1338,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
         {/* TAB 3: WELL-CHILD AGENDA */}
         {activeTab === 'pediatrician' && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
+            <div className="bg-[var(--color-canvas)] rounded-2xl p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
               <h4 className="font-bold text-xs uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                 <Stethoscope className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
                 <span>Discussion Topics with Your Doctor</span>
@@ -1353,7 +1353,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
               </ul>
             </div>
 
-            <div className="bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
+            <div className="bg-[var(--color-canvas)] rounded-2xl p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
               <h4 className="font-bold text-xs uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                 <CheckSquare className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
                 <span>Visit Preparation Checklist</span>
@@ -1373,7 +1373,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
         {/* TAB 4: DOCTOR QUESTIONS NOTEPAD */}
         {activeTab === 'questions' && (
           <div className="space-y-4">
-            <div className="bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-2xl p-4 sm:p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
+            <div className="bg-[var(--color-canvas)] rounded-2xl p-4 sm:p-5 border border-[var(--color-primary,#91A98B)]/20 space-y-3">
               <div className="flex items-center justify-between">
                 <h4 className="font-bold text-xs uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                   <HelpCircle className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
@@ -1391,7 +1391,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                   value={newQuestionText}
                   onChange={(e) => setNewQuestionText(e.target.value)}
                   placeholder="e.g. Is baby's feeding schedule typical? When to introduce eggs?"
-                  className="flex-1 px-3.5 py-2 text-xs bg-white dark:bg-[#1D241F] border border-[var(--color-primary,#91A98B)]/30 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--color-primary,#91A98B)] text-[var(--color-text-main,#303832)] placeholder:text-[var(--color-text-muted,#6E7B6C)]/50"
+                  className="flex-1 px-3.5 py-2 text-xs bg-[var(--color-card)] border border-[var(--color-primary,#91A98B)]/30 rounded-xl focus:outline-none focus:ring-1 focus:ring-[var(--color-primary,#91A98B)] text-[var(--color-text-main,#303832)] placeholder:text-[var(--color-text-muted,#6E7B6C)]/50"
                 />
                 <button
                   type="submit"
@@ -1408,7 +1408,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                 {questions.map((q, idx) => (
                   <div
                     key={idx}
-                    className="p-3 bg-white dark:bg-[#1D241F] rounded-xl border border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between gap-3 text-xs shadow-2xs"
+                    className="p-3 bg-[var(--color-card)] rounded-xl border border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between gap-3 text-xs shadow-2xs"
                   >
                     <div className="flex items-start gap-2">
                       <span className="font-bold text-[var(--color-primary,#91A98B)] shrink-0">

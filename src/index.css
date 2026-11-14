@@ -4,174 +4,183 @@
 
 @layer base {
   /* ========================================================
-     THEME 1: Botanical Sage (Signature Living Nursery & Sprout)
+     THEME 1: Ocean Blue (Apple Health style · Clean Clinical Blue)
      ======================================================== */
-  :root, [data-theme="sage"] {
-    --color-primary: #3D6A3B;
-    --color-primary-dark: #274825;
-    --color-primary-light: rgba(61, 106, 59, 0.12);
-    --color-canvas: #FAF8F4;
+  :root, [data-theme="apple-health"] {
+    --color-primary: #1D63DC;
+    --color-primary-dark: #154BB0;
+    --color-primary-light: rgba(29, 99, 220, 0.12);
+    --color-canvas: #F4F7FB;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(61, 106, 59, 0.18);
-    --color-text-main: #1A251C;
-    --color-text-muted: #546656;
-  }
-  .dark[data-theme="sage"], html.dark [data-theme="sage"], html.dark:not([data-theme]) {
-    color-scheme: dark;
-    --color-primary: #72BE6F;
-    --color-primary-dark: #97DC95;
-    --color-primary-light: rgba(114, 190, 111, 0.22);
-    --color-canvas: #121814;
-    --color-card: #1B241E;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F7FAF7;
-    --color-text-muted: #9EB2A1;
-  }
-
-  /* ========================================================
-     THEME 2: Forest Earth (Deep Woodland Oak & Earth)
-     ======================================================== */
-  [data-theme="olive"] {
-    --color-primary: #38583B;
-    --color-primary-dark: #233925;
-    --color-primary-light: rgba(56, 88, 59, 0.12);
-    --color-canvas: #F8F7F3;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(56, 88, 59, 0.18);
-    --color-text-main: #18231A;
-    --color-text-muted: #526354;
-  }
-  .dark[data-theme="olive"], html.dark [data-theme="olive"] {
-    color-scheme: dark;
-    --color-primary: #6FB375;
-    --color-primary-dark: #95D49A;
-    --color-primary-light: rgba(111, 179, 117, 0.22);
-    --color-canvas: #111713;
-    --color-card: #1A231C;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F5FAF6;
-    --color-text-muted: #9BB09E;
-  }
-
-  /* ========================================================
-     THEME 3: Warm Honeycomb (Golden Nursery Glow & Warm Almond)
-     ======================================================== */
-  [data-theme="honey"] {
-    --color-primary: #94571E;
-    --color-primary-dark: #68390E;
-    --color-primary-light: rgba(148, 87, 30, 0.12);
-    --color-canvas: #FAF6EE;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(148, 87, 30, 0.18);
-    --color-text-main: #271C12;
-    --color-text-muted: #6B5543;
-  }
-  .dark[data-theme="honey"], html.dark [data-theme="honey"] {
-    color-scheme: dark;
-    --color-primary: #E0964A;
-    --color-primary-dark: #F5B978;
-    --color-primary-light: rgba(224, 150, 74, 0.22);
-    --color-canvas: #18130E;
-    --color-card: #231C15;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #FAF6F0;
-    --color-text-muted: #B8A291;
-  }
-
-  /* ========================================================
-     THEME 4: Ocean Slate (Precision Navy & Clean High Contrast)
-     ======================================================== */
-  [data-theme="apple-health"] {
-    --color-primary: #2563EB;
-    --color-primary-dark: #1D4ED8;
-    --color-primary-light: rgba(37, 99, 235, 0.12);
-    --color-canvas: #F8FAFC;
-    --color-card: #FFFFFF;
-    --color-card-border: rgba(37, 99, 235, 0.16);
+    --color-surface: #E8EFF8;
+    --color-card-border: #D6E2F0;
     --color-text-main: #0F172A;
     --color-text-muted: #475569;
+    --color-chart-line: #1D4ED8;
+    --color-chart-curve: #E0A834;
+    --color-chart-median: #C88308;
   }
   .dark[data-theme="apple-health"], html.dark [data-theme="apple-health"] {
     color-scheme: dark;
-    --color-primary: #60A5FA;
-    --color-primary-dark: #93C5FD;
-    --color-primary-light: rgba(96, 165, 250, 0.22);
-    --color-canvas: #0B0F19;
-    --color-card: #131B2E;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F8FAFC;
+    --color-primary: #4D94FF;
+    --color-primary-dark: #88B8FF;
+    --color-primary-light: rgba(77, 148, 255, 0.20);
+    --color-canvas: #0B111E;
+    --color-card: #131C2E;
+    --color-surface: #1C273D;
+    --color-card-border: #253450;
+    --color-text-main: #F1F5F9;
     --color-text-muted: #94A3B8;
+    --color-chart-line: #60A5FA;
+    --color-chart-curve: #EBB844;
+    --color-chart-median: #F5BA42;
   }
 
   /* ========================================================
-     THEME 5: Morning Mist Teal (Pediatric Marine & Clean Clarity)
+     THEME 2: Calm Teal (Huckleberry style · Pediatric Clarity)
      ======================================================== */
   [data-theme="huckleberry"] {
-    --color-primary: #1C6B7C;
-    --color-primary-dark: #124C58;
-    --color-primary-light: rgba(28, 107, 124, 0.12);
-    --color-canvas: #F4F9FA;
+    --color-primary: #0E7490;
+    --color-primary-dark: #0A556A;
+    --color-primary-light: rgba(14, 116, 144, 0.12);
+    --color-canvas: #F2F8F9;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(28, 107, 124, 0.18);
-    --color-text-main: #122226;
-    --color-text-muted: #496369;
+    --color-surface: #E2F1F4;
+    --color-card-border: #CBE4E9;
+    --color-text-main: #0F2429;
+    --color-text-muted: #446269;
+    --color-chart-line: #0E7490;
+    --color-chart-curve: #E0A834;
+    --color-chart-median: #C88308;
   }
   .dark[data-theme="huckleberry"], html.dark [data-theme="huckleberry"] {
     color-scheme: dark;
-    --color-primary: #52B5C8;
-    --color-primary-dark: #81D2E1;
-    --color-primary-light: rgba(82, 181, 200, 0.22);
-    --color-canvas: #0D1619;
-    --color-card: #162328;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F2F8F9;
-    --color-text-muted: #8FAEB6;
+    --color-primary: #2DD4BF;
+    --color-primary-dark: #6EE7D8;
+    --color-primary-light: rgba(45, 212, 191, 0.20);
+    --color-canvas: #0A1518;
+    --color-card: #112126;
+    --color-surface: #192E35;
+    --color-card-border: #233F48;
+    --color-text-main: #ECF7F9;
+    --color-text-muted: #8FB3BC;
+    --color-chart-line: #5EEAD4;
+    --color-chart-curve: #EBB844;
+    --color-chart-median: #F5BA42;
   }
 
   /* ========================================================
-     THEME 6: Evening Twilight (Bedtime Calm & Gentle Lavender Dusk)
+     THEME 3: Botanical Sage (Baby Growth Signature · Organic Nursery)
      ======================================================== */
-  [data-theme="hatch"] {
-    --color-primary: #684C95;
-    --color-primary-dark: #49316F;
-    --color-primary-light: rgba(104, 76, 149, 0.12);
-    --color-canvas: #F9F7FD;
+  [data-theme="sage"] {
+    --color-primary: #3D6E41;
+    --color-primary-dark: #2A4E2D;
+    --color-primary-light: rgba(61, 110, 65, 0.12);
+    --color-canvas: #F7F6F1;
     --color-card: #FFFFFF;
-    --color-card-border: rgba(104, 76, 149, 0.18);
-    --color-text-main: #1D152B;
-    --color-text-muted: #5D4D73;
+    --color-surface: #ECEFE7;
+    --color-card-border: #D8E0D1;
+    --color-text-main: #19241B;
+    --color-text-muted: #526354;
+    --color-chart-line: #244B66;
+    --color-chart-curve: #E0A834;
+    --color-chart-median: #C88308;
   }
-  .dark[data-theme="hatch"], html.dark [data-theme="hatch"] {
+  .dark[data-theme="sage"], html.dark [data-theme="sage"], html.dark:not([data-theme]) {
     color-scheme: dark;
-    --color-primary: #AF95DF;
-    --color-primary-dark: #CEBEED;
-    --color-primary-light: rgba(175, 149, 223, 0.22);
-    --color-canvas: #14101E;
-    --color-card: #1E182C;
-    --color-card-border: rgba(255, 255, 255, 0.14);
-    --color-text-main: #F9F7FD;
-    --color-text-muted: #A89CBF;
+    --color-primary: #6EC274;
+    --color-primary-dark: #97DBA0;
+    --color-primary-light: rgba(110, 194, 116, 0.20);
+    --color-canvas: #101712;
+    --color-card: #18221B;
+    --color-surface: #223026;
+    --color-card-border: #2D3E32;
+    --color-text-main: #F3F8F4;
+    --color-text-muted: #9BB29E;
+    --color-chart-line: #72B6DC;
+    --color-chart-curve: #EBB844;
+    --color-chart-median: #F5BA42;
   }
 
-  /* High contrast font and container adaptability in dark / night mode */
-  .dark .bg-white {
-    background-color: var(--color-card) !important;
+  /* ========================================================
+     THEME 4: Warm Nursery (Gentle Oat, Peach & Soft Golden Glow)
+     ======================================================== */
+  [data-theme="honey"] {
+    --color-primary: #B86B35;
+    --color-primary-dark: #8A4B1E;
+    --color-primary-light: rgba(184, 107, 53, 0.12);
+    --color-canvas: #FBF7F2;
+    --color-card: #FFFFFF;
+    --color-surface: #EFE8DC;
+    --color-card-border: #E8DCCB;
+    --color-text-main: #281E16;
+    --color-text-muted: #6E5B4B;
+    --color-chart-line: #244B66;
+    --color-chart-curve: #E0A834;
+    --color-chart-median: #C88308;
   }
-  .dark .bg-white\/95 {
-    background-color: var(--color-card) !important;
+  .dark[data-theme="honey"], html.dark [data-theme="honey"] {
+    color-scheme: dark;
+    --color-primary: #E69E67;
+    --color-primary-dark: #F7C094;
+    --color-primary-light: rgba(230, 158, 103, 0.20);
+    --color-canvas: #17120E;
+    --color-card: #221B15;
+    --color-surface: #2E251D;
+    --color-card-border: #3D3127;
+    --color-text-main: #FAF5F0;
+    --color-text-muted: #BFA997;
+    --color-chart-line: #F0B482;
+    --color-chart-curve: #EBB844;
+    --color-chart-median: #F5BA42;
   }
-  .dark .bg-white\/90 {
-    background-color: var(--color-card) !important;
+
+  /* Universal theme-aware surface & contrast safeguards */
+  .bg-white:not(.keep-white),
+  .dark .bg-white:not(.keep-white),
+  .dark .bg-white\/95,
+  .dark .bg-white\/90,
+  .dark .bg-white\/80,
+  .dark .bg-white\/70 {
+    background-color: var(--color-card);
   }
+
+  .dark .bg-stone-50,
+  .dark .bg-stone-50\/70,
+  .dark .bg-stone-100 {
+    background-color: var(--color-surface) !important;
+  }
+
+  .dark .border-stone-100,
+  .dark .border-stone-200,
+  .dark .border-stone-200\/80,
+  .dark .border-stone-300 {
+    border-color: var(--color-card-border) !important;
+  }
+
+  .dark .text-stone-900,
+  .dark .text-stone-800,
+  .dark .text-stone-700 {
+    color: var(--color-text-main) !important;
+  }
+
+  .dark .text-stone-600,
+  .dark .text-stone-500,
+  .dark .text-stone-400 {
+    color: var(--color-text-muted) !important;
+  }
+
   .dark .bg-\[\#FFF9F0\],
   .dark .bg-\[\#FFF9F0\]\/60 {
-    background-color: rgba(255, 255, 255, 0.06) !important;
+    background-color: var(--color-surface) !important;
   }
 
-  .dark input, .dark select, .dark textarea {
+  .dark input,
+  .dark select,
+  .dark textarea {
     background-color: var(--color-canvas) !important;
     color: var(--color-text-main) !important;
-    border-color: rgba(255, 255, 255, 0.20) !important;
+    border-color: var(--color-card-border) !important;
   }
 
   html, body, #root {

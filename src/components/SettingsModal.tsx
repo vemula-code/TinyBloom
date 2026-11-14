@@ -444,62 +444,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     tag: string;
     desc: string;
     color: string;
-    border: string;
-    badge?: string;
+    canvasLight: string;
+    canvasDark: string;
+    badge: string;
   }[] = [
     {
-      id: 'sage',
-      label: 'Botanical Sage',
-      tag: 'Living Sprout',
-      desc: 'Gentle eucalyptus sage, sprout greens & warm oat canvas',
-      color: '#3D6A3B',
-      border: '#C8DEC6',
-      badge: 'Signature',
-    },
-    {
-      id: 'olive',
-      label: 'Forest Earth',
-      tag: 'Deep Woods',
-      desc: 'Deep woodland oak, grounding moss & quiet nursery peace',
-      color: '#38583B',
-      border: '#C4D7C6',
-      badge: 'Earthy',
-    },
-    {
-      id: 'honey',
-      label: 'Warm Honeycomb',
-      tag: 'Golden Glow',
-      desc: 'Soft golden honey, toasted oat milk & comforting warmth',
-      color: '#94571E',
-      border: '#EAD7C2',
-      badge: 'Cozy',
-    },
-    {
       id: 'apple-health',
-      label: 'Ocean Slate',
-      tag: 'Clean Minimal',
-      desc: 'Precision system navy, pearl slate & clinical high contrast',
-      color: '#2563EB',
-      border: '#BFDBFE',
-      badge: 'Minimal',
+      label: 'Ocean Blue',
+      tag: 'Top Health App',
+      desc: 'Crisp sapphire blue, high-contrast slate & deep navy night mode',
+      color: '#1D63DC',
+      canvasLight: '#F4F7FB',
+      canvasDark: '#0B111E',
+      badge: 'Clinical',
     },
     {
       id: 'huckleberry',
-      label: 'Morning Mist Teal',
-      tag: 'Clinical Clarity',
-      desc: 'Soothing pediatric teal, serene porcelain & trustworthy clarity',
-      color: '#1C6B7C',
-      border: '#BFE0E7',
-      badge: 'Pediatric',
+      label: 'Calm Teal',
+      tag: 'Top Parenting App',
+      desc: 'Serene pediatric teal, clean porcelain & calm ocean slate',
+      color: '#0E7490',
+      canvasLight: '#F2F8F9',
+      canvasDark: '#0A1518',
+      badge: 'Clarity',
     },
     {
-      id: 'hatch',
-      label: 'Evening Twilight',
-      tag: 'Bedtime Calm',
-      desc: 'Gentle evening lavender, quiet dusk & restful night tracking',
-      color: '#684C95',
-      border: '#DCD0F0',
-      badge: 'Bedtime',
+      id: 'sage',
+      label: 'Botanical Sage',
+      tag: 'Baby Nursery',
+      desc: 'Gentle sprout sage, warm cream linen & soothing forest night',
+      color: '#3D6E41',
+      canvasLight: '#F7F6F1',
+      canvasDark: '#101712',
+      badge: 'Organic',
+    },
+    {
+      id: 'honey',
+      label: 'Warm Nursery',
+      tag: 'Golden Oat',
+      desc: 'Warm toasted oat, soft apricot glow & cozy cocoa night mode',
+      color: '#B86B35',
+      canvasLight: '#FBF7F2',
+      canvasDark: '#17120E',
+      badge: 'Cozy',
     },
   ];
 
@@ -513,17 +500,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white dark:bg-[#1D241F] rounded-3xl shadow-2xl border border-[var(--color-primary,#91A98B)]/30 w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main,#303832)]">
+      <div className="bg-[var(--color-card)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main)]">
         
         {/* Modal Header */}
-        <div className="px-5 py-3.5 border-b border-[var(--color-primary,#91A98B)]/20 flex items-center justify-between bg-white dark:bg-[#1D241F] shrink-0">
+        <div className="px-5 py-3.5 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)] shrink-0">
           <div className="flex items-center gap-3">
             <TinyBloomLogo size={34} />
             <div>
-              <h2 className="text-base font-bold font-heading text-[var(--color-text-main,#303832)] leading-tight">
+              <h2 className="text-base font-bold font-heading text-[var(--color-text-main)] leading-tight">
                 Settings & Preferences
               </h2>
-              <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+              <p className="text-[11px] text-[var(--color-text-muted)]">
                 100% On-Device · Zero Cloud Tracking · Private
               </p>
             </div>
@@ -531,7 +518,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 dark:hover:text-stone-200 hover:bg-stone-100 dark:hover:bg-[#2A342D] transition-colors"
+            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors"
             aria-label="Close settings"
           >
             <X className="w-4 h-4" />
@@ -539,7 +526,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Departments Navigation Bar (Horizontal scrolling tabs) */}
-        <div className="px-3 sm:px-5 py-2 border-b border-[var(--color-primary,#91A98B)]/15 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
+        <div className="px-3 sm:px-5 py-2 border-b border-[var(--color-card-border)] bg-[var(--color-canvas)] flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
           {departments.map((dept) => {
             const isActive = activeDepartment === dept.id;
             return (
@@ -589,14 +576,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         )}
 
         {/* Department Content Area */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18]">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas)]">
           
           {/* ========================================================
               DEPARTMENT 1: BABY PROFILE
              ======================================================== */}
           {activeDepartment === 'profile' && (
             <div className="space-y-5 max-w-xl mx-auto">
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-card-border)] space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                     <Baby className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
@@ -649,7 +636,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                               className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all ${
                                 avatarUrl === av.url
                                   ? 'bg-[var(--color-primary,#5D7C57)] text-white shadow-2xs font-bold'
-                                  : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] border border-[var(--color-primary,#91A98B)]/30 hover:border-[var(--color-primary,#91A98B)]'
+                                  : 'bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] border border-[var(--color-primary,#91A98B)]/30 hover:border-[var(--color-primary,#91A98B)]'
                               }`}
                             >
                               {av.label}
@@ -670,7 +657,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                       placeholder="e.g. Maya, Lucas, Baby"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
                       required
                     />
                   </div>
@@ -687,7 +674,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
                           gender === 'boy'
                             ? 'bg-[#EBF3ED] text-[#2D5A38] border-[#2D5A38] shadow-xs'
-                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                         }`}
                       >
                         👦 Boy Curve
@@ -698,7 +685,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
                           gender === 'girl'
                             ? 'bg-[#FDF2F0] text-[#9C5D47] border-[#9C5D47] shadow-xs'
-                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                         }`}
                       >
                         👧 Girl Curve
@@ -715,7 +702,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="date"
                       value={birthDate}
                       onChange={(e) => setBirthDate(e.target.value)}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
                       required
                     />
                   </div>
@@ -732,7 +719,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
                           unit === 'metric'
                             ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                         }`}
                       >
                         Metric (kg, cm)
@@ -743,7 +730,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
                           unit === 'imperial'
                             ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                            : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                         }`}
                       >
                         Imperial (lbs/oz, in)
@@ -772,7 +759,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col cursor-pointer ${
                             chartTimelineRange === 'auto'
                               ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                              : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                           }`}
                         >
                           <span className="font-bold flex items-center gap-1">✨ Auto (by Age)</span>
@@ -785,7 +772,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
                             chartTimelineRange === 6
                               ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                              : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                           }`}
                         >
                           <span className="font-bold">0–6 Months</span>
@@ -798,7 +785,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
                             chartTimelineRange === 12
                               ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                              : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                           }`}
                         >
                           <span className="font-bold">0–12 Months</span>
@@ -811,7 +798,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
                             chartTimelineRange === 18
                               ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                              : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                           }`}
                         >
                           <span className="font-bold">0–18 Months</span>
@@ -824,7 +811,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border text-left flex flex-col justify-center cursor-pointer ${
                             chartTimelineRange === 24
                               ? 'bg-[var(--color-primary,#5D7C57)] text-white border-[var(--color-primary,#5D7C57)] shadow-xs'
-                              : 'bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                              : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
                           }`}
                         >
                           <span className="font-bold">0–24 Months</span>
@@ -875,7 +862,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
              ======================================================== */}
           {activeDepartment === 'theme' && (
             <div className="space-y-5 max-w-xl mx-auto">
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                     <Palette className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
@@ -895,7 +882,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         themeMode === 'system'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
-                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                          : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                       }`}
                     >
                       <Smartphone className="w-4 h-4" />
@@ -908,7 +895,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         themeMode === 'light'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
-                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                          : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                       }`}
                     >
                       <Sun className="w-4 h-4" />
@@ -921,7 +908,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       className={`flex flex-col items-center justify-center gap-1 py-2.5 px-2 rounded-xl text-xs font-bold transition-all border cursor-pointer ${
                         themeMode === 'dark'
                           ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-xs'
-                          : 'bg-[var(--color-canvas)] dark:bg-[#161D18] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                          : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                       }`}
                     >
                       <Moon className="w-4 h-4" />
@@ -930,9 +917,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                {/* Color Palette Choices - Exactly 6 Curated Themes */}
+                {/* Color Palette Choices - 4 Curated Themes */}
                 <div className="space-y-4 pt-2">
-                  {/* Curated Color Themes (6 Styles) */}
                   <div className="space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
@@ -940,7 +926,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                         <span>Curated Color Themes</span>
                       </span>
                       <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
-                        6 styles
+                        4 balanced styles
                       </span>
                     </div>
 
@@ -954,28 +940,29 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                             onClick={() => onChangePaletteTheme(p.id)}
                             className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
                               isSelected
-                                ? 'border-[var(--color-primary)] bg-[var(--color-primary)]/10 ring-2 ring-[var(--color-primary)]/30 shadow-xs'
-                                : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40'
+                                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]/30 shadow-xs'
+                                : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface)]/40'
                             }`}
                           >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <span
-                                className="w-7 h-7 rounded-xl shrink-0 shadow-2xs border border-white/80 dark:border-stone-700 flex items-center justify-center"
-                                style={{ backgroundColor: p.color }}
-                              />
+                            <div className="flex items-center gap-3 min-w-0">
+                              {/* Dual Day / Dark + Accent swatch preview */}
+                              <div className="w-9 h-9 rounded-xl shrink-0 overflow-hidden border border-[var(--color-card-border)] shadow-2xs relative flex flex-col">
+                                <div className="flex-1 w-full" style={{ backgroundColor: p.canvasLight }} />
+                                <div className="flex-1 w-full" style={{ backgroundColor: p.canvasDark }} />
+                                <span
+                                  className="w-4 h-4 rounded-full border-2 border-white shadow-xs absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                                  style={{ backgroundColor: p.color }}
+                                />
+                              </div>
+
                               <div className="min-w-0">
                                 <div className="flex items-center gap-1.5 flex-wrap">
                                   <span className="text-xs font-bold text-[var(--color-text-main)]">
                                     {p.label}
                                   </span>
-                                  <span className="text-[10px] font-semibold px-2 py-0.2 rounded-full bg-[var(--color-primary)]/10 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
                                     {p.tag}
                                   </span>
-                                  {p.badge && (
-                                    <span className="text-[9px] font-bold px-1.5 py-0.2 rounded-md bg-stone-500/10 text-[var(--color-text-muted)]">
-                                      {p.badge}
-                                    </span>
-                                  )}
                                 </div>
                                 <span className="text-[11px] text-[var(--color-text-muted)] block truncate mt-0.5">
                                   {p.desc}
@@ -1034,7 +1021,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           {activeDepartment === 'download' && (
             <div className="space-y-5 max-w-xl mx-auto">
               {/* Privacy Guarantee */}
-              <div className="bg-white dark:bg-[#1D241F] p-4 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 flex items-start gap-3 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 flex items-start gap-3 shadow-2xs">
                 <ShieldCheck className="w-5 h-5 text-[var(--color-primary,#5D7C57)] shrink-0 mt-0.5" />
                 <div className="text-xs space-y-0.5">
                   <span className="font-bold text-[var(--color-text-main,#303832)] block">
@@ -1047,7 +1034,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Photo & Document Scanner Permission Card (Mobile Permission Control - Disabled by Default) */}
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -1217,7 +1204,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Download & Export Options */}
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3.5 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3.5 shadow-2xs">
                 <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
                   <Download className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
                   <span>Download &amp; Export Records</span>
@@ -1228,7 +1215,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleExportCSV}
-                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
                   >
                     <div>
                       <FileSpreadsheet className="w-5 h-5 text-emerald-600 mb-1.5" />
@@ -1248,7 +1235,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleExportJSON}
-                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
                   >
                     <div>
                       <Download className="w-5 h-5 text-blue-600 mb-1.5" />
@@ -1269,7 +1256,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15 space-y-2">
                   <label
                     htmlFor="settings-json-restore"
-                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-primary,#91A98B)]/40 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-xs font-semibold text-[var(--color-text-main,#303832)] hover:border-[var(--color-primary,#91A98B)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-primary,#91A98B)]/40 bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main,#303832)] hover:border-[var(--color-primary,#91A98B)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
                   >
                     <Upload className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
                     <span>Restore from JSON Backup File</span>
@@ -1285,7 +1272,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Co-Parent Partner Sync Link */}
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-emerald-500/30 space-y-3 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-emerald-500/30 space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Share2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
@@ -1355,7 +1342,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     <span>Delete All Data & Start Fresh</span>
                   </button>
                 ) : (
-                  <div className="p-3 bg-white dark:bg-[#1D241F] rounded-xl border border-red-300 dark:border-red-800 space-y-2.5">
+                  <div className="p-3 bg-[var(--color-card)] rounded-xl border border-red-300 dark:border-red-800 space-y-2.5">
                     <span className="text-xs font-bold text-red-700 dark:text-red-400 block">
                       ⚠️ Are you completely sure? This will wipe all {entries.length} records immediately.
                     </span>
@@ -1370,7 +1357,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setShowDeleteConfirm(false)}
-                        className="py-2 px-3 bg-stone-100 dark:bg-[#2A342D] text-stone-700 dark:text-stone-300 rounded-xl text-xs font-semibold hover:bg-stone-200"
+                        className="py-2 px-3 bg-[var(--color-surface)] text-[var(--color-text-main)] rounded-xl text-xs font-semibold hover:opacity-85 transition-opacity"
                       >
                         Cancel
                       </button>
@@ -1386,7 +1373,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
              ======================================================== */}
           {activeDepartment === 'install' && (
             <div className="space-y-5 max-w-xl mx-auto">
-              <div className="bg-white dark:bg-[#1D241F] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 rounded-2xl bg-[#F8F4E8] border border-[var(--color-primary,#91A98B)]/30 p-1 flex items-center justify-center shrink-0">
                     <img
@@ -1406,7 +1393,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* 1-Tap PWA Install Button */}
-                <div className="p-3 bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] rounded-xl border border-[var(--color-primary,#91A98B)]/20">
+                <div className="p-3 bg-[var(--color-canvas)] rounded-xl border border-[var(--color-primary,#91A98B)]/20">
                   <span className="text-[11px] font-semibold text-[var(--color-text-main,#303832)] block mb-2">
                     Android & Chrome 1-Tap Install:
                   </span>
@@ -1461,14 +1448,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-5 py-3 border-t border-[var(--color-primary,#91A98B)]/20 bg-white dark:bg-[#1D241F] flex items-center justify-between text-xs shrink-0">
-          <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)]">
+        <div className="px-5 py-3 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between text-xs shrink-0">
+          <span className="text-[11px] text-[var(--color-text-muted)]">
             TinyBloom v2.2 · WHO 2006 Standards
           </span>
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-stone-100 dark:bg-[#2A342D] hover:bg-stone-200 dark:hover:bg-[#344238] font-bold text-[var(--color-text-main,#303832)] transition-colors"
+            className="px-4 py-1.5 rounded-xl bg-[var(--color-surface)] hover:opacity-85 font-bold text-[var(--color-text-main)] transition-all cursor-pointer"
           >
             Close
           </button>

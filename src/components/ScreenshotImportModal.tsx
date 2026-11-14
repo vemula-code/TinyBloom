@@ -709,14 +709,14 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       aria-modal="true"
       aria-labelledby="screenshot-modal-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-hidden shadow-2xl border border-[var(--color-primary,#4A7347)]/30 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
         
         {/* Header */}
-        <div className="relative bg-gradient-to-r from-[var(--color-primary,#4A7347)]/15 via-[#AFCDE0]/20 to-purple-500/10 p-4 sm:p-5 border-b border-[var(--color-primary,#4A7347)]/20 shrink-0">
+        <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
           <button
             type="button"
             onClick={handleClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-[var(--color-card)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -739,10 +739,10 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714] text-xs sm:text-sm text-[var(--color-text-main)]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm text-[var(--color-text-main)]">
           
           {/* Explanation Banner */}
-          <div className="p-3 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-1.5">
+          <div className="p-3 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-1.5">
             <div className="flex items-center justify-between gap-2">
               <span className="font-bold text-xs text-[var(--color-text-main)] flex items-center gap-1.5">
                 <FileImage className="w-3.5 h-3.5 text-[var(--color-primary)]" />
@@ -788,7 +788,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                   e.preventDefault();
                   handleFilesSelected(e.dataTransfer.files);
                 }}
-                className="border-2 border-dashed border-[var(--color-primary)]/40 hover:border-[var(--color-primary)] dark:border-[var(--color-primary)]/30 rounded-3xl p-6 text-center bg-white dark:bg-[#1B231F] cursor-pointer transition-all hover:bg-[var(--color-primary)]/5 group"
+                className="border-2 border-dashed border-[var(--color-primary)]/40 hover:border-[var(--color-primary)] rounded-3xl p-6 text-center bg-[var(--color-card)] cursor-pointer transition-all hover:bg-[var(--color-primary-light)]/40 group"
               >
                 <input
                   ref={fileInputRef}
@@ -906,7 +906,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                 </div>
 
                 {/* Unit Switcher for review */}
-                <div className="flex items-center bg-white dark:bg-stone-800 border border-[var(--color-card-border)] rounded-xl p-0.5 text-xs">
+                <div className="flex items-center bg-[var(--color-surface)] border border-[var(--color-card-border)] rounded-xl p-0.5 text-xs">
                   <button
                     type="button"
                     onClick={() => setActiveUnit('metric')}
@@ -990,8 +990,8 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
                       key={item.id}
                       className={`p-3.5 rounded-2xl border transition-all ${
                         item.selected
-                          ? 'bg-white dark:bg-[#1B231F] border-[var(--color-primary)] shadow-2xs'
-                          : 'bg-stone-50 dark:bg-stone-900/40 border-stone-200 dark:border-stone-800 opacity-60'
+                          ? 'bg-[var(--color-card)] border-[var(--color-primary)] shadow-2xs'
+                          : 'bg-[var(--color-surface)]/40 border-[var(--color-card-border)] opacity-60'
                       }`}
                     >
                       <div className="flex items-center justify-between gap-2 mb-2 pb-2 border-b border-[var(--color-card-border)]">
@@ -1120,7 +1120,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
               </div>
 
               {/* Import Mode Radio */}
-              <div className="p-3 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2 text-xs">
+              <div className="p-3 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2 text-xs">
                 <span className="font-bold text-[var(--color-text-main)]">Import Strategy:</span>
                 <div className="flex items-center gap-3">
                   <label className="flex items-center gap-1.5 cursor-pointer">
@@ -1172,7 +1172,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-white dark:bg-[#1B231F] flex items-center justify-between gap-3 shrink-0">
+        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between gap-3 shrink-0">
           <button
             type="button"
             onClick={handleClose}

@@ -43,14 +43,14 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
       aria-modal="true"
       aria-labelledby="privacy-guarantee-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl border border-emerald-500/30 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
         
         {/* Header Banner */}
-        <div className="relative bg-gradient-to-r from-emerald-500/15 via-[#91A98B]/20 to-[#AFCDE0]/20 p-4 sm:p-5 border-b border-emerald-500/20 shrink-0">
+        <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-[var(--color-card)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -73,13 +73,13 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1 bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main,#1B241C)]">
+        <div className="p-4 sm:p-5 space-y-3.5 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main)]">
           <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">
             Many commercial parenting apps monetize intimate infant health records, sell data to advertisers, or lock growth curves behind expensive subscriptions. TinyBloom is built on the complete opposite philosophy:
           </p>
 
           {/* Point 1: On-Device Storage */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 flex items-center justify-center shrink-0 mt-0.5">
               <Smartphone className="w-4 h-4" />
             </div>
@@ -88,13 +88,13 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
                 Stored Exclusively on Your Phone
               </h3>
               <p className="text-xs text-[var(--color-text-muted)] mt-0.5 leading-relaxed">
-                All measurements, notes, and milestones reside inside your device&apos;s browser memory (<code className="text-[10px] bg-stone-100 dark:bg-stone-800 px-1 py-0.5 rounded">localStorage</code>). No remote database collects or archives your baby&apos;s records.
+                All measurements, notes, and milestones reside inside your device&apos;s browser memory (<code className="text-[10px] bg-[var(--color-surface)] px-1 py-0.5 rounded">localStorage</code>). No remote database collects or archives your baby&apos;s records.
               </p>
             </div>
           </div>
 
           {/* Point 2: Zero Cloud Accounts or Logins */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 flex items-center justify-center shrink-0 mt-0.5">
               <Lock className="w-4 h-4" />
             </div>
@@ -109,7 +109,7 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
           </div>
 
           {/* Point 3: Zero Trackers or Commercial Ads */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-purple-100 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 mt-0.5">
               <Ban className="w-4 h-4" />
             </div>
@@ -124,7 +124,7 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
           </div>
 
           {/* Point 4: Ephemeral Screenshot Parsing */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs flex items-start gap-3">
             <div className="w-8 h-8 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center shrink-0 mt-0.5">
               <Database className="w-4 h-4" />
             </div>
@@ -156,7 +156,7 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-white dark:bg-[#1B231F] flex items-center justify-between gap-3 shrink-0">
+        <div className="p-3.5 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between gap-3 shrink-0">
           <div className="flex items-center gap-1 text-[11px] text-[var(--color-text-muted)]">
             <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
             <span>Built by parents for parents</span>
@@ -164,7 +164,7 @@ export const PrivateGuaranteeModal: React.FC<PrivateGuaranteeModalProps> = ({
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-1.5 bg-emerald-700 text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all shadow-xs cursor-pointer"
+            className="px-4 py-1.5 bg-[var(--color-primary)] text-white text-xs font-bold rounded-xl hover:opacity-90 transition-all shadow-xs cursor-pointer"
           >
             Got It
           </button>

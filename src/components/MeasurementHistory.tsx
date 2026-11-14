@@ -69,17 +69,17 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs">
+      <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] shadow-2xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[#5D7C57] font-semibold text-xs tracking-wider uppercase mb-1">
+            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold text-xs tracking-wider uppercase mb-1">
               <Calendar className="w-4 h-4" />
               <span>Audit-Friendly Growth Log</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[#303832]">
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[var(--color-text-main)]">
               Measurement History ({entries.length})
             </h2>
-            <p className="text-xs text-[#6E7B6C] mt-1">
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">
               All growth entries recorded on this device. Edit, correct, or export anytime.
             </p>
           </div>
@@ -87,7 +87,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="flex items-center gap-1.5 px-4 py-2 bg-[#91A98B] hover:bg-[#7D9977] text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0"
+            className="flex items-center gap-1.5 px-4 py-2 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-xs shrink-0 cursor-pointer"
           >
             <Plus className="w-4 h-4" />
             <span>Add Measurement</span>
@@ -95,29 +95,29 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
         </div>
 
         {/* Search & Filter Bar */}
-        <div className="mt-5 pt-4 border-t border-[#91A98B]/15 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="mt-5 pt-4 border-t border-[var(--color-card-border)] flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           {/* Search */}
           <div className="relative flex-1 max-w-sm">
-            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+            <Search className="w-4 h-4 text-[var(--color-text-muted)] absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               placeholder="Search date, notes, or milestones..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 text-xs bg-[#FFF9F0]/60 border border-[#91A98B]/30 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[#91A98B] text-[#303832]"
+              className="w-full pl-9 pr-3 py-2 text-xs bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-main)]"
             />
           </div>
 
           {/* Filter Pills & Sort Toggle */}
           <div className="flex items-center gap-2 flex-wrap justify-between sm:justify-end">
-            <div className="flex items-center gap-1 bg-[#FFF9F0] p-1 rounded-xl border border-[#91A98B]/20 text-xs font-medium">
+            <div className="flex items-center gap-1 bg-[var(--color-canvas)] p-1 rounded-xl border border-[var(--color-card-border)] text-xs font-medium">
               <button
                 type="button"
                 onClick={() => setFilterType('all')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   filterType === 'all'
-                    ? 'bg-[#91A98B] text-white font-semibold shadow-2xs'
-                    : 'text-[#303832] hover:bg-[#91A98B]/10'
+                    ? 'bg-[var(--color-primary)] text-white font-semibold shadow-2xs'
+                    : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                 }`}
               >
                 All
@@ -125,10 +125,10 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
               <button
                 type="button"
                 onClick={() => setFilterType('visits')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   filterType === 'visits'
-                    ? 'bg-[#91A98B] text-white font-semibold shadow-2xs'
-                    : 'text-[#303832] hover:bg-[#91A98B]/10'
+                    ? 'bg-[var(--color-primary)] text-white font-semibold shadow-2xs'
+                    : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                 }`}
               >
                 Pediatrician Visits
@@ -136,10 +136,10 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
               <button
                 type="button"
                 onClick={() => setFilterType('milestones')}
-                className={`px-2.5 py-1 rounded-lg transition-all ${
+                className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer ${
                   filterType === 'milestones'
-                    ? 'bg-[#91A98B] text-white font-semibold shadow-2xs'
-                    : 'text-[#303832] hover:bg-[#91A98B]/10'
+                    ? 'bg-[var(--color-primary)] text-white font-semibold shadow-2xs'
+                    : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
                 }`}
               >
                 Milestones
@@ -149,9 +149,9 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
             <button
               type="button"
               onClick={() => setSortOrder(sortOrder === 'desc' ? 'asc' : 'desc')}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-[#91A98B]/30 hover:bg-[#91A98B]/10 text-[#303832] rounded-xl text-xs font-semibold transition-colors shadow-2xs"
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-[var(--color-card)] border border-[var(--color-card-border)] hover:bg-[var(--color-surface)] text-[var(--color-text-main)] rounded-xl text-xs font-semibold transition-colors shadow-2xs cursor-pointer"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-[#5D7C57]" />
+              <ArrowUpDown className="w-3.5 h-3.5 text-[var(--color-primary)]" />
               <span>{sortOrder === 'desc' ? 'Newest First' : 'Oldest First'}</span>
             </button>
           </div>
@@ -160,16 +160,16 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
 
       {/* Delete Confirmation Alert Modal */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-xs">
-          <div className="bg-[#FFF9F0] rounded-3xl p-6 border border-[#91A98B]/40 max-w-sm w-full shadow-2xl space-y-4">
-            <div className="w-10 h-10 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+          <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] max-w-sm w-full shadow-2xl space-y-4">
+            <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center">
               <AlertCircle className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold font-heading text-[#303832]">
+              <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
                 Delete this measurement?
               </h3>
-              <p className="text-xs text-[#6E7B6C] mt-1">
+              <p className="text-xs text-[var(--color-text-muted)] mt-1">
                 This record will be permanently removed from your charts and history. This action cannot be undone.
               </p>
             </div>
@@ -177,14 +177,14 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
               <button
                 type="button"
                 onClick={() => setConfirmDeleteId(null)}
-                className="px-4 py-2 text-xs font-semibold text-[#303832] bg-white border border-stone-200 hover:bg-stone-50 rounded-xl"
+                className="px-4 py-2 text-xs font-semibold text-[var(--color-text-main)] bg-[var(--color-surface)] hover:opacity-85 rounded-xl cursor-pointer"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={() => handleDelete(confirmDeleteId)}
-                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs"
+                className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-xl shadow-xs cursor-pointer"
               >
                 Confirm Delete
               </button>

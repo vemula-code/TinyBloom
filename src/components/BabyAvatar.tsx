@@ -79,7 +79,7 @@ export const BabyAvatar: React.FC<BabyAvatarProps> = ({
       )}
 
       {showEditBadge && (
-        <div className="absolute -bottom-1 -right-1 p-1 bg-white dark:bg-[#212A24] rounded-full border border-[var(--color-primary,#91A98B)] shadow-2xs text-[var(--color-primary,#91A98B)] opacity-90 group-hover:opacity-100 transition-opacity">
+        <div className="absolute -bottom-1 -right-1 p-1 bg-[var(--color-card)] rounded-full border border-[var(--color-primary)] shadow-2xs text-[var(--color-primary)] opacity-90 group-hover:opacity-100 transition-opacity">
           <Camera className="w-3 h-3" />
         </div>
       )}

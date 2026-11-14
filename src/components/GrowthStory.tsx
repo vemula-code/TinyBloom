@@ -162,21 +162,21 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
   if (entries.length === 0) {
     return (
       <div className="space-y-6">
-        <div className="bg-white dark:bg-[#1D241F] rounded-3xl p-8 sm:p-10 border border-[var(--color-primary,#91A98B)]/30 text-center space-y-4 shadow-2xs">
-          <div className="w-16 h-16 rounded-2xl bg-[var(--color-canvas,#FFF9F0)] dark:bg-[#161D18] text-[var(--color-primary,#5D7C57)] flex items-center justify-center mx-auto shadow-2xs border border-[var(--color-primary,#91A98B)]/20">
+        <div className="bg-[var(--color-card)] rounded-3xl p-8 sm:p-10 border border-[var(--color-card-border)] text-center space-y-4 shadow-2xs">
+          <div className="w-16 h-16 rounded-2xl bg-[var(--color-canvas)] text-[var(--color-primary)] flex items-center justify-center mx-auto shadow-2xs border border-[var(--color-card-border)]">
             <Sparkles className="w-8 h-8" />
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold font-heading text-[var(--color-text-main,#303832)]">
+          <h2 className="text-xl sm:text-2xl font-bold font-heading text-[var(--color-text-main)]">
             Start {profile.name}’s Growth Story
           </h2>
-          <p className="text-xs sm:text-sm text-[var(--color-text-muted,#6E7B6C)] max-w-md mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed">
             No measurements recorded yet. Log your baby’s first weight, length, or head circumference to view percentile curves, weekly growth velocity, and personalized developmental milestones.
           </p>
           <div className="pt-2">
             <button
               type="button"
               onClick={onOpenAddModal}
-              className="px-6 py-3 bg-[var(--color-primary,#5D7C57)] text-white rounded-2xl text-xs font-bold hover:opacity-90 transition-all shadow-xs inline-flex items-center gap-2"
+              className="px-6 py-3 bg-[var(--color-primary)] text-white rounded-2xl text-xs font-bold hover:opacity-90 transition-all shadow-xs inline-flex items-center gap-2 cursor-pointer"
             >
               <span>+ Record First Measurement</span>
             </button>
@@ -189,30 +189,30 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
   return (
     <div className="space-y-6">
       {/* Intro Card */}
-      <div className="bg-white rounded-3xl p-6 border border-[#91A98B]/30 shadow-2xs">
+      <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] shadow-2xs">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[#5D7C57] font-semibold text-xs tracking-wider uppercase mb-1">
+            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold text-xs tracking-wider uppercase mb-1">
               <Sparkles className="w-4 h-4" />
               <span>Personalized Growth Story</span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[#303832]">
+            <h2 className="text-xl sm:text-2xl font-bold font-heading text-[var(--color-text-main)]">
               Understanding {profile.name}’s Growth Journey
             </h2>
-            <p className="text-xs text-[#6E7B6C] mt-1 max-w-xl">
+            <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-xl">
               Understand how your baby’s measurements connect over time. Growth is evaluated through longitudinal trends, not single numbers.
             </p>
           </div>
 
           {/* Metric Selector Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-[#FFF9F0] border border-[#91A98B]/30 rounded-2xl shrink-0">
+          <div className="flex items-center gap-1.5 p-1 bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-2xl shrink-0">
             <button
               type="button"
               onClick={() => setSelectedMetric('weight')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedMetric === 'weight'
-                  ? 'bg-[#91A98B] text-white shadow-2xs'
-                  : 'text-[#303832] hover:bg-[#91A98B]/10'
+                  ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                  : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
               }`}
             >
               <Scale className="w-3.5 h-3.5" />
@@ -221,10 +221,10 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
             <button
               type="button"
               onClick={() => setSelectedMetric('height')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedMetric === 'height'
-                  ? 'bg-[#91A98B] text-white shadow-2xs'
-                  : 'text-[#303832] hover:bg-[#91A98B]/10'
+                  ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                  : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
               }`}
             >
               <Ruler className="w-3.5 h-3.5" />
@@ -233,10 +233,10 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
             <button
               type="button"
               onClick={() => setSelectedMetric('head')}
-              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
+              className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 selectedMetric === 'head'
-                  ? 'bg-[#91A98B] text-white shadow-2xs'
-                  : 'text-[#303832] hover:bg-[#91A98B]/10'
+                  ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                  : 'text-[var(--color-text-main)] hover:bg-[var(--color-surface)]'
               }`}
             >
               <CircleDot className="w-3.5 h-3.5" />
@@ -248,20 +248,20 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
 
       {validEntries.length === 0 ? (
         /* Empty State */
-        <div className="bg-white rounded-3xl p-10 border border-[#91A98B]/30 text-center space-y-4">
-          <div className="w-14 h-14 rounded-2xl bg-[#FFF9F0] text-[#5D7C57] flex items-center justify-center mx-auto shadow-2xs">
+        <div className="bg-[var(--color-card)] rounded-3xl p-10 border border-[var(--color-card-border)] text-center space-y-4">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--color-canvas)] text-[var(--color-primary)] flex items-center justify-center mx-auto shadow-2xs">
             <Sparkles className="w-7 h-7" />
           </div>
-          <h3 className="text-lg font-bold font-heading text-[#303832]">
+          <h3 className="text-lg font-bold font-heading text-[var(--color-text-main)]">
             No {selectedMetric} records found
           </h3>
-          <p className="text-xs text-[#6E7B6C] max-w-sm mx-auto">
+          <p className="text-xs text-[var(--color-text-muted)] max-w-sm mx-auto">
             Log your baby's latest {selectedMetric} measurement to reveal their growth velocity, percentile comparisons, and milestone narrative.
           </p>
           <button
             type="button"
             onClick={onOpenAddModal}
-            className="px-5 py-2.5 bg-[#91A98B] text-white rounded-xl text-xs font-bold hover:bg-[#7D9977] transition-all shadow-xs"
+            className="px-5 py-2.5 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-xs cursor-pointer"
           >
             Add First {selectedMetric === 'weight' ? 'Weight' : selectedMetric === 'height' ? 'Length' : 'Head Size'}
           </button>
@@ -272,40 +272,40 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
           {/* 3 Numerical Highlight Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {/* Latest Recorded */}
-            <div className="bg-white rounded-3xl p-5 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
+            <div className="bg-[var(--color-card)] rounded-3xl p-5 border border-[var(--color-card-border)] shadow-2xs flex flex-col justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E7B6C] block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
                   Latest Recorded Value
                 </span>
-                <div className="text-2xl font-extrabold font-heading text-[#303832] mt-1">
+                <div className="text-2xl font-extrabold font-heading text-[var(--color-text-main)] mt-1">
                   {formatValue(latestVal)}
                 </div>
-                <div className="text-xs text-[#6E7B6C] mt-1 flex items-center gap-1.5">
-                  <Calendar className="w-3.5 h-3.5 text-[#91A98B]" />
+                <div className="text-xs text-[var(--color-text-muted)] mt-1 flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                   <span>{latest?.date} ({latestAge?.displayStr})</span>
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-[#91A98B]/15 flex items-center justify-between text-xs">
-                <span className="text-[#6E7B6C]">WHO Percentile:</span>
-                <span className="font-bold text-[#5D7C57] bg-[#91A98B]/15 px-2.5 py-0.5 rounded-full">
+              <div className="mt-4 pt-3 border-t border-[var(--color-card-border)] flex items-center justify-between text-xs">
+                <span className="text-[var(--color-text-muted)]">WHO Percentile:</span>
+                <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2.5 py-0.5 rounded-full">
                   {latestPercentile?.displayStr}
                 </span>
               </div>
             </div>
 
             {/* Previous Recorded & Velocity */}
-            <div className="bg-white rounded-3xl p-5 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
+            <div className="bg-[var(--color-card)] rounded-3xl p-5 border border-[var(--color-card-border)] shadow-2xs flex flex-col justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E7B6C] block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
                   Recent Velocity
                 </span>
                 <div className="flex items-center gap-2 mt-1">
-                  <span className="text-2xl font-extrabold font-heading text-[#303832]">
+                  <span className="text-2xl font-extrabold font-heading text-[var(--color-text-main)]">
                     {diffRecent !== null ? formatDelta(diffRecent) : '—'}
                   </span>
                   {diffRecent !== null && (
-                    <div className="p-1 rounded-lg bg-[#91A98B]/15 text-[#5D7C57]">
+                    <div className="p-1 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
                       {diffRecent > 0 ? (
                         <TrendingUp className="w-4 h-4" />
                       ) : diffRecent < 0 ? (
@@ -316,16 +316,16 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
                     </div>
                   )}
                 </div>
-                <div className="text-xs text-[#6E7B6C] mt-1">
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">
                   {previous
                     ? `From ${formatValue(prevVal)} on ${previous.date} (${daysBetween} days)`
                     : 'Log at least 2 entries to calculate velocity'}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-[#91A98B]/15 text-xs text-[#6E7B6C] flex items-center justify-between">
+              <div className="mt-4 pt-3 border-t border-[var(--color-card-border)] text-xs text-[var(--color-text-muted)] flex items-center justify-between">
                 <span>Weekly Rate:</span>
-                <span className="font-semibold text-[#303832]">
+                <span className="font-semibold text-[var(--color-text-main)]">
                   {diffRecent !== null && daysBetween > 0
                     ? `${formatDelta((diffRecent / daysBetween) * 7)} / wk`
                     : '—'}
@@ -334,22 +334,22 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
             </div>
 
             {/* Total Gain Since Earliest */}
-            <div className="bg-white rounded-3xl p-5 border border-[#91A98B]/30 shadow-2xs flex flex-col justify-between">
+            <div className="bg-[var(--color-card)] rounded-3xl p-5 border border-[var(--color-card-border)] shadow-2xs flex flex-col justify-between">
               <div>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E7B6C] block">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
                   Total Change Since Birth / First Log
                 </span>
-                <div className="text-2xl font-extrabold font-heading text-[#303832] mt-1">
+                <div className="text-2xl font-extrabold font-heading text-[var(--color-text-main)] mt-1">
                   {diffTotal !== null ? formatDelta(diffTotal) : formatValue(latestVal)}
                 </div>
-                <div className="text-xs text-[#6E7B6C] mt-1">
+                <div className="text-xs text-[var(--color-text-muted)] mt-1">
                   {first ? `Started at ${formatValue(firstVal)} on ${first.date}` : ''}
                 </div>
               </div>
 
-              <div className="mt-4 pt-3 border-t border-[#91A98B]/15 text-xs text-[#6E7B6C] flex items-center justify-between">
+              <div className="mt-4 pt-3 border-t border-[var(--color-card-border)] text-xs text-[var(--color-text-muted)] flex items-center justify-between">
                 <span>Recorded Logs:</span>
-                <span className="font-semibold text-[#303832]">
+                <span className="font-semibold text-[var(--color-text-main)]">
                   {validEntries.length} checkups
                 </span>
               </div>
@@ -357,23 +357,23 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
           </div>
 
           {/* Educational Narrative Card */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#91A98B]/30 shadow-2xs space-y-4">
+          <div className="bg-[var(--color-card)] rounded-3xl p-6 sm:p-7 border border-[var(--color-card-border)] shadow-2xs space-y-4">
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-[#F3C9B8]/40 text-[#9C5D47] flex items-center justify-center">
+              <div className="w-8 h-8 rounded-xl bg-rose-500/15 text-rose-500 flex items-center justify-center">
                 <Heart className="w-4 h-4" />
               </div>
-              <h3 className="text-base font-bold font-heading text-[#303832]">
+              <h3 className="text-base font-bold font-heading text-[var(--color-text-main)]">
                 What this means for {profile.name}
               </h3>
             </div>
 
-            <div className="text-xs sm:text-sm text-[#303832] leading-relaxed whitespace-pre-line bg-[#FFF9F0]/60 p-5 rounded-2xl border border-[#91A98B]/20">
+            <div className="text-xs sm:text-sm text-[var(--color-text-main)] leading-relaxed whitespace-pre-line bg-[var(--color-canvas)] p-5 rounded-2xl border border-[var(--color-card-border)]">
               {generateNarrative()}
             </div>
 
             {/* Disclaimer & Transparency */}
-            <div className="flex items-start gap-2.5 text-[11px] text-[#6E7B6C] bg-white p-3 rounded-xl border border-stone-200/80">
-              <Info className="w-4 h-4 text-[#91A98B] shrink-0 mt-0.5" />
+            <div className="flex items-start gap-2.5 text-[11px] text-[var(--color-text-muted)] bg-[var(--color-surface)]/40 p-3 rounded-xl border border-[var(--color-card-border)]">
+              <Info className="w-4 h-4 text-[var(--color-primary)] shrink-0 mt-0.5" />
               <span>
                 <strong>Pediatric note:</strong> A baby who is naturally at the 25th percentile or the 85th percentile is just as healthy as one at the 50th, provided they grow along their own curve. If you have questions about feeding, growth rate, or curve shifts, discuss these measurements with your pediatrician.
               </span>

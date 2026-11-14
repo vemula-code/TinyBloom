@@ -282,8 +282,8 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
           {/* Date & Unit Segmented Switch */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-stone-400" />
+              <label className="block text-xs font-semibold text-[var(--color-text-main)] mb-1.5 flex items-center gap-1.5">
+                <Calendar className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
                 Measurement Date
               </label>
               <input
@@ -291,22 +291,22 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                 required
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3.5 py-2.5 text-sm bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-stone-400 text-stone-800 font-medium"
+                className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-main)] font-medium"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-stone-700 mb-1.5">
+              <label className="block text-xs font-semibold text-[var(--color-text-main)] mb-1.5">
                 Preferred Unit System
               </label>
-              <div className="grid grid-cols-2 p-1 bg-stone-100 rounded-xl text-xs font-medium">
+              <div className="grid grid-cols-2 p-1 bg-[var(--color-surface)] rounded-xl text-xs font-medium border border-[var(--color-card-border)]">
                 <button
                   type="button"
                   onClick={() => handleToggleUnit('metric')}
-                  className={`py-2 rounded-lg transition-all ${
+                  className={`py-2 rounded-lg transition-all cursor-pointer ${
                     unit === 'metric'
-                      ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                      : 'text-stone-600 hover:text-stone-900'
+                      ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs font-semibold'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                   }`}
                 >
                   Metric (kg / cm)
@@ -314,10 +314,10 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                 <button
                   type="button"
                   onClick={() => handleToggleUnit('imperial')}
-                  className={`py-2 rounded-lg transition-all ${
+                  className={`py-2 rounded-lg transition-all cursor-pointer ${
                     unit === 'imperial'
-                      ? 'bg-white text-stone-900 shadow-xs font-semibold'
-                      : 'text-stone-600 hover:text-stone-900'
+                      ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs font-semibold'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                   }`}
                 >
                   Imperial (lb·oz / in)
@@ -327,17 +327,17 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
           </div>
 
           {/* Core Measurements Card */}
-          <div className="bg-stone-50/70 p-4 sm:p-5 rounded-2xl border border-stone-200/80 space-y-4">
-            <h3 className="text-xs font-bold text-stone-500 uppercase tracking-wider">
+          <div className="bg-[var(--color-canvas)] p-4 sm:p-5 rounded-2xl border border-[var(--color-card-border)] space-y-4">
+            <h3 className="text-xs font-bold text-[var(--color-text-muted)] uppercase tracking-wider">
               Measurements & Instant WHO Percentiles
             </h3>
 
             {/* Weight */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-stone-800">Weight</label>
+                <label className="text-xs font-semibold text-[var(--color-text-main)]">Weight</label>
                 {livePercentiles.weight && (
-                  <span className="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-md">
                     {livePercentiles.weight.displayStr} · {livePercentiles.weight.status}
                   </span>
                 )}
@@ -351,9 +351,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     placeholder="e.g. 8.42"
                     value={weightKgStr}
                     onChange={(e) => handleKgChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">kg</span>
+                  <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">kg</span>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-2">
@@ -364,9 +364,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                       placeholder="e.g. 18"
                       value={weightLbsStr}
                       onChange={(e) => handleLbsOzChange(e.target.value, weightOzStr)}
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                      className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                     />
-                    <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">lbs</span>
+                    <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">lbs</span>
                   </div>
                   <div className="relative">
                     <input
@@ -375,9 +375,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                       placeholder="e.g. 9"
                       value={weightOzStr}
                       onChange={(e) => handleLbsOzChange(weightLbsStr, e.target.value)}
-                      className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                      className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                     />
-                    <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">oz</span>
+                    <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">oz</span>
                   </div>
                 </div>
               )}
@@ -386,9 +386,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
             {/* Height / Length */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-stone-800">Length / Height</label>
+                <label className="text-xs font-semibold text-[var(--color-text-main)]">Length / Height</label>
                 {livePercentiles.height && (
-                  <span className="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-md">
                     {livePercentiles.height.displayStr} · {livePercentiles.height.status}
                   </span>
                 )}
@@ -402,9 +402,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     placeholder="e.g. 69.8"
                     value={heightCmStr}
                     onChange={(e) => handleCmHeightChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">cm</span>
+                  <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">cm</span>
                 </div>
               ) : (
                 <div className="relative">
@@ -414,9 +414,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     placeholder="e.g. 27.5"
                     value={heightInStr}
                     onChange={(e) => handleInHeightChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">in</span>
+                  <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">in</span>
                 </div>
               )}
             </div>
@@ -424,9 +424,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
             {/* Head Circumference */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="text-xs font-semibold text-stone-800">Head Circumference</label>
+                <label className="text-xs font-semibold text-[var(--color-text-main)]">Head Circumference</label>
                 {livePercentiles.head && (
-                  <span className="text-[11px] font-medium text-teal-700 bg-teal-50 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-md">
                     {livePercentiles.head.displayStr} · {livePercentiles.head.status}
                   </span>
                 )}
@@ -440,9 +440,9 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     placeholder="e.g. 44.2"
                     value={headCmStr}
                     onChange={(e) => handleCmHeadChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">cm</span>
+                  <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">cm</span>
                 </div>
               ) : (
                 <div className="relative">
@@ -452,25 +452,25 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     placeholder="e.g. 17.4"
                     value={headInStr}
                     onChange={(e) => handleInHeadChange(e.target.value)}
-                    className="w-full px-3.5 py-2.5 text-sm bg-white border border-stone-200 rounded-xl focus:outline-hidden focus:ring-2 focus:ring-orange-400 font-mono text-stone-900 pr-12"
+                    className="w-full px-3.5 py-2.5 text-sm bg-[var(--color-card)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] font-mono text-[var(--color-text-main)] pr-12"
                   />
-                  <span className="absolute right-3.5 top-2.5 text-xs text-stone-400 font-mono">in</span>
+                  <span className="absolute right-3.5 top-2.5 text-xs text-[var(--color-text-muted)] font-mono">in</span>
                 </div>
               )}
             </div>
           </div>
 
           {/* Pediatrician Checkup Toggle */}
-          <label className="flex items-center gap-3 p-3 bg-blue-50/60 border border-blue-100 rounded-xl cursor-pointer hover:bg-blue-50 transition-colors">
+          <label className="flex items-center gap-3 p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary)]/25 rounded-xl cursor-pointer hover:opacity-90 transition-opacity">
             <input
               type="checkbox"
               checked={isPediatricianVisit}
               onChange={(e) => setIsPediatricianVisit(e.target.checked)}
-              className="w-4 h-4 text-blue-600 rounded-md border-stone-300 focus:ring-blue-500"
+              className="w-4 h-4 rounded-md border-[var(--color-card-border)] accent-[var(--color-primary)]"
             />
             <div className="flex items-center gap-2">
-              <Stethoscope className="w-4 h-4 text-blue-600 shrink-0" />
-              <span className="text-xs font-semibold text-blue-900">
+              <Stethoscope className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
+              <span className="text-xs font-semibold text-[var(--color-text-main)]">
                 This is an official Pediatrician Well-Child Checkup
               </span>
             </div>
@@ -479,11 +479,11 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
           {/* Milestones Achieved */}
           <div>
             <div className="flex items-center justify-between mb-2">
-              <label className="text-xs font-semibold text-stone-800 flex items-center gap-1.5">
+              <label className="text-xs font-semibold text-[var(--color-text-main)] flex items-center gap-1.5">
                 <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                 Milestones & Discoveries
               </label>
-              <span className="text-[11px] text-stone-400">
+              <span className="text-[11px] text-[var(--color-text-muted)]">
                 {selectedMilestones.length} selected
               </span>
             </div>
@@ -496,13 +496,13 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     key={m.id}
                     type="button"
                     onClick={() => toggleMilestone(m.label)}
-                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all text-left flex items-center gap-1.5 ${
+                    className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all text-left flex items-center gap-1.5 cursor-pointer ${
                       isSelected
-                        ? 'bg-amber-100 text-amber-900 border-amber-300 font-medium'
-                        : 'bg-stone-50 text-stone-700 border-stone-200 hover:bg-stone-100'
+                        ? 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border-[var(--color-primary)]/40 font-semibold'
+                        : 'bg-[var(--color-canvas)] text-[var(--color-text-main)] border-[var(--color-card-border)] hover:bg-[var(--color-surface)]'
                     }`}
                   >
-                    {isSelected && <Check className="w-3 h-3 text-amber-700" />}
+                    {isSelected && <Check className="w-3 h-3 text-[var(--color-primary)]" />}
                     <span>{m.label}</span>
                   </button>
                 );
@@ -522,12 +522,12 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                     addCustomMilestone();
                   }
                 }}
-                className="grow px-3 py-1.5 text-xs bg-stone-50 border border-stone-200 rounded-lg focus:outline-hidden focus:ring-1 focus:ring-stone-400"
+                className="grow px-3 py-1.5 text-xs bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-lg text-[var(--color-text-main)] focus:outline-hidden focus:ring-1 focus:ring-[var(--color-primary)]"
               />
               <button
                 type="button"
                 onClick={addCustomMilestone}
-                className="px-3 py-1.5 text-xs font-medium text-stone-700 bg-stone-100 hover:bg-stone-200 rounded-lg transition-colors shrink-0"
+                className="px-3 py-1.5 text-xs font-semibold text-[var(--color-text-main)] bg-[var(--color-surface)] hover:opacity-85 rounded-lg transition-opacity shrink-0 cursor-pointer"
               >
                 Add
               </button>
@@ -536,7 +536,7 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
 
           {/* Notes & Memories */}
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--color-text-main)] mb-1.5">
               Monthly Notes, Feeding, Sleep & Pediatrician Guidance
             </label>
             <textarea
@@ -544,13 +544,13 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
               placeholder="e.g. Loves sweet potato, started drinking from open silicone cup, sleep regression lasted 4 days then back to 7h stretches..."
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              className="w-full px-3.5 py-2 text-xs bg-stone-50 border border-stone-200 rounded-xl focus:bg-white focus:outline-hidden focus:ring-2 focus:ring-stone-400 text-stone-800"
+              className="w-full px-3.5 py-2 text-xs bg-[var(--color-canvas)] border border-[var(--color-card-border)] rounded-xl focus:outline-hidden focus:ring-2 focus:ring-[var(--color-primary)] text-[var(--color-text-main)]"
             />
           </div>
 
           {/* Photo Moment Upload */}
           <div>
-            <label className="block text-xs font-semibold text-stone-800 mb-1.5">
+            <label className="block text-xs font-semibold text-[var(--color-text-main)] mb-1.5">
               Attach Moment / Photo (Saved locally on your device)
             </label>
             {photoUrl ? (
@@ -559,7 +559,7 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                   src={photoUrl}
                   alt="Milestone moment"
                   referrerPolicy="no-referrer"
-                  className="w-24 h-24 object-cover rounded-xl border border-stone-200 shadow-xs"
+                  className="w-24 h-24 object-cover rounded-xl border border-[var(--color-card-border)] shadow-xs"
                 />
                 <button
                   type="button"
@@ -570,8 +570,8 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
                 </button>
               </div>
             ) : (
-              <label className="flex items-center gap-2 px-3.5 py-2.5 border border-dashed border-stone-300 rounded-xl cursor-pointer hover:bg-stone-50 text-stone-600 text-xs transition-colors">
-                <Camera className="w-4 h-4 text-stone-400" />
+              <label className="flex items-center gap-2 px-3.5 py-2.5 border border-dashed border-[var(--color-card-border)] rounded-xl cursor-pointer hover:bg-[var(--color-surface)]/50 text-[var(--color-text-muted)] text-xs transition-colors">
+                <Camera className="w-4 h-4 text-[var(--color-primary)]" />
                 <span>Upload a cute photo for this month</span>
                 <input
                   type="file"

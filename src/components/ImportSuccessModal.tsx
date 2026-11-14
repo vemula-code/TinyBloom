@@ -54,14 +54,14 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
       aria-modal="true"
       aria-labelledby="import-success-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-emerald-500/40 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
         
         {/* Celebration Header */}
-        <div className="relative bg-gradient-to-br from-emerald-500/20 via-[var(--color-primary,#4A7347)]/15 to-teal-500/10 p-5 text-center border-b border-emerald-500/20">
+        <div className="relative bg-[var(--color-primary-light)] p-5 text-center border-b border-[var(--color-card-border)]">
           <button
             type="button"
             onClick={onClose}
-            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-white/80 dark:bg-[#2A342D] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-white dark:hover:bg-[#323E36] transition-colors shadow-2xs cursor-pointer"
+            className="absolute top-3.5 right-3.5 p-1.5 rounded-full bg-[var(--color-card)] text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors shadow-2xs cursor-pointer"
             aria-label="Close"
           >
             <X className="w-4 h-4" />
@@ -85,7 +85,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-4 sm:p-5 space-y-4 bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714]">
+        <div className="p-4 sm:p-5 space-y-4 bg-[var(--color-canvas)]">
           
           {/* Metrics summary cards */}
           <div className="grid grid-cols-3 gap-2">
@@ -95,7 +95,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
               className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                 summary.headCount > 0
                   ? 'bg-purple-50/80 dark:bg-purple-950/30 border-purple-200 dark:border-purple-800/60 hover:border-purple-400 shadow-2xs'
-                  : 'bg-white dark:bg-[#1B231F] border-[var(--color-card-border)] opacity-60'
+                  : 'bg-[var(--color-card)] border-[var(--color-card-border)] opacity-60'
               }`}
             >
               <div className="w-7 h-7 mx-auto rounded-xl bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-300 flex items-center justify-center mb-1">
@@ -115,7 +115,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
               className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                 summary.weightCount > 0
                   ? 'bg-emerald-50/80 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800/60 hover:border-emerald-400 shadow-2xs'
-                  : 'bg-white dark:bg-[#1B231F] border-[var(--color-card-border)] opacity-60'
+                  : 'bg-[var(--color-card)] border-[var(--color-card-border)] opacity-60'
               }`}
             >
               <div className="w-7 h-7 mx-auto rounded-xl bg-emerald-100 dark:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 flex items-center justify-center mb-1">
@@ -135,7 +135,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
               className={`p-3 rounded-2xl border text-center transition-all cursor-pointer ${
                 summary.heightCount > 0
                   ? 'bg-teal-50/80 dark:bg-teal-950/30 border-teal-200 dark:border-teal-800/60 hover:border-teal-400 shadow-2xs'
-                  : 'bg-white dark:bg-[#1B231F] border-[var(--color-card-border)] opacity-60'
+                  : 'bg-[var(--color-card)] border-[var(--color-card-border)] opacity-60'
               }`}
             >
               <div className="w-7 h-7 mx-auto rounded-xl bg-teal-100 dark:bg-teal-900/50 text-teal-700 dark:text-teal-300 flex items-center justify-center mb-1">
@@ -151,7 +151,7 @@ export const ImportSuccessModal: React.FC<ImportSuccessModalProps> = ({
           </div>
 
           {/* Details Pill Box */}
-          <div className="p-3.5 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-2 text-xs">
+          <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2 text-xs">
             <div className="flex items-center justify-between pb-2 border-b border-stone-100 dark:border-stone-800/80">
               <span className="text-[var(--color-text-muted)] flex items-center gap-1.5">
                 <Baby className="w-3.5 h-3.5 text-[var(--color-primary)]" />

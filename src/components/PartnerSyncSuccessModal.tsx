@@ -24,9 +24,9 @@ export const PartnerSyncSuccessModal: React.FC<PartnerSyncSuccessModalProps> = (
       aria-modal="true"
       aria-labelledby="sync-success-title"
     >
-      <div className="bg-white dark:bg-[#1B231F] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-emerald-500/40 text-[var(--color-text-main,#1B241C)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
         {/* Celebration Header */}
-        <div className="relative bg-gradient-to-br from-emerald-500/20 via-[var(--color-primary)]/15 to-teal-500/10 p-5 text-center border-b border-emerald-500/20">
+        <div className="relative bg-[var(--color-primary-light)] p-5 text-center border-b border-[var(--color-card-border)]">
           <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-in zoom-in duration-300">
             <CheckCircle2 className="w-8 h-8" />
           </div>
@@ -43,8 +43,8 @@ export const PartnerSyncSuccessModal: React.FC<PartnerSyncSuccessModalProps> = (
         </div>
 
         {/* Details Card */}
-        <div className="p-5 space-y-4 bg-[var(--color-canvas,#FAF8F3)] dark:bg-[#121714]">
-          <div className="p-4 rounded-2xl bg-white dark:bg-[#1B231F] border border-[var(--color-card-border)] shadow-2xs space-y-3">
+        <div className="p-5 space-y-4 bg-[var(--color-canvas)]">
+          <div className="p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-3">
             <div className="flex items-center justify-between pb-2.5 border-b border-stone-100 dark:border-stone-800">
               <span className="text-xs text-[var(--color-text-muted)]">Baby&apos;s Name</span>
               <span className="text-xs font-bold text-[var(--color-text-main)] flex items-center gap-1.5">
@@ -78,11 +78,11 @@ export const PartnerSyncSuccessModal: React.FC<PartnerSyncSuccessModalProps> = (
         </div>
 
         {/* Action Button */}
-        <div className="p-4 bg-white dark:bg-[#1B231F] border-t border-[var(--color-card-border)] flex items-center justify-end">
+        <div className="p-4 bg-[var(--color-card)] border-t border-[var(--color-card-border)] flex items-center justify-end">
           <button
             type="button"
             onClick={onClose}
-            className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 cursor-pointer"
+            className="w-full py-3 px-4 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-xs transition-all active:scale-98 cursor-pointer"
           >
             <span>Open {profile.name}&apos;s Growth Curves</span>
             <ArrowRight className="w-4 h-4" />

@@ -22,7 +22,7 @@ export const TinyBloomLogo: React.FC<TinyBloomLogoProps> = ({
           width={size}
           height={size}
           onError={() => setImgFailed(true)}
-          className="rounded-2xl shrink-0 object-cover shadow-2xs border border-[var(--color-primary)]/20 bg-white dark:bg-[#161D18] dark:p-0.5"
+          className="rounded-2xl shrink-0 object-cover shadow-2xs border border-[var(--color-primary)]/20 bg-[var(--color-card)] dark:p-0.5"
           style={{ width: `${size}px`, height: `${size}px` }}
         />
       ) : (

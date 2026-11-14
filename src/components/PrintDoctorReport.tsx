@@ -47,14 +47,14 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static print:z-auto">
-      <div className="bg-white rounded-3xl shadow-2xl border border-[#91A98B]/30 w-full max-w-3xl overflow-hidden my-4 sm:my-6 print:border-none print:shadow-none print:my-0 print:max-w-none flex flex-col max-h-[92vh] print:max-h-none">
+      <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-3xl overflow-hidden my-4 sm:my-6 print:border-none print:shadow-none print:my-0 print:max-w-none flex flex-col max-h-[92vh] print:max-h-none">
         {/* Top Control Bar (Hidden on print) */}
-        <div className="px-6 py-4 border-b border-[#91A98B]/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[#FFF9F0] print:hidden shrink-0">
+        <div className="px-6 py-4 border-b border-[var(--color-card-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-surface)] print:hidden shrink-0">
           <div>
-            <h2 className="text-base font-bold font-heading text-[#303832]">
+            <h2 className="text-base font-bold font-heading text-[var(--color-text-main)]">
               Doctor Visit Brief
             </h2>
-            <p className="text-xs text-[#6E7B6C]">
+            <p className="text-xs text-[var(--color-text-muted)]">
               Generated 100% on-device · Customize sections and print or save to PDF
             </p>
           </div>
@@ -63,7 +63,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
             <button
               type="button"
               onClick={handlePrint}
-              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[#91A98B] hover:bg-[#7D9977] rounded-xl transition-all shadow-xs"
+              className="flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-90 rounded-xl transition-all shadow-xs cursor-pointer"
             >
               <Printer className="w-3.5 h-3.5" />
               <span>Print / Save as PDF</span>
@@ -71,7 +71,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition-colors"
+              className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)] transition-colors cursor-pointer"
             >
               <X className="w-4 h-4" />
             </button>
@@ -79,52 +79,52 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
         </div>
 
         {/* Customization Options Bar (Hidden on print) */}
-        <div className="px-6 py-2.5 bg-white border-b border-[#91A98B]/15 text-xs text-[#303832] flex items-center gap-4 flex-wrap print:hidden shrink-0">
-          <span className="font-semibold text-[#6E7B6C]">Include:</span>
+        <div className="px-6 py-2.5 bg-[var(--color-card)] border-b border-[var(--color-card-border)] text-xs text-[var(--color-text-main)] flex items-center gap-4 flex-wrap print:hidden shrink-0">
+          <span className="font-semibold text-[var(--color-text-muted)]">Include:</span>
           <button
             type="button"
             onClick={() => setIncludeProfile(!includeProfile)}
-            className="flex items-center gap-1.5 hover:text-[#5D7C57]"
+            className="flex items-center gap-1.5 hover:text-[var(--color-primary)] cursor-pointer"
           >
-            {includeProfile ? <CheckSquare className="w-3.5 h-3.5 text-[#5D7C57]" /> : <Square className="w-3.5 h-3.5 text-stone-300" />}
+            {includeProfile ? <CheckSquare className="w-3.5 h-3.5 text-[var(--color-primary)]" /> : <Square className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />}
             <span>Profile Details</span>
           </button>
           <button
             type="button"
             onClick={() => setIncludeSummary(!includeSummary)}
-            className="flex items-center gap-1.5 hover:text-[#5D7C57]"
+            className="flex items-center gap-1.5 hover:text-[var(--color-primary)] cursor-pointer"
           >
-            {includeSummary ? <CheckSquare className="w-3.5 h-3.5 text-[#5D7C57]" /> : <Square className="w-3.5 h-3.5 text-stone-300" />}
+            {includeSummary ? <CheckSquare className="w-3.5 h-3.5 text-[var(--color-primary)]" /> : <Square className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />}
             <span>Latest Summary</span>
           </button>
           <button
             type="button"
             onClick={() => setIncludeHistoryTable(!includeHistoryTable)}
-            className="flex items-center gap-1.5 hover:text-[#5D7C57]"
+            className="flex items-center gap-1.5 hover:text-[var(--color-primary)] cursor-pointer"
           >
-            {includeHistoryTable ? <CheckSquare className="w-3.5 h-3.5 text-[#5D7C57]" /> : <Square className="w-3.5 h-3.5 text-stone-300" />}
+            {includeHistoryTable ? <CheckSquare className="w-3.5 h-3.5 text-[var(--color-primary)]" /> : <Square className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />}
             <span>Measurement Table</span>
           </button>
           <button
             type="button"
             onClick={() => setIncludeQuestions(!includeQuestions)}
-            className="flex items-center gap-1.5 hover:text-[#5D7C57]"
+            className="flex items-center gap-1.5 hover:text-[var(--color-primary)] cursor-pointer"
           >
-            {includeQuestions ? <CheckSquare className="w-3.5 h-3.5 text-[#5D7C57]" /> : <Square className="w-3.5 h-3.5 text-stone-300" />}
+            {includeQuestions ? <CheckSquare className="w-3.5 h-3.5 text-[var(--color-primary)]" /> : <Square className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />}
             <span>Parent Questions ({savedQuestions.length})</span>
           </button>
           <button
             type="button"
             onClick={() => setIncludeNotes(!includeNotes)}
-            className="flex items-center gap-1.5 hover:text-[#5D7C57]"
+            className="flex items-center gap-1.5 hover:text-[var(--color-primary)] cursor-pointer"
           >
-            {includeNotes ? <CheckSquare className="w-3.5 h-3.5 text-[#5D7C57]" /> : <Square className="w-3.5 h-3.5 text-stone-300" />}
+            {includeNotes ? <CheckSquare className="w-3.5 h-3.5 text-[var(--color-primary)]" /> : <Square className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />}
             <span>Notes & Milestones</span>
           </button>
         </div>
 
         {/* Printable Document Body */}
-        <div className="p-6 sm:p-8 space-y-6 text-[#303832] print:p-4 overflow-y-auto flex-1 bg-white" id="printable-report">
+        <div className="p-6 sm:p-8 space-y-6 text-[#303832] print:p-4 overflow-y-auto flex-1 bg-white keep-white" id="printable-report">
           {/* Clinic Header */}
           <div className="border-b-2 border-[#303832] pb-4 flex items-start justify-between">
             <div className="flex items-center gap-3">
@@ -146,7 +146,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
 
           {/* Patient Info Grid */}
           {includeProfile && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-[#FFF9F0] p-4 rounded-2xl text-xs border border-[#91A98B]/30">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 bg-[#FAF9F6] p-4 rounded-2xl text-xs border border-[#91A98B]/30">
               <div>
                 <span className="text-[#6E7B6C] font-semibold block uppercase text-[10px]">Patient Name</span>
                 <span className="font-bold text-[#303832] text-sm">{profile.name}</span>
@@ -178,7 +178,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
 
               <div className="grid grid-cols-3 gap-3 pt-1 text-xs">
                 {/* Weight */}
-                <div className="bg-white p-3 rounded-xl border border-[#91A98B]/20">
+                <div className="bg-white keep-white p-3 rounded-xl border border-[#91A98B]/20">
                   <span className="text-[#6E7B6C] block text-[11px]">Weight</span>
                   <span className="text-base font-extrabold font-mono text-[#303832]">
                     {latestEntry.weightKg
@@ -195,7 +195,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                 </div>
 
                 {/* Length */}
-                <div className="bg-white p-3 rounded-xl border border-[#91A98B]/20">
+                <div className="bg-white keep-white p-3 rounded-xl border border-[#91A98B]/20">
                   <span className="text-[#6E7B6C] block text-[11px]">Length / Height</span>
                   <span className="text-base font-extrabold font-mono text-[#303832]">
                     {latestEntry.heightCm
@@ -212,7 +212,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                 </div>
 
                 {/* Head Size */}
-                <div className="bg-white p-3 rounded-xl border border-[#91A98B]/20">
+                <div className="bg-white keep-white p-3 rounded-xl border border-[#91A98B]/20">
                   <span className="text-[#6E7B6C] block text-[11px]">Head Circumference</span>
                   <span className="text-base font-extrabold font-mono text-[#303832]">
                     {latestEntry.headCircumferenceCm
@@ -239,7 +239,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
               </h3>
               <div className="border border-[#91A98B]/30 rounded-2xl overflow-hidden">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#FFF9F0] text-[#303832] font-semibold border-b border-[#91A98B]/20">
+                  <thead className="bg-[#FAF9F6] text-[#303832] font-semibold border-b border-[#91A98B]/20">
                     <tr>
                       <th className="py-2 px-3">Date</th>
                       <th className="py-2 px-3">Age</th>
@@ -279,7 +279,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                       }
 
                       return (
-                        <tr key={entry.id} className="hover:bg-stone-50/50">
+                        <tr key={entry.id} className="hover:bg-slate-50/70">
                           <td className="py-2 px-3 font-mono">{entry.date}</td>
                           <td className="py-2 px-3 font-medium">
                             {entry.ageMonths === 0 ? 'Birth' : `${entry.ageMonths.toFixed(1)}m`}
@@ -306,7 +306,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                 <HelpCircle className="w-3.5 h-3.5 text-[#5D7C57]" />
                 <span>Parent Questions to Discuss During Visit</span>
               </h3>
-              <div className="p-3.5 rounded-xl bg-[#FFF9F0] border border-[#91A98B]/30 space-y-1.5 text-xs text-[#303832]">
+              <div className="p-3.5 rounded-xl bg-[#FAF9F6] border border-[#91A98B]/30 space-y-1.5 text-xs text-[#303832]">
                 {savedQuestions.map((q, idx) => (
                   <div key={idx} className="flex items-start gap-2">
                     <span className="font-bold text-[#5D7C57]">{idx + 1}.</span>
@@ -328,7 +328,7 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
                   .filter((e) => e.notes || (e.milestones && e.milestones.length > 0))
                   .slice(-4)
                   .map((e) => (
-                    <div key={e.id} className="p-2.5 rounded-xl bg-[#FFF9F0]/60 border border-[#91A98B]/20">
+                    <div key={e.id} className="p-2.5 rounded-xl bg-[#FAF9F6]/70 border border-[#91A98B]/20">
                       <span className="font-semibold text-[#303832]">{e.date} ({e.ageMonths.toFixed(1)}m): </span>
                       {e.notes && <span>{e.notes} </span>}
                       {e.milestones && e.milestones.length > 0 && (
