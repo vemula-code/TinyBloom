@@ -251,7 +251,7 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
       {/* Reassuring Personalized Context */}
       <div className="p-3.5 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] space-y-1.5">
         <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
-          <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />
+          <Heart className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
           <span>Percentile Perspective</span>
         </div>
         <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">

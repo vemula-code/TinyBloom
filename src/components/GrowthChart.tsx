@@ -656,15 +656,15 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             );
           })}
 
-          {/* Golden WHO Percentile Curves */}
+          {/* Muted WHO Percentile Curves */}
           {percentileCurves.map((curve) => (
             <g key={curve.key}>
               <path
                 d={curve.path}
                 fill="none"
-                stroke={curve.isMedian ? 'var(--color-chart-median, #E29B18)' : 'var(--color-chart-curve, #EBB844)'}
-                strokeWidth={curve.isMedian ? 2.4 : 1.15}
-                strokeOpacity={curve.isMedian ? 1 : 0.85}
+                stroke={curve.isMedian ? 'var(--color-chart-median, #8E6E3B)' : 'var(--color-chart-curve, #AE9264)'}
+                strokeWidth={curve.isMedian ? 2.0 : 1.0}
+                strokeOpacity={curve.isMedian ? 0.92 : 0.62}
               />
               {/* Right edge percentile label */}
               <text
@@ -673,7 +673,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 textAnchor="start"
                 className={`text-[11px] font-sans ${
                   curve.isMedian
-                    ? 'font-bold fill-[var(--color-chart-median,#E29B18)]'
+                    ? 'font-bold fill-[var(--color-chart-median,#8E6E3B)]'
                     : 'font-semibold fill-[var(--color-text-muted)]'
                 }`}
               >
@@ -687,8 +687,8 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <path
               d={babyLinePath}
               fill="none"
-              stroke="var(--color-chart-line, #244B66)"
-              strokeWidth={2.4}
+              stroke="var(--color-chart-line, #2C4A6E)"
+              strokeWidth={2.5}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -729,7 +729,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                     cy={pt.y}
                     r={9.5}
                     fill="var(--color-card)"
-                    stroke="var(--color-chart-line, #244B66)"
+                    stroke="var(--color-chart-line, #2C4A6E)"
                     strokeWidth={2.2}
                   />
                 )}
@@ -739,7 +739,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   cx={pt.x}
                   cy={pt.y}
                   r={isSelected ? 4.2 : pt.entry.isPediatricianVisit ? 4.0 : 4.2}
-                  fill={pt.entry.isPediatricianVisit ? 'var(--color-primary)' : 'var(--color-chart-line, #244B66)'}
+                  fill={pt.entry.isPediatricianVisit ? 'var(--color-primary)' : 'var(--color-chart-line, #2C4A6E)'}
                 />
               </g>
             );
@@ -774,7 +774,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
 
         {/* 3. Floating Detail Inspection Card (Appears ONLY when a dot is clicked) */}
         {activePoint && (
-          <div className="absolute bottom-9 sm:bottom-10 right-2 sm:right-5 w-52 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-[var(--color-card-border)] bg-[var(--color-card)] text-xs animate-in fade-in zoom-in-95 duration-150 z-10">
+          <div className="absolute bottom-9 sm:bottom-10 right-2 sm:right-5 w-52 sm:w-64 rounded-2xl overflow-hidden shadow-xl border border-[var(--color-card-border)] bg-[var(--color-card)] text-xs app-pop-enter z-10">
             {/* Header */}
             <div className="bg-[var(--color-surface)] px-3.5 py-2.5 flex items-center justify-between text-[var(--color-text-main)] border-b border-[var(--color-card-border)]">
               <div className="flex items-center gap-2">
@@ -845,7 +845,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       <div className="mt-3 pt-2.5 border-t border-[var(--color-card-border)] flex flex-wrap items-center justify-between gap-2 text-xs text-[var(--color-text-muted)]">
         <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-chart-line,#244B66)] inline-block" />
+            <span className="w-2.5 h-2.5 rounded-full bg-[var(--color-chart-line,#2C4A6E)] inline-block" />
             <span className="font-semibold text-[var(--color-text-main)]">{babyName}&rsquo;s Growth</span>
           </div>
           <div className="flex items-center gap-1.5">
@@ -855,7 +855,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <span>Clinic Visit</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-4 h-1 bg-[var(--color-chart-median,#E29B18)] rounded-full inline-block" />
+            <span className="w-4 h-1 bg-[var(--color-chart-median,#8E6E3B)] rounded-full inline-block" />
             <span>50% Median</span>
           </div>
         </div>

@@ -276,19 +276,14 @@ export default function App() {
   const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>(() => {
     try {
       const saved = localStorage.getItem('tinybloom_palette') as string;
-      const valid: PaletteTheme[] = [
-        'apple-health',
-        'huckleberry',
-        'sage',
-        'honey',
-      ];
+      const valid: PaletteTheme[] = ['sage', 'apple-health', 'honey'];
       if (saved && valid.includes(saved as PaletteTheme)) {
         return saved as PaletteTheme;
       }
-      // Smooth migration from older theme names
-      if (saved === 'olive') return 'sage';
-      if (saved === 'hatch' || saved === 'lavender' || saved === 'slate') return 'apple-health';
-      if (saved === 'sky') return 'huckleberry';
+      // Smooth migration from older theme names to the 3 curated themes
+      if (saved === 'huckleberry' || saved === 'sky' || saved === 'hatch' || saved === 'lavender' || saved === 'slate') {
+        return 'apple-health';
+      }
       if (saved === 'linen' || saved === 'amber') return 'honey';
       return 'sage';
     } catch {
@@ -379,10 +374,9 @@ export default function App() {
       root.setAttribute('data-theme', paletteTheme);
 
       const themeColors: Record<PaletteTheme, { light: string; dark: string }> = {
-        'apple-health': { light: '#1D63DC', dark: '#0B111E' },
-        huckleberry: { light: '#0E7490', dark: '#0A1518' },
-        sage: { light: '#3D6E41', dark: '#101712' },
-        honey: { light: '#B86B35', dark: '#17120E' },
+        sage: { light: '#F1EFEA', dark: '#111412' },
+        'apple-health': { light: '#EDF1F6', dark: '#0E1218' },
+        honey: { light: '#F3EFE9', dark: '#131110' },
       };
 
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
@@ -1051,15 +1045,15 @@ export default function App() {
               <TinyBloomLogo size={32} showText={true} />
             </button>
 
-            {/* Our Story Button: Simple heart symbol on mobile, expandable on sm+ */}
+            {/* Our Story Button: Cohesive neutral surface with subtle heart mark */}
             <button
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-full bg-rose-50 dark:bg-rose-950/40 border border-rose-200/80 dark:border-rose-800/50 text-[11px] font-bold text-rose-700 dark:text-rose-300 hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors shadow-2xs cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-[var(--color-surface)] border border-[var(--color-card-border)] text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors cursor-pointer shrink-0"
               title="Our Story: Why we built TinyBloom (From first-time parents)"
               aria-label="Our Story"
             >
-              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" />
+              <Heart className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
               <span className="hidden sm:inline">Our Story</span>
             </button>
           </div>
@@ -1070,11 +1064,11 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsPartnerSyncOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 border border-emerald-200/80 dark:border-emerald-800/50 text-xs font-semibold text-emerald-800 dark:text-emerald-300 active:scale-95 transition-all cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-primary-light)] border border-[var(--color-card-border)] text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0"
               title="Sync with Spouse or Partner via WhatsApp, link, or QR code"
               aria-label="Sync with Partner"
             >
-              <Share2 className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+              <Share2 className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
               <span className="hidden xs:inline font-bold">Sync</span>
             </button>
 
@@ -1227,7 +1221,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => setIsSettingsOpen(true)}
-                        className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors cursor-pointer"
+                        className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] rounded-lg hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
                         title="Edit baby profile & setup"
                       >
                         <Edit3 className="w-3 h-3" />
@@ -1236,11 +1230,11 @@ export default function App() {
 
                     {/* Neatly Aligned Age, Corrected Preterm Tag & Birthdate */}
                     <div className="flex flex-wrap items-center gap-1.5 text-xs mt-0.5">
-                      <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary)]/10 px-2 py-0.5 rounded-lg text-[11px]">
+                      <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-lg text-[11px]">
                         {currentAge.displayStr} old
                       </span>
                       {pretermActive && (
-                        <span className="font-bold text-amber-800 dark:text-amber-300 bg-amber-500/15 px-2 py-0.5 rounded-lg text-[10px]">
+                        <span className="font-semibold text-[var(--color-text-main)] bg-[var(--color-surface)] border border-[var(--color-card-border)] px-2 py-0.5 rounded-lg text-[10px]">
                           Corrected: {formatAgeMonthsLabel(correctedAgeMonths)}
                         </span>
                       )}
@@ -1318,20 +1312,17 @@ export default function App() {
                 {/* Developmental Stage */}
                 <button
                   type="button"
-                  onClick={() => setActiveTab('story')}
+                  onClick={() => switchTab('story')}
                   className="flex items-center gap-1.5 text-left min-w-0 hover:opacity-85 transition-opacity cursor-pointer group"
                   title="View developmental milestones"
                 >
-                  <span className="w-5 h-5 rounded-md bg-purple-100 dark:bg-purple-950/70 text-purple-700 dark:text-purple-300 flex items-center justify-center shrink-0 text-xs shadow-2xs">
-                    <Sparkles className="w-3 h-3 text-purple-600 dark:text-purple-400" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-purple-700 dark:text-purple-300 shrink-0 hidden sm:inline">
-                    Stage:
+                  <span className="w-5 h-5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center justify-center shrink-0 text-xs">
+                    <Sparkles className="w-3 h-3" />
                   </span>
                   <span className="font-bold text-[var(--color-text-main)] truncate text-[11px] sm:text-xs">
                     {getBabyStageStorySummary(currentAge.exactMonths)}
                   </span>
-                  <span className="text-[10px] text-purple-700 dark:text-purple-400 font-bold shrink-0 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
+                  <span className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shrink-0 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
                     <span>Milestones</span>
                     <ArrowRight className="w-2.5 h-2.5" />
                   </span>
@@ -1341,10 +1332,10 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setIsPrivateGuaranteeOpen(true)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-800 dark:text-emerald-300 border border-emerald-200/80 dark:border-emerald-800/60 text-[10px] sm:text-[11px] font-bold shrink-0 transition-colors cursor-pointer"
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface)] hover:bg-[var(--color-primary-light)] text-[var(--color-text-main)] border border-[var(--color-card-border)] text-[10px] sm:text-[11px] font-semibold shrink-0 transition-colors cursor-pointer"
                   title="100% Local & On-Device (Tap to verify)"
                 >
-                  <ShieldCheck className="w-3 h-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                  <ShieldCheck className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
                   <span>100% Private</span>
                 </button>
               </div>
@@ -1618,21 +1609,21 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-bold transition-all shadow-2xs"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--color-primary-light)] hover:opacity-90 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border border-[var(--color-card-border)] font-bold transition-opacity shadow-2xs cursor-pointer"
             >
-              <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+              <Heart className="w-3.5 h-3.5 text-[var(--color-primary)]" />
               <span>TinyBloom Philosophy & Local Privacy</span>
             </button>
 
             <button
               type="button"
               onClick={() => setIsSettingsOpen(true)}
-              className="hover:text-[var(--color-text-main,#303832)] font-medium transition-colors"
+              className="hover:text-[var(--color-text-main)] font-medium transition-colors cursor-pointer"
             >
               Settings & Backups
             </button>
 
-            <span className="hidden sm:inline text-stone-300 dark:text-stone-700">•</span>
+            <span className="hidden sm:inline text-[var(--color-card-border)]">•</span>
 
             <button
               type="button"

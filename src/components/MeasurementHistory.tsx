@@ -258,7 +258,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                       {entry.isPediatricianVisit && (
                         <span
                           title="Pediatrician Visit"
-                          className="inline-flex items-center gap-1 text-[10px] text-blue-700 dark:text-blue-300 font-semibold bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/50"
+                          className="inline-flex items-center gap-1 text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded-md border border-[var(--color-card-border)]"
                         >
                           <Stethoscope className="w-2.5 h-2.5" />
                           <span>Clinic</span>
@@ -279,7 +279,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         type="button"
                         onClick={() => setConfirmDeleteId(entry.id)}
                         title="Delete measurement"
-                        className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                        className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
@@ -310,7 +310,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         {heightStr}
                       </div>
                       {heightP && (
-                        <div className="text-[9px] text-amber-700 dark:text-amber-400 font-semibold truncate">
+                        <div className="text-[9px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate">
                           {heightP.displayStr}
                         </div>
                       )}
@@ -324,7 +324,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         {headStr}
                       </div>
                       {headP && (
-                        <div className="text-[9px] text-sky-700 dark:text-sky-400 font-semibold truncate">
+                        <div className="text-[9px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate">
                           {headP.displayStr}
                         </div>
                       )}
@@ -339,7 +339,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                           {entry.milestones.map((m, idx) => (
                             <span
                               key={idx}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[#F5D77A]/20 text-[#856514] dark:text-[#F5D77A] text-[9px] font-semibold border border-amber-300/40"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-[9px] font-semibold border border-[var(--color-card-border)]"
                             >
                               <Sparkles className="w-2.5 h-2.5" />
                               <span>{m}</span>
@@ -444,7 +444,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="font-mono font-semibold text-[var(--color-text-main)]">{heightStr}</div>
                           {heightP && (
-                            <div className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold">
+                            <div className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold">
                               {heightP.displayStr}
                             </div>
                           )}
@@ -454,7 +454,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="font-mono font-semibold text-[var(--color-text-main)]">{headStr}</div>
                           {headP && (
-                            <div className="text-[10px] text-sky-600 dark:text-sky-400 font-semibold">
+                            <div className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold">
                               {headP.displayStr}
                             </div>
                           )}
@@ -468,7 +468,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                                 {entry.milestones.map((m, idx) => (
                                   <span
                                     key={idx}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#F5D77A]/20 text-[#856514] dark:text-[#F5D77A] text-[10px] font-semibold"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border border-[var(--color-card-border)] text-[10px] font-semibold"
                                   >
                                     <Sparkles className="w-2.5 h-2.5" />
                                     <span>{m}</span>
@@ -502,7 +502,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                               type="button"
                               onClick={() => setConfirmDeleteId(entry.id)}
                               title="Delete measurement"
-                              className="p-1.5 rounded-lg text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
+                              className="p-1.5 rounded-lg text-[var(--color-text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 transition-colors cursor-pointer"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
                             </button>

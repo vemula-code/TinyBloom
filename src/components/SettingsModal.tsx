@@ -450,48 +450,46 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     desc: string;
     color: string;
     canvasLight: string;
+    cardLight: string;
     canvasDark: string;
-    badge: string;
+    cardDark: string;
+    chartLine: string;
   }[] = [
     {
-      id: 'apple-health',
-      label: 'Ocean Blue',
-      tag: 'Top Health App',
-      desc: 'Crisp sapphire blue, high-contrast slate & deep navy night mode',
-      color: '#1D63DC',
-      canvasLight: '#F4F7FB',
-      canvasDark: '#0B111E',
-      badge: 'Clinical',
-    },
-    {
-      id: 'huckleberry',
-      label: 'Calm Teal',
-      tag: 'Top Parenting App',
-      desc: 'Serene pediatric teal, clean porcelain & calm ocean slate',
-      color: '#0E7490',
-      canvasLight: '#F2F8F9',
-      canvasDark: '#0A1518',
-      badge: 'Clarity',
-    },
-    {
       id: 'sage',
-      label: 'Botanical Sage',
-      tag: 'Baby Nursery',
-      desc: 'Gentle sprout sage, warm cream linen & soothing forest night',
-      color: '#3D6E41',
-      canvasLight: '#F7F6F1',
-      canvasDark: '#101712',
-      badge: 'Organic',
+      label: 'Warm Pebble',
+      tag: 'Botanical Neutral',
+      desc: 'Soft linen paper, muted eucalyptus & deep charcoal-moss night mode',
+      color: '#4B6F58',
+      canvasLight: '#F1EFEA',
+      cardLight: '#FAF9F6',
+      canvasDark: '#111412',
+      cardDark: '#181C19',
+      chartLine: '#2C4A6E',
+    },
+    {
+      id: 'apple-health',
+      label: 'Nordic Slate',
+      tag: 'Calm Clinical',
+      desc: 'Misty alabaster, steel indigo & velvet midnight dark mode',
+      color: '#375A86',
+      canvasLight: '#EDF1F6',
+      cardLight: '#F8FAFC',
+      canvasDark: '#0E1218',
+      cardDark: '#151B24',
+      chartLine: '#274975',
     },
     {
       id: 'honey',
-      label: 'Warm Nursery',
-      tag: 'Golden Oat',
-      desc: 'Warm toasted oat, soft apricot glow & cozy cocoa night mode',
-      color: '#B86B35',
-      canvasLight: '#FBF7F2',
-      canvasDark: '#17120E',
-      badge: 'Cozy',
+      label: 'Velvet Sand',
+      tag: 'Warm Evening',
+      desc: 'Gentle oatmeal stone, toasted bronze & soothing espresso night mode',
+      color: '#8C5A3C',
+      canvasLight: '#F3EFE9',
+      cardLight: '#FCFBF8',
+      canvasDark: '#131110',
+      cardDark: '#1B1816',
+      chartLine: '#2F4B60',
     },
   ];
 
@@ -965,68 +963,70 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                {/* Color Palette Choices - 4 Curated Themes */}
-                <div className="space-y-4 pt-2">
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
-                        <Palette className="w-3.5 h-3.5" />
-                        <span>Curated Color Themes</span>
-                      </span>
-                      <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
-                        4 balanced styles
-                      </span>
-                    </div>
+                {/* Color Palette Choices - 3 Curated Themes */}
+                <div className="space-y-3 pt-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
+                      <Palette className="w-3.5 h-3.5" />
+                      <span>Curated Themes</span>
+                    </span>
+                    <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
+                      3 balanced Day &amp; Night palettes
+                    </span>
+                  </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-                      {palettes.map((p) => {
-                        const isSelected = paletteTheme === p.id;
-                        return (
-                          <button
-                            key={p.id}
-                            type="button"
-                            onClick={() => onChangePaletteTheme(p.id)}
-                            className={`flex items-center justify-between p-3 rounded-2xl border text-left transition-all cursor-pointer ${
-                              isSelected
-                                ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-2 ring-[var(--color-primary)]/30 shadow-xs'
-                                : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/50 hover:bg-[var(--color-surface)]/40'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3 min-w-0">
-                              {/* Dual Day / Dark + Accent swatch preview */}
-                              <div className="w-9 h-9 rounded-xl shrink-0 overflow-hidden border border-[var(--color-card-border)] shadow-2xs relative flex flex-col">
-                                <div className="flex-1 w-full" style={{ backgroundColor: p.canvasLight }} />
-                                <div className="flex-1 w-full" style={{ backgroundColor: p.canvasDark }} />
-                                <span
-                                  className="w-4 h-4 rounded-full border-2 border-white shadow-xs absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
-                                  style={{ backgroundColor: p.color }}
-                                />
+                  <div className="grid grid-cols-1 gap-2.5">
+                    {palettes.map((p) => {
+                      const isSelected = paletteTheme === p.id;
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => onChangePaletteTheme(p.id)}
+                          className={`flex items-center justify-between p-3.5 rounded-2xl border text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.99] cursor-pointer ${
+                            isSelected
+                              ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-1 ring-[var(--color-primary)]/40 shadow-xs'
+                              : 'border-[var(--color-card-border)] bg-[var(--color-canvas)] hover:border-[var(--color-primary)]/50'
+                          }`}
+                        >
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            {/* Dual Day / Night mini-surface preview */}
+                            <div className="w-12 h-11 rounded-xl shrink-0 overflow-hidden border border-[var(--color-card-border)] shadow-2xs flex">
+                              <div className="flex-1 h-full p-1 flex flex-col justify-between" style={{ backgroundColor: p.canvasLight }}>
+                                <div className="w-full h-2.5 rounded-xs" style={{ backgroundColor: p.cardLight }} />
+                                <div className="w-3/4 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
                               </div>
-
-                              <div className="min-w-0">
-                                <div className="flex items-center gap-1.5 flex-wrap">
-                                  <span className="text-xs font-bold text-[var(--color-text-main)]">
-                                    {p.label}
-                                  </span>
-                                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
-                                    {p.tag}
-                                  </span>
-                                </div>
-                                <span className="text-[11px] text-[var(--color-text-muted)] block truncate mt-0.5">
-                                  {p.desc}
-                                </span>
+                              <div className="flex-1 h-full p-1 flex flex-col justify-between" style={{ backgroundColor: p.canvasDark }}>
+                                <div className="w-full h-2.5 rounded-xs" style={{ backgroundColor: p.cardDark }} />
+                                <div className="w-3/4 h-1.5 rounded-full" style={{ backgroundColor: p.chartLine }} />
                               </div>
                             </div>
 
-                            {isSelected && (
-                              <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
-                                <Check className="w-3.5 h-3.5" />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="text-xs font-bold text-[var(--color-text-main)]">
+                                  {p.label}
+                                </span>
+                                <span className="text-[10px] font-medium text-[var(--color-text-muted)]">
+                                  · {p.tag}
+                                </span>
                               </div>
-                            )}
-                          </button>
-                        );
-                      })}
-                    </div>
+                              <span className="text-[11px] text-[var(--color-text-muted)] block mt-0.5 leading-snug">
+                                {p.desc}
+                              </span>
+                            </div>
+                          </div>
+
+                          {isSelected ? (
+                            <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
+                              <Check className="w-3.5 h-3.5" />
+                            </div>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full border border-[var(--color-card-border)] shrink-0 ml-2" />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </div>

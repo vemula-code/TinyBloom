@@ -27,18 +27,18 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
 
   if (sortedEntries.length === 0) {
     return (
-      <div className="bg-white rounded-2xl border border-stone-200 p-12 text-center">
-        <div className="w-12 h-12 rounded-full bg-stone-100 text-stone-400 mx-auto flex items-center justify-center mb-3">
+      <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] p-12 text-center">
+        <div className="w-12 h-12 rounded-full bg-[var(--color-surface)] text-[var(--color-text-muted)] mx-auto flex items-center justify-center mb-3">
           <Calendar className="w-6 h-6" />
         </div>
-        <h3 className="text-base font-semibold text-stone-800">No Growth Records Logged Yet</h3>
-        <p className="text-xs text-stone-500 mt-1 max-w-sm mx-auto">
+        <h3 className="text-base font-semibold text-[var(--color-text-main)]">No Growth Records Logged Yet</h3>
+        <p className="text-xs text-[var(--color-text-muted)] mt-1 max-w-sm mx-auto">
           Start recording monthly weight, height, and head circumference measurements to see WHO percentiles.
         </p>
         <button
           type="button"
           onClick={onAddFirstEntry}
-          className="mt-4 px-4 py-2 text-xs font-semibold text-white bg-stone-900 rounded-xl hover:bg-stone-800 transition-colors"
+          className="mt-4 px-4 py-2 text-xs font-semibold text-white bg-[var(--color-primary)] rounded-xl hover:opacity-90 transition-opacity cursor-pointer"
         >
           Add First Measurement
         </button>
@@ -91,7 +91,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                 {entry.isPediatricianVisit && (
                   <>
                     <span className="text-xs text-[var(--color-text-muted)]">·</span>
-                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-blue-700 dark:text-blue-300 font-medium bg-blue-50 dark:bg-blue-950/50 px-1.5 py-0.5 rounded-md border border-blue-200/60 dark:border-blue-800/50">
+                    <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-medium bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded-md border border-[var(--color-card-border)]">
                       <Stethoscope className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                       Pediatrician
                     </span>
@@ -113,7 +113,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                   type="button"
                   onClick={() => onDelete(entry.id)}
                   aria-label="Delete record"
-                  className="p-1.5 text-stone-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
+                  className="p-1.5 text-[var(--color-text-muted)] hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-lg transition-colors cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -146,7 +146,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                   {heightStr || '—'}
                 </div>
                 {heightP && (
-                  <span className="text-[9px] sm:text-[11px] text-amber-700 dark:text-amber-400 font-semibold truncate block">
+                  <span className="text-[9px] sm:text-[11px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate block">
                     {heightP.displayStr}
                   </span>
                 )}
@@ -161,7 +161,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                   {headStr || '—'}
                 </div>
                 {headP && (
-                  <span className="text-[9px] sm:text-[11px] text-sky-700 dark:text-sky-400 font-semibold truncate block">
+                  <span className="text-[9px] sm:text-[11px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate block">
                     {headP.displayStr}
                   </span>
                 )}
@@ -177,7 +177,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                     src={entry.photoUrl}
                     alt="Growth moment"
                     referrerPolicy="no-referrer"
-                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-stone-200 shadow-xs"
+                    className="w-20 h-20 sm:w-24 sm:h-24 object-cover rounded-xl border border-[var(--color-card-border)] shadow-xs"
                   />
                 </div>
               )}
@@ -185,7 +185,7 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
               <div className="grow space-y-2">
                 {/* Notes */}
                 {entry.notes && (
-                  <p className="text-xs text-stone-700 leading-relaxed bg-stone-50/70 p-3 rounded-xl border border-stone-100">
+                  <p className="text-xs text-[var(--color-text-main)] leading-relaxed bg-[var(--color-canvas)] p-3 rounded-xl border border-[var(--color-card-border)]">
                     {entry.notes}
                   </p>
                 )}
@@ -193,13 +193,13 @@ export const GrowthTimeline: React.FC<GrowthTimelineProps> = ({
                 {/* Milestones tags */}
                 {entry.milestones && entry.milestones.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5 pt-1">
-                    <span className="text-[11px] font-semibold text-amber-700 flex items-center gap-1 mr-1">
+                    <span className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1 mr-1">
                       <Sparkles className="w-3 h-3" /> Milestones:
                     </span>
                     {entry.milestones.map((m, idx) => (
                       <span
                         key={idx}
-                        className="text-[11px] bg-amber-50 text-amber-900 border border-amber-200 px-2 py-0.5 rounded-md"
+                        className="text-[11px] bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border border-[var(--color-card-border)] px-2 py-0.5 rounded-md font-medium"
                       >
                         {m}
                       </span>

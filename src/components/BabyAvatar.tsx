@@ -40,9 +40,9 @@ export const BabyAvatar: React.FC<BabyAvatarProps> = ({
   const renderFallback = () => {
     return (
       <div
-        className={`${sizeClasses[size]} bg-gradient-to-br from-[#91A98B]/30 via-[#F3C9B8]/40 to-[#AFCDE0]/30 border-2 border-[var(--color-primary,#91A98B)]/40 flex flex-col items-center justify-center text-[var(--color-primary-dark,#3D5939)] shadow-2xs font-bold font-heading relative overflow-hidden select-none ${className}`}
+        className={`${sizeClasses[size]} bg-[var(--color-primary-light)] border border-[var(--color-card-border)] flex flex-col items-center justify-center text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] shadow-2xs font-bold font-heading relative overflow-hidden select-none ${className}`}
       >
-        <span className="leading-none drop-shadow-xs">{initial}</span>
+        <span className="leading-none">{initial}</span>
         <span className="text-[10px] opacity-75 font-sans font-medium">🌱</span>
       </div>
     );
@@ -61,13 +61,13 @@ export const BabyAvatar: React.FC<BabyAvatarProps> = ({
           src={avatarUrl}
           alt={name}
           onError={() => setHasError(true)}
-          className={`${sizeClasses[size]} object-cover border-2 border-[var(--color-primary,#91A98B)]/30 shadow-2xs transition-transform duration-200 ${
+          className={`${sizeClasses[size]} object-cover border border-[var(--color-card-border)] shadow-2xs transition-transform duration-200 ${
             onClick ? 'group-hover:scale-105' : ''
           } ${className}`}
         />
       ) : isPreset ? (
         <div
-          className={`${sizeClasses[size]} bg-gradient-to-br from-[#91A98B]/20 via-[#FFF9F0] to-[#F5D77A]/30 border-2 border-[var(--color-primary,#91A98B)]/40 flex items-center justify-center text-2xl shadow-2xs ${className}`}
+          className={`${sizeClasses[size]} bg-[var(--color-surface)] border border-[var(--color-card-border)] flex items-center justify-center text-2xl shadow-2xs ${className}`}
         >
           {avatarUrl === 'sprout' && '🌱'}
           {avatarUrl === 'bear' && '🧸'}

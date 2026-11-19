@@ -52,7 +52,7 @@ export const CheckupPrepCard: React.FC<CheckupPrepCardProps> = ({
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border)] pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-xl bg-amber-500/15 text-amber-700 dark:text-amber-400 flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
             <Stethoscope className="w-4 h-4" />
           </span>
           <div>

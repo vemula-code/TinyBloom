@@ -1182,7 +1182,12 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                 >
                   <span>{s.ageLabel}</span>
                   {isCurrent && (
-                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Current Age" />
+                    <span
+                      className={`w-1.5 h-1.5 rounded-full ${
+                        isSelected ? 'bg-white' : 'bg-[var(--color-primary)]'
+                      }`}
+                      title="Current Age"
+                    />
                   )}
                 </button>
               );
@@ -1293,7 +1298,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                         >
                           <span className="mt-0.5 shrink-0 text-[var(--color-primary,#91A98B)] group-hover:scale-110 transition-transform">
                             {isDone ? (
-                              <CheckSquare className="w-4 h-4 text-emerald-600 fill-emerald-100 dark:fill-emerald-950" />
+                              <CheckSquare className="w-4 h-4 text-[var(--color-primary)]" />
                             ) : (
                               <Square className="w-4 h-4 opacity-60" />
                             )}
@@ -1361,7 +1366,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
               <ul className="space-y-2 text-xs text-[var(--color-text-main,#303832)]">
                 {stage.checklist.map((item, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-emerald-500 font-bold shrink-0">✓</span>
+                    <span className="text-[var(--color-primary)] font-bold shrink-0">✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
