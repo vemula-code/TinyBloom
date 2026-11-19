@@ -229,6 +229,25 @@ export default function App() {
   const [activeChartType, setActiveChartType] = useState<ChartType>('weight');
   const [growthSubView, setGrowthSubView] = useState<'chart' | 'history'>('chart');
   const [clinicOnlyFilter, setClinicOnlyFilter] = useState<boolean>(false);
+  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+
+  const switchTab = (nextTab: 'home' | 'growth' | 'story' | 'history' | 'nextsteps') => {
+    setActiveTab(nextTab);
+    if (typeof window !== 'undefined' && window.scrollY > 80) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const onScroll = () => {
+      const scrolled = window.scrollY > 8;
+      setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Saved multi-baby workspaces for instant child switching
   const [workspaces, setWorkspaces] = useState<StoredBabyWorkspace[]>(() => {
@@ -1012,17 +1031,21 @@ export default function App() {
     .slice(0, 3);
 
   return (
-    <div className="min-h-screen w-full max-w-full overflow-x-hidden bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24 transition-colors duration-250">
+    <div className="min-h-dvh w-full bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24">
       {/* ========================================================
-          STICKY TOP HEADER (Clean on Mobile, Full on Desktop)
+          STICKY TOP HEADER (Solid Surface + GPU-Promoted Layer)
          ======================================================== */}
-      <header className="sticky top-0 z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full max-w-full">
+      <header
+        className={`sticky top-0 z-40 app-sticky-chrome bg-[var(--color-card)] border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full transition-shadow duration-200 ${
+          isScrolled ? 'shadow-sm' : ''
+        }`}
+      >
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:flex-initial">
             <button
               type="button"
-              onClick={() => setActiveTab('home')}
+              onClick={() => switchTab('home')}
               className="flex items-center text-left transition-opacity hover:opacity-90 shrink min-w-0 cursor-pointer"
             >
               <TinyBloomLogo size={32} showText={true} />
@@ -1069,7 +1092,7 @@ export default function App() {
               </button>
 
               {isProfileSwitcherOpen && (
-                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xl p-2 space-y-1 z-50 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-2 w-64 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xl p-2 space-y-1 z-50 app-pop-enter">
                   <div className="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)]">
                     Child Profiles
                   </div>
@@ -1142,14 +1165,14 @@ export default function App() {
 
       {/* Toast Notification */}
       {toastMessage && (
-        <div className="bg-[var(--color-primary)] text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 animate-in fade-in slide-in-from-top duration-200">
+        <div className="bg-[var(--color-primary)] text-white px-4 py-2.5 text-center text-xs font-semibold shadow-xs flex items-center justify-center gap-2 app-pop-enter">
           <CheckCircle2 className="w-4 h-4 text-white shrink-0" />
           <span>{toastMessage}</span>
         </div>
       )}
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+      <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full">
         {/* Sample Demo Mode Banner - Only shown when exploring initial demo records */}
         {(profile.id === 'demo-sample-baby' && profile.name === 'Sample Baby') && (
           <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2.5 text-xs shadow-2xs">
@@ -1162,7 +1185,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsOnboardingOpen(true)}
-              className="px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-90 shadow-2xs transition-all shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-1"
+              className="px-3 py-1 rounded-xl text-[11px] sm:text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-90 shadow-2xs transition-opacity shrink-0 whitespace-nowrap cursor-pointer flex items-center gap-1"
             >
               <Baby className="w-3.5 h-3.5" />
               <span>Set Up Baby</span>
@@ -1174,9 +1197,9 @@ export default function App() {
             TAB 1: HOME SCREEN
            ======================================================== */}
         {activeTab === 'home' && (
-          <div className="space-y-4 sm:space-y-6">
+          <div key="tab-home" className="space-y-4 sm:space-y-6 app-view-enter">
             {/* Baby Profile Hero Card - Mobile-Optimized Native Layout */}
-            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden transition-colors space-y-3.5">
+            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden app-card-surface space-y-3.5">
               
               {/* Avatar + Name & Age + Unit Switcher & Log Growth Button */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1346,7 +1369,7 @@ export default function App() {
             />
 
             {/* 2. Interactive WHO Growth Chart directly below the selected metric */}
-            <div id="growth-chart-section">
+            <div id="growth-chart-section" className="app-card-surface">
               <GrowthChart
                 entries={entries}
                 chartType={activeChartType}
@@ -1462,14 +1485,14 @@ export default function App() {
             TAB 2: WHO INTERACTIVE GROWTH CHARTS + 1-TAP HISTORY
            ======================================================== */}
         {activeTab === 'growth' && (
-          <div className="space-y-3">
+          <div key="tab-growth" className="space-y-3 app-view-enter">
             {/* Top Segmented Sub-View: Chart vs History List */}
             <div className="flex items-center justify-between gap-2 bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-card-border)] shadow-2xs">
               <div className="flex items-center flex-1 gap-1 bg-[var(--color-surface)] p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setGrowthSubView('chart')}
-                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-[background-color,color,transform] duration-150 active:scale-[0.98] cursor-pointer ${
                     growthSubView === 'chart'
                       ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
                       : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1481,7 +1504,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setGrowthSubView('history')}
-                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                  className={`flex-1 py-1.5 px-3 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 transition-[background-color,color,transform] duration-150 active:scale-[0.98] cursor-pointer ${
                     growthSubView === 'history'
                       ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
                       : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1493,42 +1516,44 @@ export default function App() {
               </div>
             </div>
 
-            {growthSubView === 'chart' ? (
-              <GrowthChart
-                entries={entries}
-                chartType={activeChartType}
-                onChangeChartType={setActiveChartType}
-                showTimelineControls={true}
-                gender={profile.gender}
-                unit={unit}
-                babyName={profile.name}
-                babyAgeMonths={currentAge.exactMonths}
-                babyBirthDate={profile.birthDate}
-                gestationalWeeks={profile.gestationalWeeks}
-                timelineRange={chartTimelineRange}
-                onChangeTimelineRange={handleSetChartTimelineRange}
-                clinicOnlyFilter={clinicOnlyFilter}
-                onToggleClinicOnly={setClinicOnlyFilter}
-                onOpenAddModal={() => {
-                  setEditingEntry(null);
-                  setIsLogModalOpen(true);
-                }}
-                onEditEntry={handleEditEntry}
-                onOpenSettings={() => setIsSettingsOpen(true)}
-              />
-            ) : (
-              <MeasurementHistory
-                profile={profile}
-                entries={entries}
-                unit={unit}
-                onEditEntry={handleEditEntry}
-                onDeleteEntry={handleDeleteEntry}
-                onOpenAddModal={() => {
-                  setEditingEntry(null);
-                  setIsLogModalOpen(true);
-                }}
-              />
-            )}
+            <div key={growthSubView} className="app-view-enter app-card-surface">
+              {growthSubView === 'chart' ? (
+                <GrowthChart
+                  entries={entries}
+                  chartType={activeChartType}
+                  onChangeChartType={setActiveChartType}
+                  showTimelineControls={true}
+                  gender={profile.gender}
+                  unit={unit}
+                  babyName={profile.name}
+                  babyAgeMonths={currentAge.exactMonths}
+                  babyBirthDate={profile.birthDate}
+                  gestationalWeeks={profile.gestationalWeeks}
+                  timelineRange={chartTimelineRange}
+                  onChangeTimelineRange={handleSetChartTimelineRange}
+                  clinicOnlyFilter={clinicOnlyFilter}
+                  onToggleClinicOnly={setClinicOnlyFilter}
+                  onOpenAddModal={() => {
+                    setEditingEntry(null);
+                    setIsLogModalOpen(true);
+                  }}
+                  onEditEntry={handleEditEntry}
+                  onOpenSettings={() => setIsSettingsOpen(true)}
+                />
+              ) : (
+                <MeasurementHistory
+                  profile={profile}
+                  entries={entries}
+                  unit={unit}
+                  onEditEntry={handleEditEntry}
+                  onDeleteEntry={handleDeleteEntry}
+                  onOpenAddModal={() => {
+                    setEditingEntry(null);
+                    setIsLogModalOpen(true);
+                  }}
+                />
+              )}
+            </div>
           </div>
         )}
 
@@ -1536,38 +1561,46 @@ export default function App() {
             TAB 3: GROWTH STORY
            ======================================================== */}
         {activeTab === 'story' && (
-          <GrowthStory
-            profile={profile}
-            entries={entries}
-            unit={unit}
-            onOpenAddModal={() => {
-              setEditingEntry(null);
-              setIsLogModalOpen(true);
-            }}
-          />
+          <div key="tab-story" className="app-view-enter app-card-surface">
+            <GrowthStory
+              profile={profile}
+              entries={entries}
+              unit={unit}
+              onOpenAddModal={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+            />
+          </div>
         )}
 
         {/* ========================================================
             TAB 4: MEASUREMENT HISTORY
            ======================================================== */}
         {activeTab === 'history' && (
-          <MeasurementHistory
-            profile={profile}
-            entries={entries}
-            unit={unit}
-            onEditEntry={handleEditEntry}
-            onDeleteEntry={handleDeleteEntry}
-            onOpenAddModal={() => {
-              setEditingEntry(null);
-              setIsLogModalOpen(true);
-            }}
-          />
+          <div key="tab-history" className="app-view-enter app-card-surface">
+            <MeasurementHistory
+              profile={profile}
+              entries={entries}
+              unit={unit}
+              onEditEntry={handleEditEntry}
+              onDeleteEntry={handleDeleteEntry}
+              onOpenAddModal={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+            />
+          </div>
         )}
 
         {/* ========================================================
             TAB 5: PERSONALIZED NEXT STEPS
            ======================================================== */}
-        {activeTab === 'nextsteps' && <NextStepsGuide profile={profile} />}
+        {activeTab === 'nextsteps' && (
+          <div key="tab-nextsteps" className="app-view-enter app-card-surface">
+            <NextStepsGuide profile={profile} />
+          </div>
+        )}
 
         {/* ========================================================
             TINYBLOOM FOOTER WITH PHILOSOPHY & PRIVACY LINK
@@ -1621,13 +1654,13 @@ export default function App() {
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 bg-[var(--color-card)]/95 backdrop-blur-md border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-lg sm:shadow-2xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 app-sticky-chrome bg-[var(--color-card)] border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.08)] sm:shadow-xl"
       >
         {/* Left 1: Home */}
         <button
           type="button"
-          onClick={() => setActiveTab('home')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          onClick={() => switchTab('home')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
             activeTab === 'home'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
@@ -1642,9 +1675,9 @@ export default function App() {
           type="button"
           onClick={() => {
             setGrowthSubView('chart');
-            setActiveTab('growth');
+            switchTab('growth');
           }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
             activeTab === 'growth'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
@@ -1661,7 +1694,7 @@ export default function App() {
             setEditingEntry(null);
             setIsLogModalOpen(true);
           }}
-          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary,#91A98B)] hover:opacity-95 text-white shadow-md active:scale-95 transition-transform cursor-pointer"
+          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary,#91A98B)] hover:opacity-95 text-white shadow-md active:scale-95 transition-transform duration-150 cursor-pointer"
           aria-label="Log Measurement"
           title="Log Measurement"
         >
@@ -1671,8 +1704,8 @@ export default function App() {
         {/* Right 1: Milestones & Development */}
         <button
           type="button"
-          onClick={() => setActiveTab('story')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          onClick={() => switchTab('story')}
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
             activeTab === 'story' || activeTab === 'nextsteps'
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
@@ -1686,7 +1719,7 @@ export default function App() {
         <button
           type="button"
           onClick={() => setIsSettingsOpen(true)}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-all cursor-pointer ${
+          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
             isSettingsOpen
               ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
               : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'

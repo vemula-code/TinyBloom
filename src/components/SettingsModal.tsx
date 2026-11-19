@@ -504,8 +504,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-[var(--color-card)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main)]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/55 app-backdrop-enter">
+      <div className="bg-[var(--color-card)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main)] app-sheet-enter">
         
         {/* Modal Header */}
         <div className="px-5 py-3.5 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)] shrink-0">
@@ -584,7 +584,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         )}
 
         {/* Department Content Area */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas)]">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area">
+          <div key={activeDepartment} className="app-view-enter">
           
           {/* ========================================================
               DEPARTMENT 1: BABY PROFILE
@@ -1492,6 +1493,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             </div>
           )}
 
+          </div>
         </div>
 
         {/* Modal Footer */}

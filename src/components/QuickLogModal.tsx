@@ -250,8 +250,8 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/60 backdrop-blur-xs overflow-hidden animate-in fade-in duration-200">
-      <div className="bg-[var(--color-card,#FFF9F0)] text-[var(--color-text-main,#303832)] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[var(--color-card-border,#91A98B)] w-full max-w-2xl overflow-hidden max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-6 transition-colors">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/55 overflow-hidden app-backdrop-enter">
+      <div className="bg-[var(--color-card,#FFF9F0)] text-[var(--color-text-main,#303832)] rounded-t-3xl sm:rounded-3xl shadow-2xl border border-[var(--color-card-border,#91A98B)] w-full max-w-2xl overflow-hidden max-h-[92vh] sm:max-h-[85vh] flex flex-col my-0 sm:my-6 app-sheet-enter">
         {/* Header */}
         <div className="px-5 sm:px-6 py-3.5 sm:py-4 border-b border-[var(--color-card-border,#91A98B)]/30 flex items-center justify-between bg-[var(--color-card)] shrink-0">
           <div>
@@ -278,7 +278,7 @@ export const QuickLogModal: React.FC<QuickLogModalProps> = ({
 
         {/* Form Body with scrollable content and sticky footer */}
         <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden min-h-0">
-          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1">
+          <div className="p-4 sm:p-6 space-y-4 sm:space-y-5 overflow-y-auto flex-1 app-scroll-area">
           {/* Date & Unit Segmented Switch */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
