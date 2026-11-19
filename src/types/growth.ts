@@ -16,6 +16,7 @@ export interface BabyProfile {
   name: string;
   gender: Gender;
   birthDate: string; // YYYY-MM-DD
+  birthDateConfirmed?: boolean; // true once explicitly set/confirmed by parent
   gestationalWeeks?: number; // e.g., 32 for preterm (default full term >= 37)
   birthWeightKg?: number;
   birthHeightCm?: number;

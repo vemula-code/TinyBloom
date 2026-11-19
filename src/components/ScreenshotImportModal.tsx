@@ -693,9 +693,14 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
       };
     });
 
+    const isDemoProfile = !profile || profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    const shouldOverrideBirthDate =
+      (applyDetectedProfile && Boolean(detectedBirthDate)) ||
+      ((isDemoProfile || !profile?.birthDateConfirmed) && isBirthDateNeedsInference);
+
     const detectedProf: Partial<BabyProfile> = {
-      ...(detectedBabyName ? { name: detectedBabyName } : {}),
-      birthDate: effectiveBirthDate,
+      ...(applyDetectedProfile && detectedBabyName ? { name: detectedBabyName } : {}),
+      ...(shouldOverrideBirthDate ? { birthDate: effectiveBirthDate } : {}),
     };
 
     onImport(formattedEntries, importMode, detectedProf);

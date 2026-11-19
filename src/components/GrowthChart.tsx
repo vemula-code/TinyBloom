@@ -387,16 +387,16 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       if (val !== undefined && val > 0) {
         let rawAge = typeof entry.ageMonths === 'number' && !isNaN(entry.ageMonths) ? entry.ageMonths : 0;
 
-        if (rawAge <= 0 && entry.date) {
-          if (babyBirthDate && entry.date > babyBirthDate) {
+        if (entry.date && /^\d{4}-\d{2}-\d{2}$/.test(entry.date)) {
+          if (babyBirthDate && /^\d{4}-\d{2}-\d{2}$/.test(babyBirthDate) && entry.date >= babyBirthDate) {
             rawAge = calculateAge(babyBirthDate, entry.date).exactMonths;
-          } else if (earliestDate && entry.date > earliestDate) {
+          } else if (rawAge <= 0 && earliestDate && entry.date > earliestDate) {
             rawAge = calculateAge(earliestDate, entry.date).exactMonths;
           }
         }
 
-        // Prevent stacking dots on Y-axis for subsequent entries
-        if (rawAge <= 0 && idx > 0) {
+        // Prevent stacking dots on Y-axis for subsequent entries with missing dates
+        if (rawAge <= 0 && idx > 0 && (!babyBirthDate || !entry.date || entry.date !== babyBirthDate)) {
           const prevPt = pts[pts.length - 1];
           if (prevPt) {
             rawAge = prevPt.entry.ageMonths + 2;

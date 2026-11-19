@@ -82,6 +82,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
       name: cleanName,
       gender,
       birthDate,
+      birthDateConfirmed: true,
       gestationalWeeks: gestationalWeeks < 37 ? gestationalWeeks : undefined,
       birthWeightKg: weightKg,
       birthHeightCm: heightCm,

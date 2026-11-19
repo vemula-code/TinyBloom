@@ -241,8 +241,16 @@ export function calculatePercentile(
   };
 }
 
+export function getLocalTodayIso(): string {
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, '0');
+  const d = String(now.getDate()).padStart(2, '0');
+  return `${y}-${m}-${d}`;
+}
+
 // Calculate age in months and days between two dates
-export function calculateAge(birthDateStr: string, targetDateStr: string = new Date().toISOString().split('T')[0]): {
+export function calculateAge(birthDateStr: string, targetDateStr: string = getLocalTodayIso()): {
   months: number;
   days: number;
   exactMonths: number;
@@ -259,12 +267,12 @@ export function calculateAge(birthDateStr: string, targetDateStr: string = new D
   const diffDays = Math.max(0, Math.floor(diffMs / (1000 * 60 * 60 * 24)));
   const exactMonths = Math.round((diffDays / 30.4375) * 10) / 10;
   
-  let months = target.getMonth() - birth.getMonth() + (12 * (target.getFullYear() - birth.getFullYear()));
-  let days = target.getDate() - birth.getDate();
+  let months = target.getUTCMonth() - birth.getUTCMonth() + (12 * (target.getUTCFullYear() - birth.getUTCFullYear()));
+  let days = target.getUTCDate() - birth.getUTCDate();
 
   if (days < 0) {
     months -= 1;
-    const prevMonthDays = new Date(target.getFullYear(), target.getMonth(), 0).getDate();
+    const prevMonthDays = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth(), 0)).getUTCDate();
     days += prevMonthDays;
   }
 

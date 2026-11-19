@@ -19,6 +19,7 @@ import {
   isPretermProfile,
   getCorrectedAgeMonths,
   formatAgeMonthsLabel,
+  getLocalTodayIso,
 } from './data/whoGrowthStandards';
 import { GrowthChart } from './components/GrowthChart';
 import { PercentileSummaryCards } from './components/PercentileSummaryCards';
@@ -75,6 +76,68 @@ function getBabyStageStorySummary(ageMonths: number): string {
   return 'Stories & Curious Play';
 }
 
+function isValidIsoDate(val: unknown): val is string {
+  return typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val);
+}
+
+function recalculateEntriesAge(list: GrowthEntry[], birthDate: string): GrowthEntry[] {
+  if (!isValidIsoDate(birthDate)) return list;
+  return list.map((entry) => {
+    if (isValidIsoDate(entry.date) && entry.date >= birthDate) {
+      const calc = calculateAge(birthDate, entry.date);
+      return {
+        ...entry,
+        ageMonths: Math.round(Math.max(0, calc.exactMonths) * 10) / 10,
+      };
+    }
+    return {
+      ...entry,
+      ageMonths: Math.round(Math.max(0, entry.ageMonths || 0) * 10) / 10,
+    };
+  });
+}
+
+function syncWorkspacesStorage(
+  nextProfile: BabyProfile,
+  nextEntries: GrowthEntry[],
+  nextUnit: MetricUnit
+): StoredBabyWorkspace[] {
+  try {
+    const raw = localStorage.getItem('tinybloom_workspaces_v1');
+    const prev: StoredBabyWorkspace[] = raw ? JSON.parse(raw) : [];
+    const safePrev = Array.isArray(prev) ? prev : [];
+    const filtered = safePrev.filter((w) => w?.profile?.id && w.profile.id !== nextProfile.id);
+    const isCurrentDemo = nextProfile.id === 'demo-sample-baby' && safePrev.length > 0;
+    const next: StoredBabyWorkspace[] = isCurrentDemo
+      ? safePrev
+      : [{ profile: nextProfile, entries: nextEntries, unit: nextUnit }, ...filtered.filter((w) => w.profile.id !== 'demo-sample-baby')];
+    localStorage.setItem('tinybloom_workspaces_v1', JSON.stringify(next));
+    return next;
+  } catch {
+    return [{ profile: nextProfile, entries: nextEntries, unit: nextUnit }];
+  }
+}
+
+function persistAppState(
+  nextProfile: BabyProfile,
+  nextEntries: GrowthEntry[],
+  nextUnit: MetricUnit,
+  options?: { markOnboarded?: boolean }
+): StoredBabyWorkspace[] {
+  try {
+    localStorage.setItem('tinybloom_profile', JSON.stringify(nextProfile));
+    localStorage.setItem('tinybloom_entries', JSON.stringify(nextEntries));
+    localStorage.setItem('tinybloom_unit', nextUnit);
+    if (options?.markOnboarded || nextProfile.id !== 'demo-sample-baby') {
+      localStorage.setItem('tinybloom_onboarded', 'true');
+      localStorage.removeItem('tinybloom_wiped');
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  return syncWorkspacesStorage(nextProfile, nextEntries, nextUnit);
+}
+
 export default function App() {
   // Local storage initialization with automatic migration from previous version
   const [profile, setProfile] = useState<BabyProfile>(() => {
@@ -83,19 +146,37 @@ export default function App() {
       const saved = localStorage.getItem('tinybloom_profile') || localStorage.getItem('naragrowth_profile');
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.birthDate) {
-          if (parsed.id === 'demo-sample-baby' && (!parsed.avatarUrl || parsed.avatarUrl.includes('baby_portrait'))) {
+        if (parsed && isValidIsoDate(parsed.birthDate)) {
+          const isDemo = parsed.id === 'demo-sample-baby';
+          if (isDemo && (!parsed.avatarUrl || parsed.avatarUrl.includes('baby_portrait'))) {
             parsed.avatarUrl = DEFAULT_AVATAR;
+          }
+          if (parsed.birthDateConfirmed === undefined && !isDemo && parsed.birthDate !== DEFAULT_PROFILE.birthDate) {
+            parsed.birthDateConfirmed = true;
           }
           return parsed;
         }
       }
+      if (!isWiped) {
+        const wsRaw = localStorage.getItem('tinybloom_workspaces_v1');
+        if (wsRaw) {
+          const wsList = JSON.parse(wsRaw);
+          if (Array.isArray(wsList) && wsList.length > 0 && isValidIsoDate(wsList[0]?.profile?.birthDate)) {
+            const recovered = { ...wsList[0].profile };
+            if (recovered.birthDateConfirmed === undefined && recovered.id !== 'demo-sample-baby') {
+              recovered.birthDateConfirmed = true;
+            }
+            return recovered;
+          }
+        }
+      }
       if (isWiped) {
         return {
-          id: `baby-fresh`,
+          id: 'baby-fresh',
           name: 'My Baby',
           gender: 'boy',
-          birthDate: new Date().toISOString().split('T')[0],
+          birthDate: getLocalTodayIso(),
+          birthDateConfirmed: false,
           avatarUrl: DEFAULT_AVATAR,
           notes: 'Private local baby tracker',
         };
@@ -114,6 +195,15 @@ export default function App() {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {
           return parsed;
+        }
+      }
+      if (!isWiped) {
+        const wsRaw = localStorage.getItem('tinybloom_workspaces_v1');
+        if (wsRaw) {
+          const wsList = JSON.parse(wsRaw);
+          if (Array.isArray(wsList) && wsList.length > 0 && Array.isArray(wsList[0]?.entries)) {
+            return wsList[0].entries;
+          }
         }
       }
       if (isWiped) {
@@ -230,14 +320,22 @@ export default function App() {
     } catch {}
   }, []);
 
-  // Proactively check and update service worker on mobile PWA so users never run stale versions
+  // Proactively check and update service worker & request persistent PWA storage on mobile
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+    if (typeof window === 'undefined') return;
+    if ('serviceWorker' in navigator) {
       navigator.serviceWorker.getRegistrations().then((registrations) => {
         for (const registration of registrations) {
           registration.update().catch(() => {});
         }
       });
+    }
+    if (navigator.storage && typeof navigator.storage.persist === 'function') {
+      navigator.storage.persisted?.().then((alreadyPersisted) => {
+        if (!alreadyPersisted) {
+          navigator.storage.persist().catch(() => {});
+        }
+      }).catch(() => {});
     }
   }, []);
 
@@ -334,31 +432,33 @@ export default function App() {
     initialWeightKg?: number,
     initialHeightCm?: number
   ) => {
-    setProfile(newProfile);
-    if (initialWeightKg || initialHeightCm) {
-      const birthEntry: GrowthEntry = {
-        id: `entry-${Date.now()}`,
-        date: newProfile.birthDate,
-        ageMonths: 0,
-        weightKg: initialWeightKg,
-        heightCm: initialHeightCm,
-        notes: `Birth Day! Welcome to the world ${newProfile.name}.`,
-        milestones: ['Birth Day'],
-        isPediatricianVisit: true,
-      };
-      setEntries([birthEntry]);
-    } else {
-      setEntries([]);
-    }
+    const confirmedProfile: BabyProfile = {
+      ...newProfile,
+      birthDateConfirmed: true,
+    };
+    const initialEntries: GrowthEntry[] =
+      initialWeightKg || initialHeightCm
+        ? [
+            {
+              id: `entry-${Date.now()}`,
+              date: confirmedProfile.birthDate,
+              ageMonths: 0,
+              weightKg: initialWeightKg,
+              heightCm: initialHeightCm,
+              notes: `Birth Day! Welcome to the world ${confirmedProfile.name}.`,
+              milestones: ['Birth Day'],
+              isPediatricianVisit: true,
+            },
+          ]
+        : [];
 
-    try {
-      localStorage.setItem('tinybloom_onboarded', 'true');
-    } catch (e) {
-      console.error(e);
-    }
+    const nextWorkspaces = persistAppState(confirmedProfile, initialEntries, unit, { markOnboarded: true });
+    setProfile(confirmedProfile);
+    setEntries(initialEntries);
+    setWorkspaces(nextWorkspaces);
 
     setIsOnboardingOpen(false);
-    setToastMessage(`🌱 Welcome ${newProfile.name} to TinyBloom!`);
+    setToastMessage(`🌱 Welcome ${confirmedProfile.name} to TinyBloom!`);
     setTimeout(() => setToastMessage(null), 4000);
   };
 
@@ -366,7 +466,10 @@ export default function App() {
     setProfile(DEFAULT_PROFILE);
     setEntries(DEFAULT_GROWTH_ENTRIES);
     try {
+      localStorage.setItem('tinybloom_profile', JSON.stringify(DEFAULT_PROFILE));
+      localStorage.setItem('tinybloom_entries', JSON.stringify(DEFAULT_GROWTH_ENTRIES));
       localStorage.setItem('tinybloom_onboarded', 'true');
+      localStorage.removeItem('tinybloom_wiped');
     } catch (e) {
       console.error(e);
     }
@@ -375,7 +478,11 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 4500);
   };
 
-  // Sync active baby into multi-child workspaces store
+  // Keep latest state ref so lifecycle flush events always write current data before PWA suspension
+  const latestStateRef = useRef({ profile, entries, unit });
+  latestStateRef.current = { profile, entries, unit };
+
+  // Sync active baby into localStorage and multi-child workspaces store
   useEffect(() => {
     try {
       localStorage.setItem('tinybloom_profile', JSON.stringify(profile));
@@ -416,6 +523,31 @@ export default function App() {
     });
   }, [profile, entries, unit]);
 
+  // Flush synchronously when iOS/Android PWA is backgrounded, hidden, or closed
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const flushNow = () => {
+      const { profile: p, entries: e, unit: u } = latestStateRef.current;
+      const isWipedAndEmpty =
+        localStorage.getItem('tinybloom_wiped') === 'true' && e.length === 0 && !p.birthDateConfirmed;
+      if (isWipedAndEmpty) return;
+      persistAppState(p, e, u, { markOnboarded: Boolean(p.birthDateConfirmed || e.length > 0) });
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        flushNow();
+      }
+    };
+    window.addEventListener('pagehide', flushNow);
+    window.addEventListener('beforeunload', flushNow);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('pagehide', flushNow);
+      window.removeEventListener('beforeunload', flushNow);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
+
   // Close profile switcher popover on outside click
   useEffect(() => {
     if (!isProfileSwitcherOpen) return;
@@ -429,20 +561,25 @@ export default function App() {
   }, [isProfileSwitcherOpen]);
 
   const handleSwitchChild = (workspace: StoredBabyWorkspace) => {
+    const nextUnit = workspace.unit || unit;
+    const nextEntries = recalculateEntriesAge(workspace.entries || [], workspace.profile.birthDate);
+    const nextWorkspaces = persistAppState(workspace.profile, nextEntries, nextUnit, { markOnboarded: true });
     setProfile(workspace.profile);
-    setEntries(workspace.entries || []);
+    setEntries(nextEntries);
     if (workspace.unit) {
       setUnit(workspace.unit);
     }
+    setWorkspaces(nextWorkspaces);
     setIsProfileSwitcherOpen(false);
     setToastMessage(`Switched to ${workspace.profile.name}`);
     setTimeout(() => setToastMessage(null), 2500);
   };
 
-  // Auto-heal check on initial load for previously imported entries where ageMonths was stuck at 0
+  // Startup age reconciliation: strictly NEVER overwrite a user's confirmed DOB!
+  // Only sync missing/stale entry ageMonths to match the stored birthDate.
   useEffect(() => {
     if (entries.length === 0) return;
-    const isDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    const isDemo = profile.id === 'demo-sample-baby';
     if (isDemo) return;
 
     const earliestEntryDate = entries.reduce(
@@ -450,42 +587,48 @@ export default function App() {
       ''
     );
 
-    const todayIso = new Date().toISOString().split('T')[0];
-    const hasYAxisBug =
-      (earliestEntryDate && profile.birthDate >= earliestEntryDate) ||
-      profile.birthDate >= todayIso ||
-      profile.birthDate === DEFAULT_PROFILE.birthDate ||
-      (entries.length > 1 && entries.every((e) => !e.ageMonths || e.ageMonths === 0));
+    const hasConfirmedDob =
+      profile.birthDateConfirmed !== false &&
+      isValidIsoDate(profile.birthDate) &&
+      profile.birthDate !== DEFAULT_PROFILE.birthDate;
 
-    if (hasYAxisBug && earliestEntryDate) {
-      let inferredBirth = profile.birthDate;
+    // Only repair birthDate if it is explicitly unconfirmed AND missing/invalid or strictly later than earliest entry
+    let effectiveBirthDate = profile.birthDate;
+    if (
+      !hasConfirmedDob &&
+      earliestEntryDate &&
+      (!isValidIsoDate(profile.birthDate) ||
+        profile.birthDate === DEFAULT_PROFILE.birthDate ||
+        profile.birthDate > earliestEntryDate)
+    ) {
       const entryWithAge = entries.find((e) => typeof e.ageMonths === 'number' && e.ageMonths > 0);
-
       if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
-        const ms = new Date(entryWithAge.date).getTime() - (entryWithAge.ageMonths * 30.4375 * 86400000);
-        inferredBirth = new Date(ms).toISOString().split('T')[0];
+        const ms = new Date(entryWithAge.date).getTime() - entryWithAge.ageMonths * 30.4375 * 86400000;
+        effectiveBirthDate = new Date(ms).toISOString().split('T')[0];
       } else {
-        inferredBirth = earliestEntryDate;
+        effectiveBirthDate = earliestEntryDate;
       }
+      const nextProf = { ...profile, birthDate: effectiveBirthDate };
+      setProfile(nextProf);
+      persistAppState(nextProf, entries, unit, { markOnboarded: true });
+    }
 
-      const healedEntries = entries.map((entry) => {
-        let age = entry.ageMonths;
-        const calc = calculateAge(inferredBirth, entry.date);
-        if (calc.exactMonths > 0) {
-          age = calc.exactMonths;
-        } else if ((age === undefined || age <= 0) && entry.date > earliestEntryDate) {
-          age = calculateAge(earliestEntryDate, entry.date).exactMonths;
+    if (isValidIsoDate(effectiveBirthDate)) {
+      let anyAgeChanged = false;
+      const syncedEntries = entries.map((entry) => {
+        if (isValidIsoDate(entry.date) && entry.date >= effectiveBirthDate) {
+          const expectedAge = Math.round(Math.max(0, calculateAge(effectiveBirthDate, entry.date).exactMonths) * 10) / 10;
+          if (Math.abs((entry.ageMonths || 0) - expectedAge) >= 0.05) {
+            anyAgeChanged = true;
+            return { ...entry, ageMonths: expectedAge };
+          }
         }
-        return {
-          ...entry,
-          ageMonths: Math.round((age || 0) * 10) / 10,
-        };
+        return entry;
       });
-
-      if (inferredBirth !== profile.birthDate) {
-        setProfile((prev) => ({ ...prev, birthDate: inferredBirth }));
+      if (anyAgeChanged) {
+        setEntries(syncedEntries);
+        persistAppState({ ...profile, birthDate: effectiveBirthDate }, syncedEntries, unit, { markOnboarded: true });
       }
-      setEntries(healedEntries);
     }
   }, []);
 
@@ -499,11 +642,14 @@ export default function App() {
         id: `baby-${Date.now()}`,
         name: 'My Baby',
         gender: 'boy',
-        birthDate: new Date().toISOString().split('T')[0],
+        birthDate: getLocalTodayIso(),
+        birthDateConfirmed: false,
         notes: 'Track your baby’s milestones, weight, and height curves.',
       };
+      const nextWorkspaces = persistAppState(freshProf, [], unit, { markOnboarded: true });
       setProfile(freshProf);
       setEntries([]);
+      setWorkspaces(nextWorkspaces);
       setToastMessage('👶 Started a clean tracker for a new baby!');
       window.history.replaceState({}, document.title, window.location.pathname);
       const timer = setTimeout(() => setToastMessage(null), 5000);
@@ -532,56 +678,35 @@ export default function App() {
         name: result.profile.name || (isRecipientDemo ? 'My Baby' : profile.name),
         gender: (result.profile.gender as 'boy' | 'girl') || profile.gender,
         birthDate: result.profile.birthDate || profile.birthDate,
+        birthDateConfirmed: Boolean(result.profile.birthDate || profile.birthDateConfirmed),
         avatarUrl: profile.avatarUrl || DEFAULT_AVATAR,
         notes: result.profile.notes || profile.notes,
       };
 
-      setProfile(targetProfile);
-
-      // 3. Prepare entries: If recipient was on sample demo fixtures, discard demo entries and load partner's real data
-      let finalEntries: GrowthEntry[] = [];
-      setEntries((prev) => {
-        let merged: GrowthEntry[];
-        if (isRecipientDemo) {
-          merged = [...result.entries];
-        } else {
-          merged = [...prev];
-          for (const incoming of result.entries) {
-            const idx = merged.findIndex((m) => m.id === incoming.id || m.date === incoming.date);
-            if (idx >= 0) {
-              merged[idx] = { ...merged[idx], ...incoming };
-            } else {
-              merged.push(incoming);
-            }
+      const effectiveUnit = result.unit || unit;
+      let merged: GrowthEntry[];
+      if (isRecipientDemo) {
+        merged = [...result.entries];
+      } else {
+        merged = [...entries];
+        for (const incoming of result.entries) {
+          const idx = merged.findIndex((m) => m.id === incoming.id || m.date === incoming.date);
+          if (idx >= 0) {
+            merged[idx] = { ...merged[idx], ...incoming };
+          } else {
+            merged.push(incoming);
           }
         }
-        merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        finalEntries = merged;
-        try {
-          localStorage.setItem('tinybloom_entries', JSON.stringify(merged));
-          localStorage.removeItem('tinybloom_wiped');
-        } catch (e) {
-          console.error(e);
-        }
-        return merged;
-      });
+      }
+      merged.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const syncedMerged = recalculateEntriesAge(merged, targetProfile.birthDate);
+      const nextWorkspaces = persistAppState(targetProfile, syncedMerged, effectiveUnit, { markOnboarded: true });
 
-      // 4. Sync measurement unit if provided
+      setProfile(targetProfile);
+      setEntries(syncedMerged);
+      setWorkspaces(nextWorkspaces);
       if (result.unit) {
         setUnit(result.unit);
-        try {
-          localStorage.setItem('tinybloom_unit', result.unit);
-        } catch (e) {
-          console.error(e);
-        }
-      }
-
-      // 5. Persist profile immediately to localStorage
-      try {
-        localStorage.setItem('tinybloom_profile', JSON.stringify(targetProfile));
-        localStorage.removeItem('tinybloom_wiped');
-      } catch (e) {
-        console.error(e);
       }
 
       // 6. Close any onboarding modal and show PartnerSyncSuccessModal
@@ -598,50 +723,56 @@ export default function App() {
 
   // Handlers for entries
   const handleSaveEntry = (newEntry: GrowthEntry) => {
-    const isCurrentDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    const isCurrentDemo = profile.id === 'demo-sample-baby';
+    const targetProfile: BabyProfile = isCurrentDemo
+      ? {
+          id: `baby-${Date.now()}`,
+          name: profile.name === 'Sample Baby' ? 'My Baby' : profile.name,
+          gender: profile.gender,
+          birthDate: profile.birthDate,
+          gestationalWeeks: profile.gestationalWeeks,
+          birthDateConfirmed: profile.birthDateConfirmed ?? false,
+          avatarUrl: profile.avatarUrl || DEFAULT_AVATAR,
+          notes: 'Private local baby tracker',
+        }
+      : profile;
+
+    const normalizedEntry: GrowthEntry =
+      isValidIsoDate(targetProfile.birthDate) && isValidIsoDate(newEntry.date) && newEntry.date >= targetProfile.birthDate
+        ? {
+            ...newEntry,
+            ageMonths: Math.round(Math.max(0, calculateAge(targetProfile.birthDate, newEntry.date).exactMonths) * 10) / 10,
+          }
+        : newEntry;
+
+    let nextEntries: GrowthEntry[];
     if (isCurrentDemo) {
-      // If currently on sample demo baby and parent logs their first real measurement:
-      // Start real baby profile and clear sample demo fixtures!
-      const realProfile: BabyProfile = {
-        id: `baby-${Date.now()}`,
-        name: 'My Baby',
-        gender: profile.gender,
-        birthDate: profile.birthDate,
-        notes: 'Private local baby tracker',
-      };
-      setProfile(realProfile);
-      setEntries([newEntry]);
-      try {
-        localStorage.setItem('tinybloom_profile', JSON.stringify(realProfile));
-        localStorage.setItem('tinybloom_entries', JSON.stringify([newEntry]));
-        localStorage.setItem('tinybloom_onboarded', 'true');
-        localStorage.removeItem('tinybloom_wiped');
-      } catch (e) {
-        console.error(e);
+      nextEntries = [normalizedEntry];
+      setProfile(targetProfile);
+    } else {
+      const index = entries.findIndex((e) => e.id === normalizedEntry.id);
+      if (index >= 0) {
+        nextEntries = [...entries];
+        nextEntries[index] = normalizedEntry;
+      } else {
+        nextEntries = [...entries, normalizedEntry];
       }
-      setEditingEntry(null);
-      setToastMessage('🌱 First growth record logged for your baby!');
-      setTimeout(() => setToastMessage(null), 3500);
-      return;
+      nextEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     }
 
-    setEntries((prev) => {
-      const index = prev.findIndex((e) => e.id === newEntry.id);
-      if (index >= 0) {
-        const updated = [...prev];
-        updated[index] = newEntry;
-        return updated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-      }
-      const added = [...prev, newEntry];
-      return added.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    });
+    const nextWorkspaces = persistAppState(targetProfile, nextEntries, unit, { markOnboarded: true });
+    setEntries(nextEntries);
+    setWorkspaces(nextWorkspaces);
     setEditingEntry(null);
-    setToastMessage('Growth record saved to your device!');
-    setTimeout(() => setToastMessage(null), 3000);
+    setToastMessage(isCurrentDemo ? '🌱 First growth record logged for your baby!' : 'Growth record saved to your device!');
+    setTimeout(() => setToastMessage(null), isCurrentDemo ? 3500 : 3000);
   };
 
   const handleDeleteEntry = (id: string) => {
-    setEntries((prev) => prev.filter((e) => e.id !== id));
+    const nextEntries = entries.filter((e) => e.id !== id);
+    const nextWorkspaces = persistAppState(profile, nextEntries, unit);
+    setEntries(nextEntries);
+    setWorkspaces(nextWorkspaces);
     setToastMessage('Measurement deleted.');
     setTimeout(() => setToastMessage(null), 3000);
   };
@@ -675,7 +806,8 @@ export default function App() {
       id: `baby-${Date.now()}`,
       name: 'My Baby',
       gender: 'boy',
-      birthDate: new Date().toISOString().split('T')[0],
+      birthDate: getLocalTodayIso(),
+      birthDateConfirmed: false,
       avatarUrl: DEFAULT_AVATAR,
       notes: 'Private baby growth tracker',
     };
@@ -693,26 +825,35 @@ export default function App() {
   };
 
   const handleImportData = (newProfile: BabyProfile, newEntries: GrowthEntry[]) => {
-    setProfile(newProfile);
-    setEntries(newEntries);
+    const confirmedProfile: BabyProfile = {
+      ...newProfile,
+      birthDateConfirmed: Boolean(newProfile.birthDateConfirmed ?? isValidIsoDate(newProfile.birthDate)),
+    };
+    const syncedEntries = recalculateEntriesAge(newEntries, confirmedProfile.birthDate);
+    const nextWorkspaces = persistAppState(confirmedProfile, syncedEntries, unit, { markOnboarded: true });
+    setProfile(confirmedProfile);
+    setEntries(syncedEntries);
+    setWorkspaces(nextWorkspaces);
   };
 
-  const handleSaveProfile = (updatedProfile: BabyProfile) => {
+  const handleSaveProfile = (updatedProfile: BabyProfile, silent = false) => {
     const isPreviousDemo = !updatedProfile.id || updatedProfile.id === 'demo-sample-baby' || updatedProfile.id === 'baby-main';
     const cleanProfile: BabyProfile = {
       ...updatedProfile,
       id: isPreviousDemo ? `baby-${Date.now()}` : updatedProfile.id,
+      birthDateConfirmed: true,
     };
+    const recalculatedEntries = recalculateEntriesAge(entries, cleanProfile.birthDate);
+    const nextWorkspaces = persistAppState(cleanProfile, recalculatedEntries, unit, { markOnboarded: true });
+
     setProfile(cleanProfile);
-    try {
-      localStorage.setItem('tinybloom_profile', JSON.stringify(cleanProfile));
-      localStorage.setItem('tinybloom_onboarded', 'true');
-      localStorage.removeItem('tinybloom_wiped');
-    } catch (e) {
-      console.error(e);
+    setEntries(recalculatedEntries);
+    setWorkspaces(nextWorkspaces);
+
+    if (!silent) {
+      setToastMessage(`✨ Saved details for ${cleanProfile.name}!`);
+      setTimeout(() => setToastMessage(null), 3500);
     }
-    setToastMessage(`✨ Saved details for ${cleanProfile.name}!`);
-    setTimeout(() => setToastMessage(null), 3500);
   };
 
   const handleImportPastEntries = (
@@ -720,7 +861,7 @@ export default function App() {
     mode: 'merge' | 'replace',
     detectedProfile?: Partial<BabyProfile>
   ) => {
-    const isCurrentDemo = profile.id === 'demo-sample-baby' || profile.name === 'Sample Baby';
+    const isCurrentDemo = profile.id === 'demo-sample-baby';
 
     let finalEntries: GrowthEntry[] = [];
     if (mode === 'replace' || isCurrentDemo) {
@@ -750,10 +891,7 @@ export default function App() {
       );
     }
 
-    setEntries(finalEntries);
-
-    let updatedProfile = { ...profile };
-    let profileChanged = false;
+    let updatedProfile: BabyProfile = { ...profile };
 
     // Detect earliest checkup date among final entries
     const earliestCheckupDate = finalEntries.reduce(
@@ -766,25 +904,29 @@ export default function App() {
       if (updatedProfile.name === 'Sample Baby') {
         updatedProfile.name = detectedProfile?.name || 'My Baby';
       }
-      profileChanged = true;
     }
     if (detectedProfile?.name && (updatedProfile.name === 'My Baby' || updatedProfile.name === 'Sample Baby')) {
       updatedProfile.name = detectedProfile.name;
-      profileChanged = true;
     }
 
-    // Determine birthDate: if current birth date is default, today, or later than earliest checkup, infer accurately
-    const todayIso = new Date().toISOString().split('T')[0];
-    const isBirthDateNeedsInference =
-      isCurrentDemo ||
-      !updatedProfile.birthDate ||
-      updatedProfile.birthDate === DEFAULT_PROFILE.birthDate ||
-      updatedProfile.birthDate >= todayIso ||
-      (earliestCheckupDate && updatedProfile.birthDate >= earliestCheckupDate);
+    // Strictly respect confirmed user DOB unless user explicitly chose to apply a detected DOB from screenshot/import
+    const todayIso = getLocalTodayIso();
+    const hasConfirmedDob =
+      updatedProfile.birthDateConfirmed === true &&
+      isValidIsoDate(updatedProfile.birthDate) &&
+      updatedProfile.birthDate !== DEFAULT_PROFILE.birthDate;
 
-    if (detectedProfile?.birthDate) {
+    const isBirthDateNeedsInference =
+      !hasConfirmedDob &&
+      (isCurrentDemo ||
+        !isValidIsoDate(updatedProfile.birthDate) ||
+        updatedProfile.birthDate === DEFAULT_PROFILE.birthDate ||
+        updatedProfile.birthDate > todayIso ||
+        (earliestCheckupDate && updatedProfile.birthDate > earliestCheckupDate));
+
+    if (detectedProfile?.birthDate && isValidIsoDate(detectedProfile.birthDate)) {
       updatedProfile.birthDate = detectedProfile.birthDate;
-      profileChanged = true;
+      updatedProfile.birthDateConfirmed = true;
     } else if (isBirthDateNeedsInference && earliestCheckupDate) {
       const entryWithAge = finalEntries.find((e) => typeof e.ageMonths === 'number' && e.ageMonths > 0);
       if (entryWithAge && typeof entryWithAge.ageMonths === 'number') {
@@ -793,7 +935,7 @@ export default function App() {
       } else {
         updatedProfile.birthDate = earliestCheckupDate;
       }
-      profileChanged = true;
+      updatedProfile.birthDateConfirmed = true;
     }
 
     // Ensure all entries have accurate ageMonths relative to the effective birthDate
@@ -801,37 +943,23 @@ export default function App() {
       const calculatedAge = calculateAge(updatedProfile.birthDate, entry.date);
       let effectiveAge = calculatedAge.exactMonths;
 
-      // If calculatedAge is <= 0 but entry.ageMonths was extracted and valid, keep it!
-      if (effectiveAge <= 0 && typeof entry.ageMonths === 'number' && entry.ageMonths > 0) {
+      // If calculatedAge is <= 0 (e.g., entry is prior to DOB or birth date) and valid extracted age exists, keep it
+      if (effectiveAge <= 0 && entry.date !== updatedProfile.birthDate && typeof entry.ageMonths === 'number' && entry.ageMonths > 0) {
         effectiveAge = entry.ageMonths;
-      } else if (effectiveAge <= 0 && earliestCheckupDate && entry.date > earliestCheckupDate) {
+      } else if (effectiveAge < 0 && earliestCheckupDate && entry.date > earliestCheckupDate) {
         effectiveAge = calculateAge(earliestCheckupDate, entry.date).exactMonths;
       }
 
       return {
         ...entry,
-        ageMonths: Math.round(effectiveAge * 10) / 10,
+        ageMonths: Math.round(Math.max(0, effectiveAge) * 10) / 10,
       };
     });
 
+    const nextWorkspaces = persistAppState(updatedProfile, finalEntries, unit, { markOnboarded: true });
+    setProfile(updatedProfile);
     setEntries(finalEntries);
-
-    if (profileChanged) {
-      setProfile(updatedProfile);
-      try {
-        localStorage.setItem('tinybloom_profile', JSON.stringify(updatedProfile));
-      } catch (e) {
-        console.error(e);
-      }
-    }
-
-    try {
-      localStorage.setItem('tinybloom_entries', JSON.stringify(finalEntries));
-      localStorage.setItem('tinybloom_onboarded', 'true');
-      localStorage.removeItem('tinybloom_wiped');
-    } catch (e) {
-      console.error(e);
-    }
+    setWorkspaces(nextWorkspaces);
 
     // Compute metric breakdown for completion modal
     const headCount = newEntries.filter((e) => e.headCircumferenceCm !== undefined && e.headCircumferenceCm > 0).length;

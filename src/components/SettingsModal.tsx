@@ -5,7 +5,7 @@ import { BabyAvatar } from './BabyAvatar';
 import { PWAInstallButton } from './PWAInstallButton';
 import { MeasurementHistory } from './MeasurementHistory';
 import { PRESET_AVATARS, DEFAULT_AVATAR } from '../data/defaultData';
-import { kgToLbsOz, cmToInches } from '../data/whoGrowthStandards';
+import { kgToLbsOz, cmToInches, getLocalTodayIso } from '../data/whoGrowthStandards';
 import { generateSyncUrl } from '../utils/syncPayload';
 import {
   X,
@@ -40,7 +40,7 @@ interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
   profile: BabyProfile;
-  onSaveProfile: (profile: BabyProfile) => void;
+  onSaveProfile: (profile: BabyProfile, silent?: boolean) => void;
   entries: GrowthEntry[];
   onImportData: (profile: BabyProfile, entries: GrowthEntry[]) => void;
   onResetData: () => void;
@@ -144,30 +144,49 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleSubmitProfile = (e: React.FormEvent) => {
-    e.preventDefault();
-    const cleanId = (!profile.id || profile.id === 'demo-sample-baby' || profile.id === 'baby-main')
-      ? `baby-${Date.now()}`
-      : profile.id;
+  const isValidDateStr = (val: string) => /^\d{4}-\d{2}-\d{2}$/.test(val);
 
-    const newProfile: BabyProfile = {
+  const buildUpdatedProfile = (overrides?: Partial<BabyProfile>): BabyProfile => {
+    const cleanId =
+      !profile.id || profile.id === 'demo-sample-baby' || profile.id === 'baby-main'
+        ? `baby-${Date.now()}`
+        : profile.id;
+    const effectiveWeeks = overrides?.gestationalWeeks ?? gestationalWeeks;
+    const effectiveBirthDate = overrides?.birthDate ?? birthDate;
+    return {
       ...profile,
       id: cleanId,
-      name: name.trim() || 'My Baby',
-      gender,
-      birthDate,
-      gestationalWeeks: gestationalWeeks < 37 ? gestationalWeeks : undefined,
-      avatarUrl,
+      name: (overrides?.name ?? name).trim() || 'My Baby',
+      gender: overrides?.gender ?? gender,
+      birthDate: isValidDateStr(effectiveBirthDate) ? effectiveBirthDate : profile.birthDate,
+      gestationalWeeks: effectiveWeeks < 37 ? effectiveWeeks : undefined,
+      avatarUrl: overrides?.avatarUrl ?? avatarUrl,
+      birthDateConfirmed: true,
     };
+  };
 
-    onSaveProfile(newProfile);
-    try {
-      localStorage.setItem('tinybloom_profile', JSON.stringify(newProfile));
-      localStorage.setItem('tinybloom_onboarded', 'true');
-      localStorage.removeItem('tinybloom_wiped');
-    } catch (err) {
-      console.error(err);
+  const flushPendingProfileEdits = () => {
+    const hasPendingChanges =
+      (name.trim() || 'My Baby') !== profile.name ||
+      gender !== profile.gender ||
+      (isValidDateStr(birthDate) && birthDate !== profile.birthDate) ||
+      gestationalWeeks !== (profile.gestationalWeeks || 40) ||
+      avatarUrl !== (profile.avatarUrl || DEFAULT_AVATAR);
+
+    if (hasPendingChanges) {
+      onSaveProfile(buildUpdatedProfile(), true);
     }
+  };
+
+  const handleCloseModal = () => {
+    flushPendingProfileEdits();
+    onClose();
+  };
+
+  const handleSubmitProfile = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newProfile = buildUpdatedProfile();
+    onSaveProfile(newProfile, false);
     setStatusMsg(`✨ ${newProfile.name}’s profile saved to your device!`);
     setTimeout(() => setStatusMsg(''), 3000);
   };
@@ -175,13 +194,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // Generate and copy private Co-Parent sync link
   const handleCopySyncLink = async () => {
     try {
-      const activeProf: BabyProfile = {
-        ...profile,
-        name: name.trim() || profile.name,
-        gender,
-        birthDate,
-        avatarUrl,
-      };
+      const activeProf: BabyProfile = buildUpdatedProfile();
       const url = generateSyncUrl(activeProf, entries, unit);
       if (navigator.clipboard && navigator.clipboard.writeText) {
         await navigator.clipboard.writeText(url);
@@ -199,13 +212,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   // Direct 1-tap share via WhatsApp, Messages, etc.
   const handleShareSyncLink = async () => {
     try {
-      const activeProf: BabyProfile = {
-        ...profile,
-        name: name.trim() || profile.name,
-        gender,
-        birthDate,
-        avatarUrl,
-      };
+      const activeProf: BabyProfile = buildUpdatedProfile();
       const url = generateSyncUrl(activeProf, entries, unit);
       if (navigator.share) {
         await navigator.share({
@@ -254,13 +261,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       app: 'TinyBloom',
       version: '2.2',
       exportedAt: new Date().toISOString(),
-      profile: {
-        ...profile,
-        name,
-        gender,
-        birthDate,
-        avatarUrl,
-      },
+      profile: buildUpdatedProfile(),
       entries,
     };
 
@@ -270,9 +271,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `tinybloom-${(name || 'baby').toLowerCase().replace(/\s+/g, '-')}-backup-${
-      new Date().toISOString().split('T')[0]
-    }.json`;
+    a.download = `tinybloom-${(name || 'baby').toLowerCase().replace(/\s+/g, '-')}-backup-${getLocalTodayIso()}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -374,7 +373,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           id: parsed.profile?.id || profile.id,
           name: parsed.profile?.name || 'My Baby',
           gender: parsed.profile?.gender || 'boy',
-          birthDate: parsed.profile?.birthDate || new Date().toISOString().split('T')[0],
+          birthDate: parsed.profile?.birthDate || getLocalTodayIso(),
+          gestationalWeeks: parsed.profile?.gestationalWeeks,
+          birthDateConfirmed: Boolean(parsed.profile?.birthDate),
           avatarUrl: parsed.profile?.avatarUrl || DEFAULT_AVATAR,
           notes: parsed.profile?.notes || '',
         };
@@ -422,7 +423,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
         id: `baby-${Date.now()}`,
         name: 'My Baby',
         gender: 'boy',
-        birthDate: new Date().toISOString().split('T')[0],
+        birthDate: getLocalTodayIso(),
+        birthDateConfirmed: false,
         avatarUrl: DEFAULT_AVATAR,
         notes: 'Private baby growth tracker',
       };
@@ -431,7 +433,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
     setName('My Baby');
     setGender('boy');
-    setBirthDate(new Date().toISOString().split('T')[0]);
+    setBirthDate(getLocalTodayIso());
     setAvatarUrl(DEFAULT_AVATAR);
     setShowDeleteConfirm(false);
     setStatusMsg('🧹 All baby records have been completely erased from this device.');
@@ -520,7 +522,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCloseModal}
             className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors"
             aria-label="Close settings"
           >
@@ -537,6 +539,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 key={dept.id}
                 type="button"
                 onClick={() => {
+                  if (activeDepartment === 'profile' && dept.id !== 'profile') {
+                    flushPendingProfileEdits();
+                  }
                   setActiveDepartment(dept.id);
                   setShowDeleteConfirm(false);
                 }}
@@ -698,13 +703,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                   {/* Birth Date */}
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
-                      Date of Birth
-                    </label>
+                    <div className="flex items-center justify-between">
+                      <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                        Date of Birth
+                      </label>
+                      {isValidDateStr(birthDate) && birthDate === profile.birthDate && profile.birthDateConfirmed && (
+                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                          Saved on device ✓
+                        </span>
+                      )}
+                    </div>
                     <input
                       type="date"
                       value={birthDate}
-                      onChange={(e) => setBirthDate(e.target.value)}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setBirthDate(val);
+                        if (isValidDateStr(val) && val !== profile.birthDate) {
+                          onSaveProfile(buildUpdatedProfile({ birthDate: val }), true);
+                        }
+                      }}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
                       required
                     />
@@ -1483,7 +1501,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </span>
           <button
             type="button"
-            onClick={onClose}
+            onClick={handleCloseModal}
             className="px-4 py-1.5 rounded-xl bg-[var(--color-surface)] hover:opacity-85 font-bold text-[var(--color-text-main)] transition-all cursor-pointer"
           >
             Close
