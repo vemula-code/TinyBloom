@@ -95,11 +95,11 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/55 overflow-hidden app-backdrop-enter"
       role="dialog"
       aria-modal="true"
     >
-      <div className="bg-[var(--color-card)] rounded-3xl max-w-xl w-full max-h-[92vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-xl w-full max-h-[90dvh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col app-sheet-enter">
         
         {/* Header Hero */}
         <div className="relative bg-[var(--color-primary-light)] p-5 sm:p-6 border-b border-[var(--color-card-border)] shrink-0 text-center sm:text-left">
@@ -130,7 +130,7 @@ export const OnboardingModal: React.FC<OnboardingModalProps> = ({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 bg-[var(--color-canvas)]">
+        <div className="p-5 sm:p-6 space-y-5 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area">
           
           {mode === 'choose' ? (
             <div className="space-y-4">

@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
   BabyProfile,
   ChartType,
@@ -444,6 +444,27 @@ export default function App() {
     }
   });
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const hasAnyModalOpen =
+    isLogModalOpen ||
+    isReportOpen ||
+    isImportModalOpen ||
+    isHeartModalOpen ||
+    isPrivateGuaranteeOpen ||
+    isScreenshotImportOpen ||
+    isPartnerSyncOpen ||
+    Boolean(syncSuccessData) ||
+    importSuccessData !== null ||
+    isOnboardingOpen;
+
+  useEffect(() => {
+    if (typeof document === 'undefined' || !hasAnyModalOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = prevOverflow;
+    };
+  }, [hasAnyModalOpen]);
 
   const handleCompleteOnboarding = (
     newProfile: BabyProfile,
@@ -1025,9 +1046,13 @@ export default function App() {
   const pretermActive = isPretermProfile(profile.gestationalWeeks);
   const correctedAgeMonths = getCorrectedAgeMonths(currentAge.exactMonths, profile.gestationalWeeks);
 
-  const recentThreeEntries = [...entries]
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-    .slice(0, 3);
+  const recentThreeEntries = useMemo(
+    () =>
+      [...entries]
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .slice(0, 3),
+    [entries]
+  );
 
   return (
     <div className="min-h-dvh w-full bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24">

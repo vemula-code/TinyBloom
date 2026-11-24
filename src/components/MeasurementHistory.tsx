@@ -160,8 +160,8 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
 
       {/* Delete Confirmation Alert Modal */}
       {confirmDeleteId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] max-w-sm w-full shadow-2xl space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/55 overflow-hidden app-backdrop-enter">
+          <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] max-w-sm w-full shadow-2xl space-y-4 app-sheet-enter">
             <div className="w-10 h-10 rounded-2xl bg-red-100 dark:bg-red-950/60 text-red-600 dark:text-red-400 flex items-center justify-center">
               <AlertCircle className="w-5 h-5" />
             </div>

@@ -103,12 +103,12 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/55 overflow-hidden app-backdrop-enter"
       role="dialog"
       aria-modal="true"
       aria-labelledby="partner-sync-title"
     >
-      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full max-h-[90dvh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col app-sheet-enter">
         {/* Header Banner */}
         <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
           <button
@@ -137,7 +137,7 @@ export const PartnerSyncModal: React.FC<PartnerSyncModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto max-h-[75vh] bg-[var(--color-canvas)]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area">
           {/* Quick Explanation */}
           <div className="p-3.5 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2">
             <p className="text-xs text-[var(--color-text-main)] leading-relaxed">

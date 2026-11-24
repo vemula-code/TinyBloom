@@ -104,6 +104,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   const [statusMsg, setStatusMsg] = useState<string>('');
   const [errorMsg, setErrorMsg] = useState<string>('');
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [pendingRestoreBackup, setPendingRestoreBackup] = useState<{
+    profile: BabyProfile;
+    entries: GrowthEntry[];
+  } | null>(null);
 
   // Photo & Document access permission mode (disabled by default for strict mobile privacy)
   const [photoPermission, setPhotoPermission] = useState<PhotoPermissionMode>(() => {
@@ -391,25 +395,27 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           notes: parsed.profile?.notes || '',
         };
 
-        if (
-          window.confirm(
-            `Restore backup with ${validEntries.length} measurements for ${newProfile.name}?`
-          )
-        ) {
-          onImportData(newProfile, validEntries);
-          setName(newProfile.name);
-          setGender(newProfile.gender);
-          setBirthDate(newProfile.birthDate);
-          setAvatarUrl(newProfile.avatarUrl || DEFAULT_AVATAR);
-          setStatusMsg(`Successfully restored ${validEntries.length} records!`);
-          setTimeout(() => setStatusMsg(''), 4000);
-        }
+        setPendingRestoreBackup({ profile: newProfile, entries: validEntries });
       } catch (err: any) {
         setErrorMsg(err.message || 'Failed to read file. Please verify JSON format.');
       }
     };
     reader.readAsText(file);
     e.target.value = '';
+  };
+
+  const confirmPendingRestore = () => {
+    if (!pendingRestoreBackup) return;
+    const { profile: newProfile, entries: validEntries } = pendingRestoreBackup;
+    onImportData(newProfile, validEntries);
+    setName(newProfile.name);
+    setGender(newProfile.gender);
+    setBirthDate(newProfile.birthDate);
+    setGestationalWeeks(newProfile.gestationalWeeks || 40);
+    setAvatarUrl(newProfile.avatarUrl || DEFAULT_AVATAR);
+    setPendingRestoreBackup(null);
+    setStatusMsg(`Successfully restored ${validEntries.length} records!`);
+    setTimeout(() => setStatusMsg(''), 4000);
   };
 
   // Complete wipe & start fresh
@@ -1381,21 +1387,48 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Restore Backup */}
-                <div className="pt-2 border-t border-[var(--color-card-border)] space-y-2">
-                  <label
-                    htmlFor="settings-json-restore"
-                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-card-border)] bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main)] hover:border-[var(--color-primary)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
-                  >
-                    <Upload className="w-4 h-4 text-[var(--color-primary)]" />
-                    <span>Restore from JSON Backup File</span>
-                  </label>
-                  <input
-                    id="settings-json-restore"
-                    type="file"
-                    accept=".json"
-                    className="hidden"
-                    onChange={handleImportJSON}
-                  />
+                <div className="pt-2 border-t border-[var(--color-card-border)] space-y-2.5">
+                  {pendingRestoreBackup ? (
+                    <div className="p-3.5 rounded-xl bg-[var(--color-primary-light)] border border-[var(--color-primary)]/40 space-y-2.5 app-pop-enter">
+                      <p className="text-xs font-semibold text-[var(--color-text-main)]">
+                        Restore backup with <strong>{pendingRestoreBackup.entries.length}</strong> measurement(s) for{' '}
+                        <strong>{pendingRestoreBackup.profile.name}</strong>?
+                      </p>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={confirmPendingRestore}
+                          className="px-3.5 py-1.5 rounded-lg bg-[var(--color-primary)] text-white text-xs font-bold hover:opacity-90 transition-opacity cursor-pointer"
+                        >
+                          Confirm Restore
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPendingRestoreBackup(null)}
+                          className="px-3.5 py-1.5 rounded-lg bg-[var(--color-surface)] text-[var(--color-text-main)] text-xs font-semibold hover:opacity-85 transition-opacity cursor-pointer"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <label
+                        htmlFor="settings-json-restore"
+                        className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-card-border)] bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main)] hover:border-[var(--color-primary)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                      >
+                        <Upload className="w-4 h-4 text-[var(--color-primary)]" />
+                        <span>Restore from JSON Backup File</span>
+                      </label>
+                      <input
+                        id="settings-json-restore"
+                        type="file"
+                        accept=".json"
+                        className="hidden"
+                        onChange={handleImportJSON}
+                      />
+                    </>
+                  )}
                 </div>
               </div>
 

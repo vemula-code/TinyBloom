@@ -709,12 +709,12 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/65 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/55 overflow-hidden app-backdrop-enter"
       role="dialog"
       aria-modal="true"
       aria-labelledby="screenshot-modal-title"
     >
-      <div className="bg-[var(--color-card)] rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-2xl w-full max-h-[90dvh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col app-sheet-enter">
         
         {/* Header */}
         <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
@@ -744,7 +744,7 @@ export const ScreenshotImportModal: React.FC<ScreenshotImportModalProps> = ({
         </div>
 
         {/* Modal Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm text-[var(--color-text-main)]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm text-[var(--color-text-main)] app-scroll-area">
           
           {/* Explanation Banner */}
           <div className="p-3 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-1.5">

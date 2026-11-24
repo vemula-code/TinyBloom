@@ -132,7 +132,7 @@ export const CheckupPrepCard: React.FC<CheckupPrepCardProps> = ({
           </form>
 
           {questions.length > 0 ? (
-            <div className="space-y-1.5 max-h-32 overflow-y-auto pr-0.5">
+            <div className="space-y-1.5">
               {questions.map((q, idx) => (
                 <div
                   key={idx}

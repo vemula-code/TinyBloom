@@ -56,8 +56,8 @@ export const PrintDoctorReport: React.FC<PrintDoctorReportProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-stone-900/60 backdrop-blur-xs overflow-y-auto print:p-0 print:bg-white print:static print:z-auto">
-      <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-3xl overflow-hidden my-4 sm:my-6 print:border-none print:shadow-none print:my-0 print:max-w-none flex flex-col max-h-[92vh] print:max-h-none">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/55 overflow-hidden app-backdrop-enter print:p-0 print:bg-white print:static print:z-auto">
+      <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-3xl overflow-hidden print:border-none print:shadow-none print:my-0 print:max-w-none flex flex-col max-h-[90dvh] print:max-h-none app-sheet-enter">
         {/* Top Control Bar (Hidden on print) */}
         <div className="px-6 py-4 border-b border-[var(--color-card-border)] flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-[var(--color-surface)] print:hidden shrink-0">
           <div>

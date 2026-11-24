@@ -1154,7 +1154,7 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
             <button
               type="button"
               onClick={() => setSelectedStageIdx(matchedStageIndex)}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary,#91A98B)] hover:opacity-95 transition-all shadow-2xs flex items-center gap-1.5 shrink-0"
+              className="px-3.5 py-2 rounded-xl text-xs font-bold text-white bg-[var(--color-primary)] hover:opacity-95 transition-opacity shadow-2xs flex items-center gap-1.5 shrink-0 cursor-pointer"
             >
               <span>📍 Jump to {profile.name}’s Current Stage</span>
             </button>
@@ -1162,8 +1162,8 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
         </div>
 
         {/* Horizontal Age Scroller (0 to 36 Months) */}
-        <div className="mt-5 pt-4 border-t border-[var(--color-primary,#91A98B)]/20">
-          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+        <div className="mt-5 pt-4 border-t border-[var(--color-card-border)]">
+          <div className="flex items-center gap-2 pb-2 app-scroll-x">
             {UNIVERSAL_AGE_STAGES.map((s, idx) => {
               const isSelected = idx === selectedStageIdx;
               const isCurrent = idx === matchedStageIndex;
@@ -1172,12 +1172,12 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
                   key={s.id}
                   type="button"
                   onClick={() => setSelectedStageIdx(idx)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all border flex items-center gap-1.5 shrink-0 ${
+                  className={`px-3 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-colors duration-150 border flex items-center gap-1.5 shrink-0 cursor-pointer ${
                     isSelected
-                      ? 'bg-[var(--color-primary,#91A98B)] text-white border-[var(--color-primary,#91A98B)] shadow-2xs scale-102'
+                      ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)] shadow-2xs'
                       : isCurrent
-                      ? 'bg-[var(--color-primary,#91A98B)]/15 border-[var(--color-primary,#91A98B)] text-[var(--color-primary-dark,#3D5939)]'
-                      : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/20 text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                      ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]'
+                      : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)]'
                   }`}
                 >
                   <span>{s.ageLabel}</span>
@@ -1219,14 +1219,14 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
         </div>
 
         {/* Section Tabs */}
-        <div className="flex items-center gap-2 border-b border-[var(--color-primary,#91A98B)]/20 pb-2 overflow-x-auto">
+        <div className="flex items-center gap-2 border-b border-[var(--color-card-border)] pb-2 app-scroll-x">
           <button
             type="button"
             onClick={() => setActiveTab('milestones')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'milestones'
-                ? 'bg-[var(--color-primary,#91A98B)] text-white shadow-2xs'
-                : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)]'
             }`}
           >
             <CheckSquare className="w-3.5 h-3.5" />
@@ -1236,10 +1236,10 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('play')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'play'
-                ? 'bg-[var(--color-primary,#91A98B)] text-white shadow-2xs'
-                : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)]'
             }`}
           >
             <Smile className="w-3.5 h-3.5" />
@@ -1249,10 +1249,10 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('pediatrician')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'pediatrician'
-                ? 'bg-[var(--color-primary,#91A98B)] text-white shadow-2xs'
-                : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)]'
             }`}
           >
             <Stethoscope className="w-3.5 h-3.5" />
@@ -1262,10 +1262,10 @@ export const NextStepsGuide: React.FC<NextStepsGuideProps> = ({ profile }) => {
           <button
             type="button"
             onClick={() => setActiveTab('questions')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-colors duration-150 flex items-center gap-1.5 whitespace-nowrap shrink-0 cursor-pointer ${
               activeTab === 'questions'
-                ? 'bg-[var(--color-primary,#91A98B)] text-white shadow-2xs'
-                : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10'
+                ? 'bg-[var(--color-primary)] text-white shadow-2xs'
+                : 'text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)]'
             }`}
           >
             <HelpCircle className="w-3.5 h-3.5" />

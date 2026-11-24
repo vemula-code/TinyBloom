@@ -61,8 +61,8 @@ export const ImportPastDataModal: React.FC<ImportPastDataModalProps> = ({
 2026-10-14, 17.4 lbs, 28.0 in, 17.5 in, 6.5 month milestone`;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden my-4 sm:my-6 flex flex-col max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/55 overflow-hidden app-backdrop-enter">
+      <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden flex flex-col max-h-[90dvh] app-sheet-enter">
         {/* Header */}
         <div className="px-6 py-4 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)] shrink-0">
           <div className="flex items-center gap-3">
@@ -89,7 +89,7 @@ export const ImportPastDataModal: React.FC<ImportPastDataModalProps> = ({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)]">
+        <div className="p-6 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area">
           {/* Privacy Guarantee Banner */}
           <div className="flex items-center gap-2 p-3 bg-[var(--color-primary-light)] border border-[var(--color-primary)]/30 rounded-2xl text-xs text-[var(--color-text-main)]">
             <ShieldCheck className="w-4 h-4 text-[var(--color-primary)] shrink-0" />

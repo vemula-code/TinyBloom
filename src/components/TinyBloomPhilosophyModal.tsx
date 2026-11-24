@@ -26,12 +26,12 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/55 overflow-hidden app-backdrop-enter"
       role="dialog"
       aria-modal="true"
       aria-labelledby="philosophy-title"
     >
-      <div className="bg-[var(--color-card)] rounded-3xl max-w-lg w-full max-h-[90vh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-lg w-full max-h-[90dvh] overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col app-sheet-enter">
         
         {/* Header Hero Banner */}
         <div className="relative bg-[var(--color-primary-light)] p-4 sm:p-5 border-b border-[var(--color-card-border)] shrink-0">
@@ -47,8 +47,8 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
           <div className="flex items-center gap-3">
             <TinyBloomLogo size={38} showText={false} />
             <div>
-              <div className="flex items-center gap-1.5 text-rose-500 font-bold text-[11px] uppercase tracking-wider">
-                <Heart className="w-3.5 h-3.5 fill-rose-500/20" />
+              <div className="flex items-center gap-1.5 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold text-[11px] uppercase tracking-wider">
+                <Heart className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                 <span>Our Real Story</span>
               </div>
               <h2 id="philosophy-title" className="text-base sm:text-lg font-bold font-heading text-[var(--color-text-main)] leading-tight">
@@ -62,7 +62,7 @@ export const TinyBloomPhilosophyModal: React.FC<TinyBloomPhilosophyModalProps> =
         </div>
 
         {/* Story Body */}
-        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main)]">
+        <div className="p-4 sm:p-5 space-y-4 overflow-y-auto flex-1 bg-[var(--color-canvas)] text-xs sm:text-sm leading-relaxed text-[var(--color-text-main)] app-scroll-area">
           
           {/* Card 1: The First Baby & Confusing Lines */}
           <div className="p-4 rounded-2xl bg-[var(--color-card)] border border-[var(--color-card-border)] shadow-2xs space-y-2">

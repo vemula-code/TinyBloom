@@ -80,8 +80,8 @@ export const PWAInstallButton: React.FC<PWAInstallButtonProps> = ({ className = 
 
       {/* Installation Guide Modal */}
       {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs overflow-y-auto animate-in fade-in duration-150">
-          <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-lg overflow-hidden my-4 sm:my-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/55 overflow-hidden app-backdrop-enter">
+          <div className="bg-[var(--color-card)] text-[var(--color-text-main)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-lg max-h-[90dvh] overflow-y-auto app-sheet-enter app-scroll-area">
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)]">
               <div className="flex items-center gap-3">

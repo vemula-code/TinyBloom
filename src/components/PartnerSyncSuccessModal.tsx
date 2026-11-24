@@ -19,12 +19,12 @@ export const PartnerSyncSuccessModal: React.FC<PartnerSyncSuccessModalProps> = (
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/60 backdrop-blur-xs animate-in fade-in duration-200 overflow-y-auto"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 bg-black/55 overflow-hidden app-backdrop-enter"
       role="dialog"
       aria-modal="true"
       aria-labelledby="sync-success-title"
     >
-      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full overflow-hidden shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col my-auto transition-colors animate-in zoom-in-95 duration-200">
+      <div className="bg-[var(--color-card)] rounded-3xl max-w-md w-full max-h-[90dvh] overflow-y-auto shadow-2xl border border-[var(--color-card-border)] text-[var(--color-text-main)] flex flex-col app-sheet-enter app-scroll-area">
         {/* Celebration Header */}
         <div className="relative bg-[var(--color-primary-light)] p-5 text-center border-b border-[var(--color-card-border)]">
           <div className="w-14 h-14 mx-auto rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-lg mb-2.5 animate-in zoom-in duration-300">
