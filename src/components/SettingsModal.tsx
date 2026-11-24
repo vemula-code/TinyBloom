@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { BabyProfile, Gender, GrowthEntry, MetricUnit, ThemeMode, PaletteTheme } from '../types/growth';
 import { TinyBloomLogo } from './TinyBloomLogo';
 import { BabyAvatar } from './BabyAvatar';
@@ -39,6 +39,7 @@ export type PhotoPermissionMode = 'disabled' | 'limited' | 'full';
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  asPage?: boolean;
   profile: BabyProfile;
   onSaveProfile: (profile: BabyProfile, silent?: boolean) => void;
   entries: GrowthEntry[];
@@ -68,6 +69,7 @@ interface SettingsModalProps {
 export const SettingsModal: React.FC<SettingsModalProps> = ({
   isOpen,
   onClose,
+  asPage = false,
   profile,
   onSaveProfile,
   entries,
@@ -177,6 +179,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
       onSaveProfile(buildUpdatedProfile(), true);
     }
   };
+
+  const latestFlushRef = useRef(flushPendingProfileEdits);
+  latestFlushRef.current = flushPendingProfileEdits;
+
+  useEffect(() => {
+    return () => {
+      latestFlushRef.current();
+    };
+  }, []);
 
   const handleCloseModal = () => {
     flushPendingProfileEdits();
@@ -501,95 +512,162 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     { id: 'install', label: 'Install App', icon: <Smartphone className="w-4 h-4" /> },
   ];
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/55 app-backdrop-enter">
-      <div className="bg-[var(--color-card)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main)] app-sheet-enter">
-        
-        {/* Modal Header */}
-        <div className="px-5 py-3.5 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)] shrink-0">
-          <div className="flex items-center gap-3">
-            <TinyBloomLogo size={34} />
-            <div>
-              <h2 className="text-base font-bold font-heading text-[var(--color-text-main)] leading-tight">
-                Settings & Preferences
-              </h2>
-              <p className="text-[11px] text-[var(--color-text-muted)]">
-                100% On-Device · Zero Cloud Tracking · Private
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors"
-            aria-label="Close settings"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+  const wrapperOuterClass = asPage
+    ? 'space-y-4 sm:space-y-5'
+    : 'fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/55 app-backdrop-enter';
 
-        {/* Departments Navigation Bar (Horizontal scrolling tabs) */}
-        <div className="px-3 sm:px-5 py-2 border-b border-[var(--color-card-border)] bg-[var(--color-canvas)] flex items-center gap-1.5 overflow-x-auto scrollbar-none shrink-0">
-          {departments.map((dept) => {
-            const isActive = activeDepartment === dept.id;
-            return (
-              <button
-                key={dept.id}
-                type="button"
-                onClick={() => {
-                  if (activeDepartment === 'profile' && dept.id !== 'profile') {
-                    flushPendingProfileEdits();
-                  }
-                  setActiveDepartment(dept.id);
-                  setShowDeleteConfirm(false);
-                }}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all shrink-0 ${
-                  isActive
-                    ? 'bg-[var(--color-primary,#5D7C57)] text-white shadow-xs'
-                    : 'text-[var(--color-text-muted,#6E7B6C)] hover:bg-[var(--color-primary,#91A98B)]/10 hover:text-[var(--color-text-main,#303832)]'
-                }`}
-              >
-                {dept.icon}
-                <span>{dept.label}</span>
-                {dept.badge && (
-                  <span
-                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+  const wrapperCardClass = asPage
+    ? 'space-y-4 sm:space-y-5 text-[var(--color-text-main)]'
+    : 'bg-[var(--color-card)] rounded-3xl shadow-2xl border border-[var(--color-card-border)] w-full max-w-2xl overflow-hidden h-[88vh] max-h-[660px] min-h-[520px] flex flex-col text-[var(--color-text-main)] app-sheet-enter';
+
+  return (
+    <div className={wrapperOuterClass}>
+      <div className={wrapperCardClass}>
+        {asPage ? (
+          /* Page Header Card matching Home / WHO / Milestones */
+          <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] shadow-2xs overflow-hidden">
+            <div className="px-4 sm:px-6 py-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <TinyBloomLogo size={34} />
+                <div className="min-w-0">
+                  <h2 className="text-lg sm:text-xl font-bold font-heading text-[var(--color-text-main)] leading-tight truncate">
+                    Settings &amp; Preferences
+                  </h2>
+                  <p className="text-[11px] sm:text-xs text-[var(--color-text-muted)] truncate">
+                    100% On-Device · Zero Cloud Tracking · Private
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Department Navigation Tabs inside Header Card */}
+            <div className="px-3 sm:px-6 pb-3 pt-1 border-t border-[var(--color-card-border)]/70 flex items-center gap-1.5 app-scroll-x">
+              {departments.map((dept) => {
+                const isActive = activeDepartment === dept.id;
+                return (
+                  <button
+                    key={dept.id}
+                    type="button"
+                    onClick={() => {
+                      if (activeDepartment === 'profile' && dept.id !== 'profile') {
+                        flushPendingProfileEdits();
+                      }
+                      setActiveDepartment(dept.id);
+                      setShowDeleteConfirm(false);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 shrink-0 cursor-pointer ${
                       isActive
-                        ? 'bg-white/25 text-white'
-                        : 'bg-[var(--color-primary,#91A98B)]/20 text-[var(--color-text-main,#303832)]'
+                        ? 'bg-[var(--color-primary)] text-white shadow-xs'
+                        : 'bg-[var(--color-surface)]/70 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
                     }`}
                   >
-                    {dept.badge}
-                  </span>
-                )}
+                    {dept.icon}
+                    <span>{dept.label}</span>
+                    {dept.badge && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                          isActive
+                            ? 'bg-white/25 text-white'
+                            : 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]'
+                        }`}
+                      >
+                        {dept.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <>
+            {/* Modal Header */}
+            <div className="px-5 py-3.5 border-b border-[var(--color-card-border)] flex items-center justify-between bg-[var(--color-card)] shrink-0">
+              <div className="flex items-center gap-3">
+                <TinyBloomLogo size={34} />
+                <div>
+                  <h2 className="text-base font-bold font-heading text-[var(--color-text-main)] leading-tight">
+                    Settings &amp; Preferences
+                  </h2>
+                  <p className="text-[11px] text-[var(--color-text-muted)]">
+                    100% On-Device · Zero Cloud Tracking · Private
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="w-8 h-8 rounded-full flex items-center justify-center text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
+                aria-label="Close settings"
+              >
+                <X className="w-4 h-4" />
               </button>
-            );
-          })}
-        </div>
+            </div>
+
+            {/* Departments Navigation Bar (Horizontal scrolling tabs) */}
+            <div className="px-3 sm:px-5 py-2 border-b border-[var(--color-card-border)] bg-[var(--color-canvas)] flex items-center gap-1.5 app-scroll-x shrink-0">
+              {departments.map((dept) => {
+                const isActive = activeDepartment === dept.id;
+                return (
+                  <button
+                    key={dept.id}
+                    type="button"
+                    onClick={() => {
+                      if (activeDepartment === 'profile' && dept.id !== 'profile') {
+                        flushPendingProfileEdits();
+                      }
+                      setActiveDepartment(dept.id);
+                      setShowDeleteConfirm(false);
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors duration-150 shrink-0 cursor-pointer ${
+                      isActive
+                        ? 'bg-[var(--color-primary)] text-white shadow-xs'
+                        : 'text-[var(--color-text-muted)] hover:bg-[var(--color-primary-light)] hover:text-[var(--color-text-main)]'
+                    }`}
+                  >
+                    {dept.icon}
+                    <span>{dept.label}</span>
+                    {dept.badge && (
+                      <span
+                        className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                          isActive
+                            ? 'bg-white/25 text-white'
+                            : 'bg-[var(--color-primary-light)] text-[var(--color-text-main)]'
+                        }`}
+                      >
+                        {dept.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </>
+        )}
 
         {/* Status & Error Toasts */}
         {statusMsg && (
-          <div className="mx-4 mt-3 p-3 rounded-2xl bg-[var(--color-primary,#91A98B)]/15 border border-[var(--color-primary,#91A98B)]/30 text-xs text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] font-medium flex items-center gap-2">
+          <div className={`${asPage ? '' : 'mx-4 mt-3'} p-3 rounded-2xl bg-[var(--color-primary-light)] border border-[var(--color-primary)]/30 text-xs text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-medium flex items-center gap-2`}>
             <Check className="w-4 h-4 shrink-0" />
             <span>{statusMsg}</span>
           </div>
         )}
         {errorMsg && (
-          <div className="mx-4 mt-3 p-3 rounded-2xl bg-red-100 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-200 font-medium flex items-center gap-2">
+          <div className={`${asPage ? '' : 'mx-4 mt-3'} p-3 rounded-2xl bg-red-100 dark:bg-red-950/50 border border-red-200 dark:border-red-900 text-xs text-red-800 dark:text-red-200 font-medium flex items-center gap-2`}>
             <AlertTriangle className="w-4 h-4 text-red-600 shrink-0" />
             <span>{errorMsg}</span>
           </div>
         )}
 
         {/* Department Content Area */}
-        <div className="p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area">
+        <div className={asPage ? '' : 'p-4 sm:p-6 overflow-y-auto flex-1 bg-[var(--color-canvas)] app-scroll-area'}>
           <div key={activeDepartment} className="app-view-enter">
           
           {/* ========================================================
               DEPARTMENT 1: BABY PROFILE
              ======================================================== */}
           {activeDepartment === 'profile' && (
-            <div className="space-y-5 max-w-xl mx-auto">
+            <div className="space-y-5 max-w-2xl mx-auto">
               <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-card-border)] space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
@@ -663,25 +741,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       type="text"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
+                      onBlur={flushPendingProfileEdits}
                       placeholder="e.g. Maya, Lucas, Baby"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-canvas)] text-[var(--color-text-main)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                       required
                     />
                   </div>
 
                   {/* Gender Selector */}
                   <div className="space-y-1">
-                    <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                    <label className="text-xs font-semibold block text-[var(--color-text-main)]">
                       Sex Assigned at Birth (for WHO Standards)
                     </label>
                     <div className="grid grid-cols-2 gap-3">
                       <button
                         type="button"
                         onClick={() => setGender('boy')}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-colors border cursor-pointer ${
                           gender === 'boy'
-                            ? 'bg-[#EBF3ED] text-[#2D5A38] border-[#2D5A38] shadow-xs'
-                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            ? 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border-[var(--color-primary)] shadow-2xs'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)]'
                         }`}
                       >
                         👦 Boy Curve
@@ -689,10 +768,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         type="button"
                         onClick={() => setGender('girl')}
-                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                        className={`py-2 px-3 rounded-xl text-xs font-bold transition-colors border cursor-pointer ${
                           gender === 'girl'
-                            ? 'bg-[#FDF2F0] text-[#9C5D47] border-[#9C5D47] shadow-xs'
-                            : 'bg-[var(--color-canvas)] border-[var(--color-primary,#91A98B)]/30 text-[var(--color-text-muted,#6E7B6C)]'
+                            ? 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border-[var(--color-primary)] shadow-2xs'
+                            : 'bg-[var(--color-canvas)] border-[var(--color-card-border)] text-[var(--color-text-muted)]'
                         }`}
                       >
                         👧 Girl Curve
@@ -703,11 +782,11 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {/* Birth Date */}
                   <div className="space-y-1">
                     <div className="flex items-center justify-between">
-                      <label className="text-xs font-semibold block text-[var(--color-text-main,#303832)]">
+                      <label className="text-xs font-semibold block text-[var(--color-text-main)]">
                         Date of Birth
                       </label>
                       {isValidDateStr(birthDate) && birthDate === profile.birthDate && profile.birthDateConfirmed && (
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
+                        <span className="text-[10px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
                           Saved on device ✓
                         </span>
                       )}
@@ -722,7 +801,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           onSaveProfile(buildUpdatedProfile({ birthDate: val }), true);
                         }
                       }}
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] text-[var(--color-text-main,#303832)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary,#91A98B)]"
+                      onBlur={flushPendingProfileEdits}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-canvas)] text-[var(--color-text-main)] text-xs font-medium focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)]"
                       required
                     />
                   </div>
@@ -881,9 +961,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         type="button"
                         onClick={onOpenHeartfeltModal}
-                        className="px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-200 border border-amber-200/80 dark:border-amber-800/50 text-xs font-bold hover:bg-amber-100 dark:hover:bg-amber-900/50 transition-colors cursor-pointer flex items-center gap-1.5"
+                        className="px-3 py-1.5 rounded-xl bg-[var(--color-surface)] text-[var(--color-text-main)] border border-[var(--color-card-border)] text-xs font-bold hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer flex items-center gap-1.5"
                       >
-                        <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                        <Heart className="w-3.5 h-3.5 text-[var(--color-primary)]" />
                         <span>Our Story</span>
                       </button>
                     </div>
@@ -892,7 +972,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full py-2.5 px-4 bg-[var(--color-primary,#5D7C57)] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all shadow-xs flex items-center justify-center gap-2"
+                      className="w-full py-2.5 px-4 bg-[var(--color-primary)] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-opacity shadow-xs flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                       <span>Save Profile Changes</span>
@@ -907,7 +987,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               DEPARTMENT 2: THEME & COLOR PALETTE
              ======================================================== */}
           {activeDepartment === 'theme' && (
-            <div className="space-y-5 max-w-xl mx-auto">
+            <div className="space-y-5 max-w-2xl mx-auto">
               <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
@@ -1045,7 +1125,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onEditEntry={(e) => {
                   if (onEditEntry) {
                     onEditEntry(e);
-                    onClose();
+                    if (!asPage) onClose();
                   }
                 }}
                 onDeleteEntry={(id) => {
@@ -1056,7 +1136,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 onOpenAddModal={() => {
                   if (onOpenAddModal) {
                     onOpenAddModal();
-                    onClose();
+                    if (!asPage) onClose();
                   }
                 }}
               />
@@ -1067,7 +1147,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               DEPARTMENT 4: DATA BACKUP & PRIVACY
              ======================================================== */}
           {activeDepartment === 'download' && (
-            <div className="space-y-5 max-w-xl mx-auto">
+            <div className="space-y-5 max-w-2xl mx-auto">
               {/* Privacy Guarantee */}
               <div className="bg-[var(--color-card)] p-4 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 flex items-start gap-3 shadow-2xs">
                 <ShieldCheck className="w-5 h-5 text-[var(--color-primary,#5D7C57)] shrink-0 mt-0.5" />
@@ -1228,15 +1308,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       <button
                         type="button"
                         onClick={() => {
-                          onClose();
+                          if (!asPage) onClose();
                           if (onOpenScreenshotImport) onOpenScreenshotImport();
                         }}
-                        className="w-full py-2.5 px-4 rounded-xl bg-amber-500/20 hover:bg-amber-500/30 border border-amber-500/40 text-amber-900 dark:text-amber-200 text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-2xs cursor-pointer active:scale-98"
+                        className="w-full py-2.5 px-4 rounded-xl bg-[var(--color-primary-light)] hover:opacity-90 border border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-xs font-bold transition-opacity flex items-center justify-center gap-2 shadow-2xs cursor-pointer"
                       >
-                        <Camera className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+                        <Camera className="w-4 h-4 text-[var(--color-primary)]" />
                         <span>📸 Launch Screenshot &amp; Document Scanner</span>
                       </button>
-                      <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted,#6E7B6C)] px-1">
+                      <div className="flex items-center justify-between text-[11px] text-[var(--color-text-muted)] px-1">
                         <span>Status: {photoPermission === 'limited' ? 'Limited (Selected Photos Only)' : 'Photo Access Granted'}</span>
                         <button
                           type="button"
@@ -1252,9 +1332,9 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Download & Export Options */}
-              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-3.5 shadow-2xs">
-                <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] flex items-center gap-1.5">
-                  <Download className="w-4 h-4 text-[var(--color-primary,#91A98B)]" />
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-card-border)] space-y-3.5 shadow-2xs">
+                <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5">
+                  <Download className="w-4 h-4 text-[var(--color-primary)]" />
                   <span>Download &amp; Export Records</span>
                 </h3>
 
@@ -1263,18 +1343,18 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleExportCSV}
-                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                    className="p-3.5 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-canvas)] hover:border-[var(--color-primary)] flex flex-col justify-between text-left transition-colors cursor-pointer group"
                   >
                     <div>
-                      <FileSpreadsheet className="w-5 h-5 text-emerald-600 mb-1.5" />
-                      <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                      <FileSpreadsheet className="w-5 h-5 text-[var(--color-primary)] mb-1.5" />
+                      <span className="text-xs font-bold text-[var(--color-text-main)] block">
                         Spreadsheet (CSV)
                       </span>
-                      <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
+                      <span className="text-[11px] text-[var(--color-text-muted)] block">
                         Open in Excel or print for your pediatrician
                       </span>
                     </div>
-                    <span className="text-[11px] font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] mt-3 flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] mt-3 flex items-center gap-1">
                       <Download className="w-3.5 h-3.5" /> Download CSV
                     </span>
                   </button>
@@ -1283,30 +1363,30 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleExportJSON}
-                    className="p-3.5 rounded-xl border border-[var(--color-primary,#91A98B)]/30 bg-[var(--color-canvas)] hover:border-[var(--color-primary,#91A98B)] flex flex-col justify-between text-left transition-all group"
+                    className="p-3.5 rounded-xl border border-[var(--color-card-border)] bg-[var(--color-canvas)] hover:border-[var(--color-primary)] flex flex-col justify-between text-left transition-colors cursor-pointer group"
                   >
                     <div>
-                      <Download className="w-5 h-5 text-blue-600 mb-1.5" />
-                      <span className="text-xs font-bold text-[var(--color-text-main,#303832)] block">
+                      <Download className="w-5 h-5 text-[var(--color-primary)] mb-1.5" />
+                      <span className="text-xs font-bold text-[var(--color-text-main)] block">
                         JSON Data Archive
                       </span>
-                      <span className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] block">
+                      <span className="text-[11px] text-[var(--color-text-muted)] block">
                         Complete raw backup of profile &amp; entries
                       </span>
                     </div>
-                    <span className="text-[11px] font-bold text-blue-600 dark:text-blue-400 mt-3 flex items-center gap-1">
+                    <span className="text-[11px] font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] mt-3 flex items-center gap-1">
                       <Download className="w-3.5 h-3.5" /> Download Backup
                     </span>
                   </button>
                 </div>
 
                 {/* Restore Backup */}
-                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15 space-y-2">
+                <div className="pt-2 border-t border-[var(--color-card-border)] space-y-2">
                   <label
                     htmlFor="settings-json-restore"
-                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-primary,#91A98B)]/40 bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main,#303832)] hover:border-[var(--color-primary,#91A98B)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
+                    className="w-full py-2.5 px-4 rounded-xl border border-dashed border-[var(--color-card-border)] bg-[var(--color-canvas)] text-xs font-semibold text-[var(--color-text-main)] hover:border-[var(--color-primary)] flex items-center justify-center gap-2 cursor-pointer transition-colors"
                   >
-                    <Upload className="w-4 h-4 text-[var(--color-primary,#5D7C57)]" />
+                    <Upload className="w-4 h-4 text-[var(--color-primary)]" />
                     <span>Restore from JSON Backup File</span>
                   </label>
                   <input
@@ -1320,26 +1400,26 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
               </div>
 
               {/* Co-Parent Partner Sync Link */}
-              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-emerald-500/30 space-y-3 shadow-2xs">
+              <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-card-border)] space-y-3 shadow-2xs">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Share2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-                    <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)]">
+                    <Share2 className="w-4 h-4 text-[var(--color-primary)]" />
+                    <h3 className="text-xs font-bold font-heading uppercase tracking-wider text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
                       Sync with Spouse or Partner
                     </h3>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300">
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
                     Instant
                   </span>
                 </div>
-                <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] leading-relaxed">
+                <p className="text-[11px] text-[var(--color-text-muted)] leading-relaxed">
                   Send a private sync link to your partner on WhatsApp or Messages. When she opens it on her phone, all of {name.trim() || profile.name}’s measurements and curves load immediately.
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
                   <button
                     type="button"
                     onClick={handleShareSyncLink}
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-2xs flex items-center justify-center gap-2 cursor-pointer active:scale-98"
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-[var(--color-primary)] hover:opacity-90 text-white text-xs font-bold transition-opacity shadow-2xs flex items-center justify-center gap-2 cursor-pointer"
                   >
                     <Share2 className="w-3.5 h-3.5 shrink-0" />
                     <span>Send via WhatsApp / Messages</span>
@@ -1347,7 +1427,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={handleCopySyncLink}
-                    className="w-full py-2.5 px-3.5 rounded-xl bg-[var(--color-primary,#91A98B)]/15 hover:bg-[var(--color-primary,#91A98B)]/25 text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-[var(--color-primary,#91A98B)]/30 cursor-pointer active:scale-98"
+                    className="w-full py-2.5 px-3.5 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-primary-light)] text-[var(--color-text-main)] text-xs font-bold transition-colors flex items-center justify-center gap-2 border border-[var(--color-card-border)] cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5 shrink-0" />
                     <span>Copy Sync Link</span>
@@ -1357,7 +1437,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      onClose();
+                      if (!asPage) onClose();
                       onOpenPartnerSync();
                     }}
                     className="w-full py-2 text-center text-[11px] font-semibold text-[var(--color-primary)] hover:underline flex items-center justify-center gap-1.5 cursor-pointer"
@@ -1496,19 +1576,21 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="px-5 py-3 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between text-xs shrink-0">
-          <span className="text-[11px] text-[var(--color-text-muted)]">
-            TinyBloom v2.2 · WHO 2006 Standards
-          </span>
-          <button
-            type="button"
-            onClick={handleCloseModal}
-            className="px-4 py-1.5 rounded-xl bg-[var(--color-surface)] hover:opacity-85 font-bold text-[var(--color-text-main)] transition-all cursor-pointer"
-          >
-            Close
-          </button>
-        </div>
+        {/* Modal Footer (only rendered in overlay modal mode) */}
+        {!asPage && (
+          <div className="px-5 py-3 border-t border-[var(--color-card-border)] bg-[var(--color-card)] flex items-center justify-between text-xs shrink-0">
+            <span className="text-[11px] text-[var(--color-text-muted)]">
+              TinyBloom v2.2 · WHO 2006 Standards
+            </span>
+            <button
+              type="button"
+              onClick={handleCloseModal}
+              className="px-4 py-1.5 rounded-xl bg-[var(--color-surface)] hover:opacity-85 font-bold text-[var(--color-text-main)] transition-opacity cursor-pointer"
+            >
+              Close
+            </button>
+          </div>
+        )}
 
       </div>
     </div>

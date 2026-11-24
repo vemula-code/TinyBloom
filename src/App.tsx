@@ -224,25 +224,31 @@ export default function App() {
     }
   });
 
-  // Navigation tab states: 'home' | 'growth' | 'story' | 'history' | 'nextsteps'
-  const [activeTab, setActiveTab] = useState<'home' | 'growth' | 'story' | 'history' | 'nextsteps'>('home');
+  // Navigation tab states: 'home' | 'growth' | 'story' | 'history' | 'nextsteps' | 'settings'
+  const [activeTab, setActiveTab] = useState<'home' | 'growth' | 'story' | 'history' | 'nextsteps' | 'settings'>('home');
   const [activeChartType, setActiveChartType] = useState<ChartType>('weight');
   const [growthSubView, setGrowthSubView] = useState<'chart' | 'history'>('chart');
   const [clinicOnlyFilter, setClinicOnlyFilter] = useState<boolean>(false);
-  const [isScrolled, setIsScrolled] = useState<boolean>(false);
+  const headerRef = useRef<HTMLElement | null>(null);
 
-  const switchTab = (nextTab: 'home' | 'growth' | 'story' | 'history' | 'nextsteps') => {
+  const switchTab = (nextTab: 'home' | 'growth' | 'story' | 'history' | 'nextsteps' | 'settings') => {
     setActiveTab(nextTab);
-    if (typeof window !== 'undefined' && window.scrollY > 80) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (typeof window !== 'undefined' && window.scrollY > 0) {
+      window.scrollTo({ top: 0, behavior: 'auto' });
     }
   };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
+    let lastScrolled = false;
     const onScroll = () => {
       const scrolled = window.scrollY > 8;
-      setIsScrolled((prev) => (prev !== scrolled ? scrolled : prev));
+      if (scrolled !== lastScrolled) {
+        lastScrolled = scrolled;
+        if (headerRef.current) {
+          headerRef.current.dataset.scrolled = scrolled ? 'true' : 'false';
+        }
+      }
     };
     onScroll();
     window.addEventListener('scroll', onScroll, { passive: true });
@@ -420,7 +426,6 @@ export default function App() {
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [editingEntry, setEditingEntry] = useState<GrowthEntry | null>(null);
   const [isReportOpen, setIsReportOpen] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const [isHeartModalOpen, setIsHeartModalOpen] = useState(false);
   const [isPrivateGuaranteeOpen, setIsPrivateGuaranteeOpen] = useState(false);
@@ -1030,11 +1035,11 @@ export default function App() {
           STICKY TOP HEADER (Solid Surface + GPU-Promoted Layer)
          ======================================================== */}
       <header
-        className={`sticky top-0 z-40 app-sticky-chrome bg-[var(--color-card)] border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full transition-shadow duration-200 ${
-          isScrolled ? 'shadow-sm' : ''
-        }`}
+        ref={headerRef}
+        data-scrolled="false"
+        className="sticky top-0 z-40 app-sticky-chrome bg-[var(--color-surface)] border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full transition-shadow duration-200"
       >
-        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-15 flex items-center justify-between gap-2">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
           <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1 sm:flex-initial">
             <button
@@ -1045,11 +1050,11 @@ export default function App() {
               <TinyBloomLogo size={32} showText={true} />
             </button>
 
-            {/* Our Story Button: Cohesive neutral surface with subtle heart mark */}
+            {/* Our Story Button */}
             <button
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
-              className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-[var(--color-surface)] border border-[var(--color-card-border)] text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center justify-center gap-1.5 p-1.5 sm:px-2.5 sm:py-1 rounded-xl bg-[var(--color-card)] border border-[var(--color-card-border)] text-[11px] font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] transition-colors cursor-pointer shrink-0"
               title="Our Story: Why we built TinyBloom (From first-time parents)"
               aria-label="Our Story"
             >
@@ -1064,7 +1069,7 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsPartnerSyncOpen(true)}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[var(--color-surface)] hover:bg-[var(--color-primary-light)] border border-[var(--color-card-border)] text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0"
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-[var(--color-card)] hover:bg-[var(--color-primary-light)] border border-[var(--color-card-border)] text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0"
               title="Sync with Spouse or Partner via WhatsApp, link, or QR code"
               aria-label="Sync with Partner"
             >
@@ -1077,12 +1082,12 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsProfileSwitcherOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-primary)]/12 hover:bg-[var(--color-primary)]/20 border border-[var(--color-primary)]/25 text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-all cursor-pointer shrink-0"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-card)] hover:bg-[var(--color-primary-light)] border border-[var(--color-primary)]/30 text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0"
                 title="Switch child profile or open settings"
               >
                 <Baby className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
                 <span className="font-bold truncate max-w-[80px] xs:max-w-[115px] sm:max-w-[155px]">{profile.name}</span>
-                <ChevronDown className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform ${isProfileSwitcherOpen ? 'rotate-180' : ''}`} />
+                <ChevronDown className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform duration-150 ${isProfileSwitcherOpen ? 'rotate-180' : ''}`} />
               </button>
 
               {isProfileSwitcherOpen && (
@@ -1142,7 +1147,7 @@ export default function App() {
                       type="button"
                       onClick={() => {
                         setIsProfileSwitcherOpen(false);
-                        setIsSettingsOpen(true);
+                        switchTab('settings');
                       }}
                       className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
                     >
@@ -1193,7 +1198,7 @@ export default function App() {
         {activeTab === 'home' && (
           <div key="tab-home" className="space-y-4 sm:space-y-6 app-view-enter">
             {/* Baby Profile Hero Card - Mobile-Optimized Native Layout */}
-            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden app-card-surface space-y-3.5">
+            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden space-y-3.5">
               
               {/* Avatar + Name & Age + Unit Switcher & Log Growth Button */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -1204,7 +1209,7 @@ export default function App() {
                       name={profile.name}
                       gender={profile.gender}
                       size="md"
-                      onClick={() => setIsSettingsOpen(true)}
+                      onClick={() => switchTab('settings')}
                       showEditBadge={true}
                     />
                   </div>
@@ -1220,7 +1225,7 @@ export default function App() {
                       </span>
                       <button
                         type="button"
-                        onClick={() => setIsSettingsOpen(true)}
+                        onClick={() => switchTab('settings')}
                         className="p-1 text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] rounded-lg hover:bg-[var(--color-surface)] transition-colors cursor-pointer"
                         title="Edit baby profile & setup"
                       >
@@ -1267,7 +1272,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setUnit('metric')}
-                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                      className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
                         unit === 'metric'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1278,7 +1283,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setUnit('imperial')}
-                      className={`px-2 py-1 rounded-lg transition-all cursor-pointer ${
+                      className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
                         unit === 'imperial'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1295,7 +1300,7 @@ export default function App() {
                       setEditingEntry(null);
                       setIsLogModalOpen(true);
                     }}
-                    className="px-3 sm:px-3.5 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-all shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
+                    className="px-3 sm:px-3.5 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-[opacity,transform] duration-150 shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
                     title="Log new measurement"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1360,7 +1365,7 @@ export default function App() {
             />
 
             {/* 2. Interactive WHO Growth Chart directly below the selected metric */}
-            <div id="growth-chart-section" className="app-card-surface">
+            <div id="growth-chart-section">
               <GrowthChart
                 entries={entries}
                 chartType={activeChartType}
@@ -1378,7 +1383,7 @@ export default function App() {
                   setIsLogModalOpen(true);
                 }}
                 onEditEntry={handleEditEntry}
-                onOpenSettings={() => setIsSettingsOpen(true)}
+                onOpenSettings={() => switchTab('settings')}
               />
             </div>
 
@@ -1507,7 +1512,7 @@ export default function App() {
               </div>
             </div>
 
-            <div key={growthSubView} className="app-view-enter app-card-surface">
+            <div key={growthSubView} className="app-view-enter">
               {growthSubView === 'chart' ? (
                 <GrowthChart
                   entries={entries}
@@ -1529,7 +1534,7 @@ export default function App() {
                     setIsLogModalOpen(true);
                   }}
                   onEditEntry={handleEditEntry}
-                  onOpenSettings={() => setIsSettingsOpen(true)}
+                  onOpenSettings={() => switchTab('settings')}
                 />
               ) : (
                 <MeasurementHistory
@@ -1552,7 +1557,7 @@ export default function App() {
             TAB 3: GROWTH STORY
            ======================================================== */}
         {activeTab === 'story' && (
-          <div key="tab-story" className="app-view-enter app-card-surface">
+          <div key="tab-story" className="app-view-enter">
             <GrowthStory
               profile={profile}
               entries={entries}
@@ -1569,7 +1574,7 @@ export default function App() {
             TAB 4: MEASUREMENT HISTORY
            ======================================================== */}
         {activeTab === 'history' && (
-          <div key="tab-history" className="app-view-enter app-card-surface">
+          <div key="tab-history" className="app-view-enter">
             <MeasurementHistory
               profile={profile}
               entries={entries}
@@ -1588,19 +1593,58 @@ export default function App() {
             TAB 5: PERSONALIZED NEXT STEPS
            ======================================================== */}
         {activeTab === 'nextsteps' && (
-          <div key="tab-nextsteps" className="app-view-enter app-card-surface">
+          <div key="tab-nextsteps" className="app-view-enter">
             <NextStepsGuide profile={profile} />
+          </div>
+        )}
+
+        {/* ========================================================
+            TAB 6: SETTINGS & PREFERENCES (Full-Screen Matched Tab)
+           ======================================================== */}
+        {activeTab === 'settings' && (
+          <div key="tab-settings" className="app-view-enter">
+            <SettingsModal
+              isOpen={true}
+              asPage={true}
+              onClose={() => switchTab('home')}
+              profile={profile}
+              onSaveProfile={handleSaveProfile}
+              entries={entries}
+              onImportData={handleImportData}
+              onResetData={handleResetData}
+              onDeleteAll={handleDeleteAll}
+              onOpenImportPastData={() => setIsImportModalOpen(true)}
+              unit={unit}
+              onToggleUnit={setUnit}
+              themeMode={themeMode}
+              onToggleThemeMode={setThemeMode}
+              paletteTheme={paletteTheme}
+              onChangePaletteTheme={setPaletteTheme}
+              onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
+              onOpenOnboardingModal={() => setIsOnboardingOpen(true)}
+              onNavigateToHistory={() => switchTab('history')}
+              onEditEntry={handleEditEntry}
+              onDeleteEntry={handleDeleteEntry}
+              onOpenAddModal={() => {
+                setEditingEntry(null);
+                setIsLogModalOpen(true);
+              }}
+              chartTimelineRange={chartTimelineRange}
+              onChangeChartTimelineRange={handleSetChartTimelineRange}
+              onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
+              onOpenPartnerSync={() => setIsPartnerSyncOpen(true)}
+            />
           </div>
         )}
 
         {/* ========================================================
             TINYBLOOM FOOTER WITH PHILOSOPHY & PRIVACY LINK
            ======================================================== */}
-        <footer className="mt-12 pt-8 pb-10 border-t border-[var(--color-primary,#91A98B)]/20 text-center text-xs text-[var(--color-text-muted,#6E7B6C)] space-y-3">
+        <footer className="mt-12 pt-8 pb-10 border-t border-[var(--color-primary)]/20 text-center text-xs text-[var(--color-text-muted)] space-y-3">
           <div className="flex flex-wrap items-center justify-center gap-2">
             <TinyBloomLogo size={24} />
-            <span className="text-[var(--color-primary,#91A98B)] font-bold">·</span>
-            <span className="font-semibold italic text-[var(--color-text-main,#303832)]">
+            <span className="text-[var(--color-primary)] font-bold">·</span>
+            <span className="font-semibold italic text-[var(--color-text-main)]">
               Every little milestone matters.
             </span>
           </div>
@@ -1617,7 +1661,7 @@ export default function App() {
 
             <button
               type="button"
-              onClick={() => setIsSettingsOpen(true)}
+              onClick={() => switchTab('settings')}
               className="hover:text-[var(--color-text-main)] font-medium transition-colors cursor-pointer"
             >
               Settings & Backups
@@ -1628,55 +1672,77 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
-              className="hover:text-[var(--color-text-main,#303832)] font-medium transition-colors"
+              className="hover:text-[var(--color-text-main)] font-medium transition-colors cursor-pointer"
             >
               Pediatrician Report
             </button>
           </div>
 
-          <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] max-w-md mx-auto leading-relaxed pt-1">
+          <p className="text-[11px] text-[var(--color-text-muted)] max-w-md mx-auto leading-relaxed pt-1">
             100% offline-first · Zero cloud trackers · Free forever for your family.
           </p>
         </footer>
       </main>
 
       {/* ========================================================
-          BOTTOM NAVIGATION BAR (2 on left, + in center, 2 on right)
+          BOTTOM NAVIGATION BAR (Distinct Matte Dock + Highlighted Tab)
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 app-sticky-chrome bg-[var(--color-card)] border-t sm:border border-[var(--color-card-border)] px-3 sm:px-4 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-[0_-4px_20px_-6px_rgba(0,0,0,0.08)] sm:shadow-xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 app-sticky-chrome bg-[var(--color-surface)] border-t sm:border border-[var(--color-card-border)] px-2 sm:px-3 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-[0_-6px_24px_-8px_rgba(0,0,0,0.14)] sm:shadow-xl"
       >
         {/* Left 1: Home */}
-        <button
-          type="button"
-          onClick={() => switchTab('home')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
-            activeTab === 'home'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
-              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-          }`}
-        >
-          <HomeIcon className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Home</span>
-        </button>
+        {(() => {
+          const isActive = activeTab === 'home';
+          return (
+            <button
+              type="button"
+              onClick={() => switchTab('home')}
+              aria-current={isActive ? 'page' : undefined}
+              className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
+                isActive
+                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+              }`}
+            >
+              <HomeIcon className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
+              <span className="text-[10px] tracking-tight leading-none">Home</span>
+              <span
+                className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
+                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                }`}
+              />
+            </button>
+          );
+        })()}
 
         {/* Left 2: WHO Charts */}
-        <button
-          type="button"
-          onClick={() => {
-            setGrowthSubView('chart');
-            switchTab('growth');
-          }}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
-            activeTab === 'growth'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
-              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-          }`}
-        >
-          <TrendingUp className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">WHO</span>
-        </button>
+        {(() => {
+          const isActive = activeTab === 'growth' || activeTab === 'history';
+          return (
+            <button
+              type="button"
+              onClick={() => {
+                setGrowthSubView('chart');
+                switchTab('growth');
+              }}
+              aria-current={isActive ? 'page' : undefined}
+              className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
+                isActive
+                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+              }`}
+            >
+              <TrendingUp className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
+              <span className="text-[10px] tracking-tight leading-none">WHO</span>
+              <span
+                className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
+                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                }`}
+              />
+            </button>
+          );
+        })()}
 
         {/* Center: Elevated + Log Action */}
         <button
@@ -1685,7 +1751,7 @@ export default function App() {
             setEditingEntry(null);
             setIsLogModalOpen(true);
           }}
-          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary,#91A98B)] hover:opacity-95 text-white shadow-md active:scale-95 transition-transform duration-150 cursor-pointer"
+          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary)] hover:opacity-95 text-white ring-4 ring-[var(--color-surface)] shadow-md active:scale-95 transition-transform duration-150 cursor-pointer shrink-0"
           aria-label="Log Measurement"
           title="Log Measurement"
         >
@@ -1693,32 +1759,54 @@ export default function App() {
         </button>
 
         {/* Right 1: Milestones & Development */}
-        <button
-          type="button"
-          onClick={() => switchTab('story')}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
-            activeTab === 'story' || activeTab === 'nextsteps'
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
-              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-          }`}
-        >
-          <BookOpen className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Milestones</span>
-        </button>
+        {(() => {
+          const isActive = activeTab === 'story' || activeTab === 'nextsteps';
+          return (
+            <button
+              type="button"
+              onClick={() => switchTab('story')}
+              aria-current={isActive ? 'page' : undefined}
+              className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
+                isActive
+                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+              }`}
+            >
+              <BookOpen className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
+              <span className="text-[10px] tracking-tight leading-none">Milestones</span>
+              <span
+                className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
+                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                }`}
+              />
+            </button>
+          );
+        })()}
 
-        {/* Right 2: Settings & Tools (Measurement History, Themes, App Download, PDF Report) */}
-        <button
-          type="button"
-          onClick={() => setIsSettingsOpen(true)}
-          className={`flex flex-col items-center justify-center py-1 px-3 rounded-xl transition-[color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
-            isSettingsOpen
-              ? 'text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#86B880)] font-bold'
-              : 'text-[var(--color-text-muted,#6E7B6C)] hover:text-[var(--color-text-main,#303832)]'
-          }`}
-        >
-          <Settings className="w-5 h-5 mb-0.5" />
-          <span className="text-[10px] tracking-tight">Settings</span>
-        </button>
+        {/* Right 2: Settings & Tools */}
+        {(() => {
+          const isActive = activeTab === 'settings';
+          return (
+            <button
+              type="button"
+              onClick={() => switchTab('settings')}
+              aria-current={isActive ? 'page' : undefined}
+              className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
+                isActive
+                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+              }`}
+            >
+              <Settings className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
+              <span className="text-[10px] tracking-tight leading-none">Settings</span>
+              <span
+                className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
+                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                }`}
+              />
+            </button>
+          );
+        })()}
       </nav>
 
       {/* Modals & Sheets */}
@@ -1744,34 +1832,6 @@ export default function App() {
           onClose={() => setIsReportOpen(false)}
         />
       )}
-
-      <SettingsModal
-        isOpen={isSettingsOpen}
-        onClose={() => setIsSettingsOpen(false)}
-        profile={profile}
-        onSaveProfile={handleSaveProfile}
-        entries={entries}
-        onImportData={handleImportData}
-        onResetData={handleResetData}
-        onDeleteAll={handleDeleteAll}
-        onOpenImportPastData={() => setIsImportModalOpen(true)}
-        unit={unit}
-        onToggleUnit={setUnit}
-        themeMode={themeMode}
-        onToggleThemeMode={setThemeMode}
-        paletteTheme={paletteTheme}
-        onChangePaletteTheme={setPaletteTheme}
-        onOpenHeartfeltModal={() => setIsHeartModalOpen(true)}
-        onOpenOnboardingModal={() => setIsOnboardingOpen(true)}
-        onNavigateToHistory={() => setActiveTab('history')}
-        onEditEntry={handleEditEntry}
-        onDeleteEntry={handleDeleteEntry}
-        onOpenAddModal={() => setIsLogModalOpen(true)}
-        chartTimelineRange={chartTimelineRange}
-        onChangeChartTimelineRange={handleSetChartTimelineRange}
-        onOpenScreenshotImport={() => setIsScreenshotImportOpen(true)}
-        onOpenPartnerSync={() => setIsPartnerSyncOpen(true)}
-      />
 
       <PartnerSyncModal
         isOpen={isPartnerSyncOpen}

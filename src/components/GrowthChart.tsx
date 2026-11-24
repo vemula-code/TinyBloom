@@ -170,17 +170,18 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
     const el = chartBoxRef.current;
     if (!el) return;
     const updateWidth = () => {
-      const w = el.clientWidth;
+      const w = Math.round(el.clientWidth);
       if (w > 100) {
-        setContainerWidth(Math.round(w));
+        setContainerWidth((prev) => (prev !== w ? w : prev));
       }
     };
     updateWidth();
     if (typeof ResizeObserver !== 'undefined') {
       const ro = new ResizeObserver((entriesList) => {
         for (const item of entriesList) {
-          if (item.contentRect.width > 100) {
-            setContainerWidth(Math.round(item.contentRect.width));
+          const w = Math.round(item.contentRect.width);
+          if (w > 100) {
+            setContainerWidth((prev) => (prev !== w ? w : prev));
           }
         }
       });
@@ -480,7 +481,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   }, [rangeMonths]);
 
   return (
-    <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-all text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
+    <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-colors duration-150 text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
       
       {/* 1. Optional Segmented Header Controls (hidden on Home tab when summary cards above already switch) */}
       {showMetricSwitcher && (
@@ -492,7 +493,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 setSelectedPointId(null);
                 onChangeChartType?.('weight');
               }}
-              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-colors duration-150 cursor-pointer ${
                 chartType === 'weight'
                   ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -506,7 +507,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 setSelectedPointId(null);
                 onChangeChartType?.('height');
               }}
-              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-colors duration-150 cursor-pointer ${
                 chartType === 'height'
                   ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -520,7 +521,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 setSelectedPointId(null);
                 onChangeChartType?.('head');
               }}
-              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-all cursor-pointer ${
+              className={`flex-1 py-1.5 sm:py-2 rounded-xl font-bold text-xs sm:text-sm text-center transition-colors duration-150 cursor-pointer ${
                 chartType === 'head'
                   ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-xs'
                   : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -546,7 +547,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                     setSelectedPointId(null);
                     onChangeTimelineRange(r);
                   }}
-                  className={`px-2 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                  className={`px-2 py-1 rounded-lg font-bold transition-colors duration-150 cursor-pointer ${
                     timelineRange === r
                       ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-2xs'
                       : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -567,7 +568,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   setSelectedPointId(null);
                   onToggleClinicOnly(false);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-bold transition-colors duration-150 cursor-pointer ${
                   !clinicOnlyFilter
                     ? 'bg-[var(--color-card)] text-[var(--color-text-main)] shadow-2xs'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -581,7 +582,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   setSelectedPointId(null);
                   onToggleClinicOnly(true);
                 }}
-                className={`px-2.5 py-1 rounded-lg font-bold transition-all flex items-center gap-1 cursor-pointer ${
+                className={`px-2.5 py-1 rounded-lg font-bold transition-colors duration-150 flex items-center gap-1 cursor-pointer ${
                   clinicOnlyFilter
                     ? 'bg-[var(--color-card)] text-[var(--color-primary)] shadow-2xs'
                     : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -599,7 +600,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
       <div ref={chartBoxRef} className="relative w-full">
         <svg
           viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-          className="w-full h-auto block select-none touch-manipulation"
+          className="w-full h-auto block select-none touch-pan-y"
           onClick={() => {
             if (selectedPointId) setSelectedPointId(null);
           }}
