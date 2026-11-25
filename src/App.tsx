@@ -76,6 +76,13 @@ function getBabyStageStorySummary(ageMonths: number): string {
   return 'Stories & Curious Play';
 }
 
+function getTimeGreeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return 'Good morning';
+  if (hour < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 function isValidIsoDate(val: unknown): val is string {
   return typeof val === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(val);
 }
@@ -282,18 +289,17 @@ export default function App() {
   const [paletteTheme, setPaletteTheme] = useState<PaletteTheme>(() => {
     try {
       const saved = localStorage.getItem('tinybloom_palette') as string;
-      const valid: PaletteTheme[] = ['sage', 'apple-health', 'honey'];
+      const valid: PaletteTheme[] = ['amazon-teal', 'apple-health', 'sage', 'huckleberry'];
       if (saved && valid.includes(saved as PaletteTheme)) {
         return saved as PaletteTheme;
       }
-      // Smooth migration from older theme names to the 3 curated themes
-      if (saved === 'huckleberry' || saved === 'sky' || saved === 'hatch' || saved === 'lavender' || saved === 'slate') {
-        return 'apple-health';
+      if (saved === 'sky') return 'apple-health';
+      if (saved === 'lavender' || saved === 'slate' || saved === 'honey' || saved === 'linen' || saved === 'amber') {
+        return 'huckleberry';
       }
-      if (saved === 'linen' || saved === 'amber') return 'honey';
-      return 'sage';
+      return 'amazon-teal';
     } catch {
-      return 'sage';
+      return 'amazon-teal';
     }
   });
 
@@ -380,14 +386,15 @@ export default function App() {
       root.setAttribute('data-theme', paletteTheme);
 
       const themeColors: Record<PaletteTheme, { light: string; dark: string }> = {
-        sage: { light: '#F1EFEA', dark: '#111412' },
-        'apple-health': { light: '#EDF1F6', dark: '#0E1218' },
-        honey: { light: '#F3EFE9', dark: '#131110' },
+        'amazon-teal': { light: '#D6F0F4', dark: '#0C2530' },
+        'apple-health': { light: '#DCEBFF', dark: '#101E3D' },
+        sage: { light: '#D7F2E4', dark: '#0D271D' },
+        huckleberry: { light: '#E3E0FC', dark: '#1B1642' },
       };
 
       const metaThemeColor = document.querySelector('meta[name="theme-color"]');
       if (metaThemeColor) {
-        const themeDef = themeColors[paletteTheme] || themeColors.sage;
+        const themeDef = themeColors[paletteTheme] || themeColors['amazon-teal'];
         metaThemeColor.setAttribute('content', isDark ? themeDef.dark : themeDef.light);
       }
     };
@@ -1055,14 +1062,20 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-dvh w-full bg-[var(--color-canvas,#FFF9F0)] text-[var(--color-text-main,#303832)] font-sans pb-28 sm:pb-24">
+    <div className="relative min-h-dvh w-full bg-[var(--color-canvas)] text-[var(--color-text-main)] font-sans pb-28 sm:pb-24">
+      {/* Ambient top atmospheric wash (Amazon / Apple Health / Oura style) */}
+      <div
+        aria-hidden="true"
+        className="app-top-backdrop pointer-events-none absolute top-0 left-0 right-0 h-[300px] sm:h-[330px]"
+      />
+
       {/* ========================================================
-          STICKY TOP HEADER (Solid Surface + GPU-Promoted Layer)
+          STICKY TOP HEADER (Matches Atmospheric Backdrop)
          ======================================================== */}
       <header
         ref={headerRef}
         data-scrolled="false"
-        className="sticky top-0 z-40 app-sticky-chrome bg-[var(--color-surface)] border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full transition-shadow duration-200"
+        className="sticky top-0 z-40 app-sticky-chrome bg-[var(--color-header-bg)] border-b border-[var(--color-card-border)] text-[var(--color-text-main)] w-full transition-shadow duration-200"
       >
         <div className="max-w-6xl mx-auto px-3 sm:px-6 h-14 flex items-center justify-between gap-2">
           {/* Brand Identity + Heart "Our Story" right beside app name */}
@@ -1107,10 +1120,10 @@ export default function App() {
               <button
                 type="button"
                 onClick={() => setIsProfileSwitcherOpen((v) => !v)}
-                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-card)] hover:bg-[var(--color-primary-light)] border border-[var(--color-primary)]/30 text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0"
+                className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[var(--color-card)] hover:bg-[var(--color-primary-light)] border border-[var(--color-card-border)] text-xs font-semibold text-[var(--color-text-main)] active:scale-95 transition-[background-color,transform] duration-150 cursor-pointer shrink-0 shadow-2xs"
                 title="Switch child profile or open settings"
               >
-                <Baby className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
+                <Baby className="w-3.5 h-3.5 text-[var(--color-primary-dark)] shrink-0" />
                 <span className="font-bold truncate max-w-[80px] xs:max-w-[115px] sm:max-w-[155px]">{profile.name}</span>
                 <ChevronDown className={`w-3.5 h-3.5 text-[var(--color-text-muted)] transition-transform duration-150 ${isProfileSwitcherOpen ? 'rotate-180' : ''}`} />
               </button>
@@ -1149,7 +1162,7 @@ export default function App() {
                             </div>
                           </div>
                         </div>
-                        {isCurrent && <Check className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />}
+                        {isCurrent && <Check className="w-3.5 h-3.5 text-[var(--color-primary-dark)] shrink-0" />}
                       </button>
                     );
                   })}
@@ -1162,7 +1175,7 @@ export default function App() {
                         setIsAddingChildModal(true);
                         setIsOnboardingOpen(true);
                       }}
-                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"
+                      className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-bold text-[var(--color-primary-dark)] hover:bg-[var(--color-primary-light)] transition-colors cursor-pointer"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Add Another Child / Twin</span>
@@ -1196,10 +1209,10 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <main className="max-w-6xl mx-auto px-3.5 sm:px-6 pt-4 sm:pt-6 space-y-5 sm:space-y-6 w-full">
+      <main className="relative z-10 max-w-6xl mx-auto px-3.5 sm:px-6 pt-3 sm:pt-5 space-y-4 sm:space-y-5 w-full">
         {/* Sample Demo Mode Banner - Only shown when exploring initial demo records */}
         {(profile.id === 'demo-sample-baby' && profile.name === 'Sample Baby') && (
-          <div className="bg-[var(--color-primary)]/10 border border-[var(--color-primary)]/25 rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2.5 text-xs shadow-2xs">
+          <div className="app-card-elevated rounded-2xl px-3 sm:px-4 py-2 flex items-center justify-between gap-2.5 text-xs">
             <div className="flex items-center gap-2 min-w-0 truncate">
               <span className="text-sm shrink-0 select-none">🌱</span>
               <p className="text-xs text-[var(--color-text-main)] truncate">
@@ -1218,14 +1231,34 @@ export default function App() {
         )}
 
         {/* ========================================================
-            TAB 1: HOME SCREEN
+            TAB 1: HOME SCREEN (Daily Overview & Checkup Companion)
            ======================================================== */}
         {activeTab === 'home' && (
-          <div key="tab-home" className="space-y-4 sm:space-y-6 app-view-enter">
-            {/* Baby Profile Hero Card - Mobile-Optimized Native Layout */}
-            <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] p-3.5 sm:p-5 shadow-2xs relative overflow-hidden space-y-3.5">
-              
-              {/* Avatar + Name & Age + Unit Switcher & Log Growth Button */}
+          <div key="tab-home" className="space-y-4 sm:space-y-5 app-view-enter">
+            {/* Top Contextual Greeting Banner over Atmospheric Backdrop */}
+            <div className="flex items-end justify-between gap-3 px-1 pt-0.5">
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-[var(--color-primary-dark)]">
+                  {getTimeGreeting()} · {profile.name}’s Daily Hub
+                </p>
+                <h1 className="text-lg sm:text-2xl font-extrabold font-heading tracking-tight text-[var(--color-text-main)] truncate">
+                  {currentAge.displayStr} · {getBabyStageStorySummary(currentAge.exactMonths)}
+                </h1>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsPrivateGuaranteeOpen(true)}
+                className="flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-[var(--color-card)]/90 hover:bg-[var(--color-card)] text-[var(--color-text-main)] border border-[var(--color-card-border)] text-[11px] font-semibold shrink-0 transition-colors cursor-pointer shadow-2xs"
+                title="100% Local & On-Device (Tap to verify)"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-[var(--color-primary-dark)] shrink-0" />
+                <span>100% Private</span>
+              </button>
+            </div>
+
+            {/* Baby Profile Hero Card */}
+            <div className="app-card-elevated rounded-3xl p-3.5 sm:p-5 relative overflow-hidden space-y-3">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="relative shrink-0">
@@ -1240,12 +1273,11 @@ export default function App() {
                   </div>
 
                   <div className="min-w-0">
-                    {/* Name + Gender Pill + Edit Setup icon */}
                     <div className="flex items-center gap-1.5">
-                      <h1 className="text-base sm:text-xl font-bold font-heading tracking-tight text-[var(--color-text-main)] truncate">
+                      <h2 className="text-base sm:text-xl font-bold font-heading tracking-tight text-[var(--color-text-main)] truncate">
                         {profile.name}
-                      </h1>
-                      <span className="text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full bg-[var(--color-primary)]/15 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] shrink-0">
+                      </h2>
+                      <span className="text-[10px] font-semibold capitalize px-2 py-0.5 rounded-full bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] shrink-0">
                         {profile.gender}
                       </span>
                       <button
@@ -1258,9 +1290,8 @@ export default function App() {
                       </button>
                     </div>
 
-                    {/* Neatly Aligned Age, Corrected Preterm Tag & Birthdate */}
                     <div className="flex flex-wrap items-center gap-1.5 text-xs mt-0.5">
-                      <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-lg text-[11px]">
+                      <span className="font-bold text-[var(--color-primary-dark)] bg-[var(--color-primary-light)] px-2 py-0.5 rounded-lg text-[11px]">
                         {currentAge.displayStr} old
                       </span>
                       {pretermActive && (
@@ -1269,7 +1300,7 @@ export default function App() {
                         </span>
                       )}
                       <span className="text-[var(--color-text-muted)] text-[11px] flex items-center gap-1">
-                        <Calendar className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
+                        <Calendar className="w-3 h-3 text-[var(--color-primary-dark)] shrink-0" />
                         <span>Born {(() => {
                           try {
                             const [y, m, d] = (profile.birthDate || '').split('-').map(Number);
@@ -1290,14 +1321,12 @@ export default function App() {
                   </div>
                 </div>
 
-                {/* Right / Bottom on mobile: Unit Switcher beside Log Growth Button */}
-                <div className="flex items-center justify-between sm:justify-end gap-2 pt-1 sm:pt-0 border-t sm:border-t-0 border-[var(--color-card-border)]/40 shrink-0">
-                  {/* Unit Switcher */}
-                  <div className="flex items-center bg-[var(--color-canvas)] border border-[var(--color-card-border)] p-0.5 rounded-xl text-[11px] font-medium shrink-0">
+                <div className="flex items-center justify-between sm:justify-end gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 border-[var(--color-card-border)] shrink-0">
+                  <div className="flex items-center bg-[var(--color-surface)] border border-[var(--color-card-border)] p-0.5 rounded-xl text-[11px] font-medium shrink-0">
                     <button
                       type="button"
                       onClick={() => setUnit('metric')}
-                      className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
                         unit === 'metric'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1308,7 +1337,7 @@ export default function App() {
                     <button
                       type="button"
                       onClick={() => setUnit('imperial')}
-                      className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
+                      className={`px-2.5 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
                         unit === 'imperial'
                           ? 'bg-[var(--color-primary)] text-white shadow-2xs font-bold'
                           : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
@@ -1318,14 +1347,13 @@ export default function App() {
                     </button>
                   </div>
 
-                  {/* Log Growth Button */}
                   <button
                     type="button"
                     onClick={() => {
                       setEditingEntry(null);
                       setIsLogModalOpen(true);
                     }}
-                    className="px-3 sm:px-3.5 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-[opacity,transform] duration-150 shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
+                    className="px-3.5 py-1.5 bg-[var(--color-primary)] hover:opacity-90 text-white rounded-xl text-xs font-bold transition-[opacity,transform] duration-150 shadow-xs cursor-pointer active:scale-95 flex items-center gap-1.5 shrink-0"
                     title="Log new measurement"
                   >
                     <Plus className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -1333,102 +1361,62 @@ export default function App() {
                   </button>
                 </div>
               </div>
-
             </div>
 
-            {/* Minimized All-in-1 Baby Stage, Privacy & WHO Standards Strip */}
-            <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] p-2.5 sm:p-3 shadow-2xs text-xs space-y-1.5">
-              <div className="flex items-center justify-between gap-2">
-                {/* Developmental Stage */}
-                <button
-                  type="button"
-                  onClick={() => switchTab('story')}
-                  className="flex items-center gap-1.5 text-left min-w-0 hover:opacity-85 transition-opacity cursor-pointer group"
-                  title="View developmental milestones"
-                >
-                  <span className="w-5 h-5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center justify-center shrink-0 text-xs">
-                    <Sparkles className="w-3 h-3" />
-                  </span>
-                  <span className="font-bold text-[var(--color-text-main)] truncate text-[11px] sm:text-xs">
-                    {getBabyStageStorySummary(currentAge.exactMonths)}
-                  </span>
-                  <span className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shrink-0 flex items-center gap-0.5 group-hover:translate-x-0.5 transition-transform">
-                    <span>Milestones</span>
-                    <ArrowRight className="w-2.5 h-2.5" />
-                  </span>
-                </button>
-
-                {/* 100% Private Badge */}
-                <button
-                  type="button"
-                  onClick={() => setIsPrivateGuaranteeOpen(true)}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-lg bg-[var(--color-surface)] hover:bg-[var(--color-primary-light)] text-[var(--color-text-main)] border border-[var(--color-card-border)] text-[10px] sm:text-[11px] font-semibold shrink-0 transition-colors cursor-pointer"
-                  title="100% Local & On-Device (Tap to verify)"
-                >
-                  <ShieldCheck className="w-3 h-3 text-[var(--color-primary)] shrink-0" />
-                  <span>100% Private</span>
-                </button>
-              </div>
-
-              {/* WHO Standards Reassurance micro-line - completely visible without truncation */}
-              <div className="flex items-start sm:items-center gap-1.5 pt-1.5 border-t border-[var(--color-card-border)]/60 text-[11px] leading-snug text-[var(--color-text-muted)]">
-                <span className="shrink-0 text-xs select-none mt-0.5 sm:mt-0">🌱</span>
-                <p className="flex-1 min-w-0">
-                  <span className="font-bold text-[var(--color-text-main)] mr-1">WHO Standards:</span>
-                  <span>Both 15th% &amp; 85th% are equally healthy. Zero comparison.</span>
-                </p>
-              </div>
-            </div>
-
-            {/* 1. Side-by-Side Metric Selector Cards (Weight, Length, Head) */}
-            <PercentileSummaryCards
-              entries={entries}
-              profile={profile}
-              unit={unit}
-              selectedMetric={activeChartType}
-              onSelectMetric={setActiveChartType}
-            />
-
-            {/* 2. Interactive WHO Growth Chart directly below the selected metric */}
-            <div id="growth-chart-section">
-              <GrowthChart
+            {/* Latest Vitals Selector Cards + Interactive WHO Growth Chart (Home Only) */}
+            <div className="space-y-3">
+              <PercentileSummaryCards
                 entries={entries}
-                chartType={activeChartType}
-                onChangeChartType={setActiveChartType}
-                showMetricSwitcher={false}
-                gender={profile.gender}
+                profile={profile}
                 unit={unit}
-                babyName={profile.name}
-                babyAgeMonths={currentAge.exactMonths}
-                babyBirthDate={profile.birthDate}
-                gestationalWeeks={profile.gestationalWeeks}
-                timelineRange={chartTimelineRange}
-                onOpenAddModal={() => {
-                  setEditingEntry(null);
-                  setIsLogModalOpen(true);
-                }}
-                onEditEntry={handleEditEntry}
-                onOpenSettings={() => switchTab('settings')}
+                selectedMetric={activeChartType}
+                onSelectMetric={setActiveChartType}
               />
+
+              <div id="growth-chart-section">
+                <GrowthChart
+                  entries={entries}
+                  chartType={activeChartType}
+                  onChangeChartType={setActiveChartType}
+                  showMetricSwitcher={false}
+                  showTimelineControls={true}
+                  gender={profile.gender}
+                  unit={unit}
+                  babyName={profile.name}
+                  babyAgeMonths={currentAge.exactMonths}
+                  babyBirthDate={profile.birthDate}
+                  gestationalWeeks={profile.gestationalWeeks}
+                  timelineRange={chartTimelineRange}
+                  onChangeTimelineRange={handleSetChartTimelineRange}
+                  clinicOnlyFilter={clinicOnlyFilter}
+                  onToggleClinicOnly={setClinicOnlyFilter}
+                  onOpenAddModal={() => {
+                    setEditingEntry(null);
+                    setIsLogModalOpen(true);
+                  }}
+                  onEditEntry={handleEditEntry}
+                  onOpenSettings={() => switchTab('settings')}
+                />
+              </div>
             </div>
 
-            {/* 2b. Compact Recent Logs Strip (1-Tap Edit or View All History) */}
+            {/* Compact Recent Measurements (1-Tap Edit or View All History in WHO Tab) */}
             {recentThreeEntries.length > 0 && (
-              <div className="bg-[var(--color-card)] rounded-2xl border border-[var(--color-card-border)] p-3 sm:p-4 shadow-2xs space-y-2">
+              <div className="app-card-elevated rounded-3xl p-3.5 sm:p-5 space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
                   <div className="flex items-center gap-1.5 font-bold text-[var(--color-text-main)]">
-                    <Clock className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+                    <Clock className="w-3.5 h-3.5 text-[var(--color-primary-dark)]" />
                     <span>Recent Measurements</span>
                   </div>
                   <button
                     type="button"
                     onClick={() => {
                       setGrowthSubView('history');
-                      setActiveTab('growth');
+                      switchTab('growth');
                     }}
-                    className="text-[11px] font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] font-bold text-[var(--color-primary-dark)] hover:underline flex items-center gap-1 cursor-pointer"
                   >
-                    <span>View All ({entries.length})</span>
+                    <span>All Logs ({entries.length})</span>
                     <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -1462,14 +1450,14 @@ export default function App() {
                         className="flex items-center justify-between gap-2 px-3 py-2 rounded-xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] hover:border-[var(--color-primary)]/50 text-left transition-colors cursor-pointer"
                       >
                         <div className="min-w-0">
-                          <div className="text-[11px] font-bold text-[var(--color-text-main)] truncate">
+                          <div className="text-[11px] font-bold text-[var(--color-text-main)] truncate tabular-nums">
                             {entry.date}
                           </div>
                           <div className="text-[10px] text-[var(--color-text-muted)]">
                             {entry.isPediatricianVisit ? 'Clinic Visit' : 'Home Log'}
                           </div>
                         </div>
-                        <span className="text-xs font-mono font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] shrink-0">
+                        <span className="text-xs font-mono font-bold text-[var(--color-primary-dark)] shrink-0 tabular-nums">
                           {summaryVal}
                         </span>
                       </button>
@@ -1479,36 +1467,85 @@ export default function App() {
               </div>
             )}
 
-            {/* 3. Live Personalized Progress & Growth Pace Insights */}
-            <GrowthInsightsCard
-              profile={profile}
-              entries={entries}
-              activeChartType={activeChartType}
-              unit={unit}
-              onOpenDetailedAnalysis={() => setActiveTab('story')}
-              onOpenHistory={() => {
-                setGrowthSubView('history');
-                setActiveTab('growth');
-              }}
-            />
+            {/* Developmental Milestones & Story Quick Bridge */}
+            <button
+              type="button"
+              onClick={() => switchTab('story')}
+              className="w-full app-card-elevated rounded-2xl p-3.5 sm:px-5 flex items-center justify-between gap-3 text-left hover:border-[var(--color-primary)]/45 transition-colors cursor-pointer group"
+            >
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-9 h-9 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0">
+                  <Sparkles className="w-4 h-4" />
+                </span>
+                <div className="min-w-0">
+                  <div className="text-xs sm:text-sm font-bold text-[var(--color-text-main)] truncate">
+                    {getBabyStageStorySummary(currentAge.exactMonths)}
+                  </div>
+                  <div className="text-[11px] text-[var(--color-text-muted)] truncate">
+                    Explore {profile.name}’s Growth Story &amp; 0–36m developmental guide
+                  </div>
+                </div>
+              </div>
+              <span className="text-xs font-bold text-[var(--color-primary-dark)] shrink-0 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                <span>Milestones</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </span>
+            </button>
 
-            {/* 4. Checkup Prep & Doctor Questions (Synced directly to Doctor Brief PDF) */}
+            {/* Checkup Prep & Doctor Questions (Synced directly to Doctor Brief PDF) */}
             <CheckupPrepCard
               ageMonths={currentAge.exactMonths}
               babyName={profile.name}
               onOpenReport={() => setIsReportOpen(true)}
-              onOpenUniversalGuide={() => setActiveTab('nextsteps')}
+              onOpenUniversalGuide={() => switchTab('nextsteps')}
             />
           </div>
         )}
 
         {/* ========================================================
-            TAB 2: WHO INTERACTIVE GROWTH CHARTS + 1-TAP HISTORY
+            TAB 2: WHO PERCENTILE INSIGHTS & MEASUREMENT LOGS
            ======================================================== */}
         {activeTab === 'growth' && (
-          <div key="tab-growth" className="space-y-3 app-view-enter">
-            {/* Top Segmented Sub-View: Chart vs History List */}
-            <div className="flex items-center justify-between gap-2 bg-[var(--color-card)] p-1.5 rounded-2xl border border-[var(--color-card-border)] shadow-2xs">
+          <div key="tab-growth" className="space-y-4 app-view-enter">
+            {/* Top Contextual Header over Atmospheric Backdrop */}
+            <div className="flex items-end justify-between gap-3 px-1 pt-0.5">
+              <div className="min-w-0">
+                <p className="text-[11px] sm:text-xs font-semibold text-[var(--color-primary-dark)]">
+                  WHO 2006 Clinical Standards · {profile.gender === 'boy' ? 'Boys' : 'Girls'}
+                </p>
+                <h1 className="text-lg sm:text-2xl font-extrabold font-heading tracking-tight text-[var(--color-text-main)] truncate">
+                  {profile.name}’s Percentiles &amp; Logs
+                </h1>
+              </div>
+
+              <div className="flex items-center bg-[var(--color-card)] border border-[var(--color-card-border)] p-0.5 rounded-xl text-[11px] font-medium shrink-0 shadow-2xs">
+                <button
+                  type="button"
+                  onClick={() => setUnit('metric')}
+                  className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
+                    unit === 'metric'
+                      ? 'bg-[var(--color-primary)] text-white font-bold'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                  }`}
+                >
+                  kg/cm
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setUnit('imperial')}
+                  className={`px-2 py-1 rounded-lg transition-colors duration-150 cursor-pointer ${
+                    unit === 'imperial'
+                      ? 'bg-[var(--color-primary)] text-white font-bold'
+                      : 'text-[var(--color-text-muted)] hover:text-[var(--color-text-main)]'
+                  }`}
+                >
+                  lb/in
+                </button>
+              </div>
+            </div>
+
+            {/* Sub-View Switcher: WHO Insights vs Full History */}
+            <div className="app-card-elevated p-1.5 rounded-2xl flex items-center justify-between gap-2">
               <div className="flex items-center flex-1 gap-1 bg-[var(--color-surface)] p-1 rounded-xl">
                 <button
                   type="button"
@@ -1520,7 +1557,7 @@ export default function App() {
                   }`}
                 >
                   <TrendingUp className="w-3.5 h-3.5" />
-                  <span>WHO Graph</span>
+                  <span>Pace &amp; Insights</span>
                 </button>
                 <button
                   type="button"
@@ -1532,35 +1569,51 @@ export default function App() {
                   }`}
                 >
                   <ListChecks className="w-3.5 h-3.5" />
-                  <span>History List ({entries.length})</span>
+                  <span>All Logs ({entries.length})</span>
                 </button>
               </div>
             </div>
 
-            <div key={growthSubView} className="app-view-enter">
+            <div key={growthSubView} className="space-y-4 app-view-enter">
               {growthSubView === 'chart' ? (
-                <GrowthChart
-                  entries={entries}
-                  chartType={activeChartType}
-                  onChangeChartType={setActiveChartType}
-                  showTimelineControls={true}
-                  gender={profile.gender}
-                  unit={unit}
-                  babyName={profile.name}
-                  babyAgeMonths={currentAge.exactMonths}
-                  babyBirthDate={profile.birthDate}
-                  gestationalWeeks={profile.gestationalWeeks}
-                  timelineRange={chartTimelineRange}
-                  onChangeTimelineRange={handleSetChartTimelineRange}
-                  clinicOnlyFilter={clinicOnlyFilter}
-                  onToggleClinicOnly={setClinicOnlyFilter}
-                  onOpenAddModal={() => {
-                    setEditingEntry(null);
-                    setIsLogModalOpen(true);
-                  }}
-                  onEditEntry={handleEditEntry}
-                  onOpenSettings={() => switchTab('settings')}
-                />
+                <>
+                  {/* Interactive Metric Cards Switcher (Weight / Length / Head) */}
+                  <PercentileSummaryCards
+                    entries={entries}
+                    profile={profile}
+                    unit={unit}
+                    selectedMetric={activeChartType}
+                    onSelectMetric={setActiveChartType}
+                  />
+
+                  {/* Clinical Velocity & Percentile Channel Analysis */}
+                  <GrowthInsightsCard
+                    profile={profile}
+                    entries={entries}
+                    activeChartType={activeChartType}
+                    unit={unit}
+                    onOpenDetailedAnalysis={() => switchTab('story')}
+                    onOpenHistory={() => setGrowthSubView('history')}
+                  />
+
+                  {/* WHO Reassurance Strip */}
+                  <div className="app-card-elevated rounded-2xl px-4 py-3 flex items-center justify-between gap-3 text-xs text-[var(--color-text-muted)]">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="shrink-0 text-sm select-none">🌱</span>
+                      <p className="leading-snug">
+                        <strong className="text-[var(--color-text-main)] mr-1">WHO Standards:</strong>
+                        Both 15th% &amp; 85th% are equally healthy. Pediatricians look for steady progress along your baby’s own curve.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => switchTab('home')}
+                      className="text-[11px] font-bold text-[var(--color-primary-dark)] hover:underline whitespace-nowrap shrink-0 cursor-pointer"
+                    >
+                      View Chart →
+                    </button>
+                  </div>
+                </>
               ) : (
                 <MeasurementHistory
                   profile={profile}
@@ -1665,10 +1718,10 @@ export default function App() {
         {/* ========================================================
             TINYBLOOM FOOTER WITH PHILOSOPHY & PRIVACY LINK
            ======================================================== */}
-        <footer className="mt-12 pt-8 pb-10 border-t border-[var(--color-primary)]/20 text-center text-xs text-[var(--color-text-muted)] space-y-3">
+        <footer className="mt-12 pt-8 pb-10 border-t border-[var(--color-card-border)] text-center text-xs text-[var(--color-text-muted)] space-y-3">
           <div className="flex flex-wrap items-center justify-center gap-2">
             <TinyBloomLogo size={24} />
-            <span className="text-[var(--color-primary)] font-bold">·</span>
+            <span className="text-[var(--color-primary-dark)] font-bold">·</span>
             <span className="font-semibold italic text-[var(--color-text-main)]">
               Every little milestone matters.
             </span>
@@ -1678,9 +1731,9 @@ export default function App() {
             <button
               type="button"
               onClick={() => setIsHeartModalOpen(true)}
-              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--color-primary-light)] hover:opacity-90 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border border-[var(--color-card-border)] font-bold transition-opacity shadow-2xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[var(--color-primary-light)] hover:opacity-90 text-[var(--color-primary-dark)] border border-[var(--color-card-border)] font-bold transition-opacity shadow-2xs cursor-pointer"
             >
-              <Heart className="w-3.5 h-3.5 text-[var(--color-primary)]" />
+              <Heart className="w-3.5 h-3.5 text-[var(--color-primary-dark)]" />
               <span>TinyBloom Philosophy & Local Privacy</span>
             </button>
 
@@ -1714,7 +1767,7 @@ export default function App() {
          ======================================================== */}
       <nav
         aria-label="Navigation"
-        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 app-sticky-chrome bg-[var(--color-surface)] border-t sm:border border-[var(--color-card-border)] px-2 sm:px-3 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-[0_-6px_24px_-8px_rgba(0,0,0,0.14)] sm:shadow-xl"
+        className="fixed bottom-0 sm:bottom-4 left-0 right-0 sm:left-1/2 sm:-translate-x-1/2 sm:max-w-md sm:rounded-2xl z-40 app-sticky-chrome bg-[var(--color-card)] border-t sm:border border-[var(--color-card-border)] px-2 sm:px-3 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))] sm:py-2 flex items-center justify-around shadow-[0_-6px_24px_-8px_rgba(0,0,0,0.12)] sm:shadow-xl"
       >
         {/* Left 1: Home */}
         {(() => {
@@ -1726,15 +1779,15 @@ export default function App() {
               aria-current={isActive ? 'page' : undefined}
               className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
                 isActive
-                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+                  ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]/70 font-medium'
               }`}
             >
               <HomeIcon className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
               <span className="text-[10px] tracking-tight leading-none">Home</span>
               <span
                 className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
-                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                  isActive ? 'bg-[var(--color-primary-dark)] opacity-100' : 'opacity-0'
                 }`}
               />
             </button>
@@ -1754,15 +1807,15 @@ export default function App() {
               aria-current={isActive ? 'page' : undefined}
               className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
                 isActive
-                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+                  ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]/70 font-medium'
               }`}
             >
               <TrendingUp className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
               <span className="text-[10px] tracking-tight leading-none">WHO</span>
               <span
                 className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
-                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                  isActive ? 'bg-[var(--color-primary-dark)] opacity-100' : 'opacity-0'
                 }`}
               />
             </button>
@@ -1776,7 +1829,7 @@ export default function App() {
             setEditingEntry(null);
             setIsLogModalOpen(true);
           }}
-          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary)] hover:opacity-95 text-white ring-4 ring-[var(--color-surface)] shadow-md active:scale-95 transition-transform duration-150 cursor-pointer shrink-0"
+          className="-mt-5 flex flex-col items-center justify-center w-12 h-12 rounded-full bg-[var(--color-primary)] hover:opacity-95 text-white ring-4 ring-[var(--color-card)] shadow-md active:scale-95 transition-transform duration-150 cursor-pointer shrink-0"
           aria-label="Log Measurement"
           title="Log Measurement"
         >
@@ -1793,15 +1846,15 @@ export default function App() {
               aria-current={isActive ? 'page' : undefined}
               className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
                 isActive
-                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+                  ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]/70 font-medium'
               }`}
             >
               <BookOpen className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
               <span className="text-[10px] tracking-tight leading-none">Milestones</span>
               <span
                 className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
-                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                  isActive ? 'bg-[var(--color-primary-dark)] opacity-100' : 'opacity-0'
                 }`}
               />
             </button>
@@ -1818,15 +1871,15 @@ export default function App() {
               aria-current={isActive ? 'page' : undefined}
               className={`relative flex flex-col items-center justify-center min-w-[60px] py-1.5 px-2.5 rounded-xl border transition-[background-color,color,border-color,transform] duration-150 active:scale-[0.94] cursor-pointer ${
                 isActive
-                  ? 'bg-[var(--color-card)] border-[var(--color-primary)]/35 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-bold shadow-2xs'
-                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-card)]/50 font-medium'
+                  ? 'bg-[var(--color-primary-light)] border-[var(--color-primary)]/30 text-[var(--color-primary-dark)] font-bold shadow-2xs'
+                  : 'border-transparent text-[var(--color-text-muted)] hover:text-[var(--color-text-main)] hover:bg-[var(--color-surface)]/70 font-medium'
               }`}
             >
               <Settings className="w-5 h-5 mb-0.5" strokeWidth={isActive ? 2.35 : 1.85} />
               <span className="text-[10px] tracking-tight leading-none">Settings</span>
               <span
                 className={`mt-1 h-0.5 w-3.5 rounded-full transition-opacity duration-150 ${
-                  isActive ? 'bg-[var(--color-primary)] opacity-100' : 'opacity-0'
+                  isActive ? 'bg-[var(--color-primary-dark)] opacity-100' : 'opacity-0'
                 }`}
               />
             </button>
@@ -1931,10 +1984,13 @@ export default function App() {
           summary={importSuccessData}
           onSelectChartType={(type) => {
             setActiveChartType(type);
-            const chartElem = document.getElementById('growth-chart-section');
-            if (chartElem) {
-              chartElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
+            setActiveTab('home');
+            setTimeout(() => {
+              const chartElem = document.getElementById('growth-chart-section');
+              if (chartElem) {
+                chartElem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }, 60);
           }}
         />
       )}

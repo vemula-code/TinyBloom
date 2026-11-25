@@ -37,7 +37,7 @@ export const TinyBloomLogo: React.FC<TinyBloomLogoProps> = ({
       {showText && (
         <div className="flex flex-col leading-tight select-none min-w-0">
           <span className="font-heading font-extrabold text-sm sm:text-base tracking-tight text-[var(--color-text-main)] truncate">
-            Tiny<span className="text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">Bloom</span>
+            Tiny<span className="text-[var(--color-primary-dark)]">Bloom</span>
           </span>
           <span className="text-[9px] sm:text-[10px] text-[var(--color-text-muted)] font-medium tracking-tight sm:tracking-normal block truncate max-w-[155px] xs:max-w-none">
             Every little milestone matters.

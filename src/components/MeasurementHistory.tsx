@@ -69,10 +69,10 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] shadow-2xs">
+      <div className="app-card-elevated rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold text-xs tracking-wider uppercase mb-1">
+            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] font-semibold text-xs tracking-wider uppercase mb-1">
               <Calendar className="w-4 h-4" />
               <span>Audit-Friendly Growth Log</span>
             </div>
@@ -258,7 +258,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                       {entry.isPediatricianVisit && (
                         <span
                           title="Pediatrician Visit"
-                          className="inline-flex items-center gap-1 text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded-md border border-[var(--color-card-border)]"
+                          className="inline-flex items-center gap-1 text-[10px] text-[var(--color-primary-dark)] font-semibold bg-[var(--color-primary-light)] px-1.5 py-0.5 rounded-md border border-[var(--color-card-border)]"
                         >
                           <Stethoscope className="w-2.5 h-2.5" />
                           <span>Clinic</span>
@@ -296,7 +296,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         {weightStr}
                       </div>
                       {weightP && (
-                        <div className="text-[9px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate">
+                        <div className="text-[9px] text-[var(--color-primary-dark)] font-semibold truncate">
                           {weightP.displayStr}
                         </div>
                       )}
@@ -310,7 +310,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         {heightStr}
                       </div>
                       {heightP && (
-                        <div className="text-[9px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate">
+                        <div className="text-[9px] text-[var(--color-primary-dark)] font-semibold truncate">
                           {heightP.displayStr}
                         </div>
                       )}
@@ -324,7 +324,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         {headStr}
                       </div>
                       {headP && (
-                        <div className="text-[9px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold truncate">
+                        <div className="text-[9px] text-[var(--color-primary-dark)] font-semibold truncate">
                           {headP.displayStr}
                         </div>
                       )}
@@ -339,7 +339,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                           {entry.milestones.map((m, idx) => (
                             <span
                               key={idx}
-                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-[9px] font-semibold border border-[var(--color-card-border)]"
+                              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] text-[9px] font-semibold border border-[var(--color-card-border)]"
                             >
                               <Sparkles className="w-2.5 h-2.5" />
                               <span>{m}</span>
@@ -419,7 +419,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                             {entry.isPediatricianVisit && (
                               <span
                                 title="Pediatrician Visit"
-                                className="w-4 h-4 rounded-full bg-[var(--color-primary)]/20 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] inline-flex items-center justify-center text-[10px]"
+                                className="w-4 h-4 rounded-full bg-[var(--color-primary)]/20 text-[var(--color-primary-dark)] inline-flex items-center justify-center text-[10px]"
                               >
                                 <Stethoscope className="w-2.5 h-2.5" />
                               </span>
@@ -434,7 +434,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="font-mono font-semibold text-[var(--color-text-main)]">{weightStr}</div>
                           {weightP && (
-                            <div className="text-[10px] text-[var(--color-primary)] font-semibold">
+                            <div className="text-[10px] text-[var(--color-primary-dark)] font-semibold">
                               {weightP.displayStr}
                             </div>
                           )}
@@ -444,7 +444,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="font-mono font-semibold text-[var(--color-text-main)]">{heightStr}</div>
                           {heightP && (
-                            <div className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold">
+                            <div className="text-[10px] text-[var(--color-primary-dark)] font-semibold">
                               {heightP.displayStr}
                             </div>
                           )}
@@ -454,7 +454,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                         <td className="py-3 px-4 whitespace-nowrap">
                           <div className="font-mono font-semibold text-[var(--color-text-main)]">{headStr}</div>
                           {headP && (
-                            <div className="text-[10px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold">
+                            <div className="text-[10px] text-[var(--color-primary-dark)] font-semibold">
                               {headP.displayStr}
                             </div>
                           )}
@@ -468,7 +468,7 @@ export const MeasurementHistory: React.FC<MeasurementHistoryProps> = ({
                                 {entry.milestones.map((m, idx) => (
                                   <span
                                     key={idx}
-                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] border border-[var(--color-card-border)] text-[10px] font-semibold"
+                                    className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] border border-[var(--color-card-border)] text-[10px] font-semibold"
                                   >
                                     <Sparkles className="w-2.5 h-2.5" />
                                     <span>{m}</span>

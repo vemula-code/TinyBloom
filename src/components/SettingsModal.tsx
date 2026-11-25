@@ -466,47 +466,69 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
     tag: string;
     desc: string;
     color: string;
+    topLight: string;
     canvasLight: string;
     cardLight: string;
+    topDark: string;
     canvasDark: string;
     cardDark: string;
-    chartLine: string;
+    colorDark: string;
   }[] = [
     {
-      id: 'sage',
-      label: 'Warm Pebble',
-      tag: 'Botanical Neutral',
-      desc: 'Soft linen paper, muted eucalyptus & deep charcoal-moss night mode',
-      color: '#4B6F58',
-      canvasLight: '#F1EFEA',
-      cardLight: '#FAF9F6',
-      canvasDark: '#111412',
-      cardDark: '#181C19',
-      chartLine: '#2C4A6E',
+      id: 'amazon-teal',
+      label: 'Coastal Aqua',
+      tag: 'Fresh & Crisp',
+      desc: 'Aqua top wash, pure white cards & deep ocean-teal accents',
+      color: '#00768A',
+      topLight: '#D6F0F4',
+      canvasLight: '#F2F5F7',
+      cardLight: '#FFFFFF',
+      topDark: '#0C2B38',
+      canvasDark: '#0A0F14',
+      cardDark: '#131B22',
+      colorDark: '#38BDF8',
     },
     {
       id: 'apple-health',
-      label: 'Nordic Slate',
-      tag: 'Calm Clinical',
-      desc: 'Misty alabaster, steel indigo & velvet midnight dark mode',
-      color: '#375A86',
-      canvasLight: '#EDF1F6',
-      cardLight: '#F8FAFC',
-      canvasDark: '#0E1218',
-      cardDark: '#151B24',
-      chartLine: '#274975',
+      label: 'Nordic Sky',
+      tag: 'iOS Studio',
+      desc: 'Airy sky backdrop, crisp alabaster surfaces & clean cobalt blue',
+      color: '#1D63ED',
+      topLight: '#DCEBFF',
+      canvasLight: '#F2F4F8',
+      cardLight: '#FFFFFF',
+      topDark: '#11244D',
+      canvasDark: '#0A0D14',
+      cardDark: '#131926',
+      colorDark: '#60A5FA',
     },
     {
-      id: 'honey',
-      label: 'Velvet Sand',
-      tag: 'Warm Evening',
-      desc: 'Gentle oatmeal stone, toasted bronze & soothing espresso night mode',
-      color: '#8C5A3C',
-      canvasLight: '#F3EFE9',
-      cardLight: '#FCFBF8',
-      canvasDark: '#131110',
-      cardDark: '#1B1816',
-      chartLine: '#2F4B60',
+      id: 'sage',
+      label: 'Fresh Meadow',
+      tag: 'Botanical Clean',
+      desc: 'Morning mint top glow, white cards & crisp emerald accents',
+      color: '#157A54',
+      topLight: '#D7F2E4',
+      canvasLight: '#F3F6F4',
+      cardLight: '#FFFFFF',
+      topDark: '#0E2E22',
+      canvasDark: '#0A0F0D',
+      cardDark: '#121B17',
+      colorDark: '#34D399',
+    },
+    {
+      id: 'huckleberry',
+      label: 'Twilight Indigo',
+      tag: 'Evening Calm',
+      desc: 'Soft lavender dusk header, crisp cards & restful obsidian night',
+      color: '#4F46E5',
+      topLight: '#E3E0FC',
+      canvasLight: '#F4F3F8',
+      cardLight: '#FFFFFF',
+      topDark: '#211B52',
+      canvasDark: '#0B0A14',
+      cardDark: '#151326',
+      colorDark: '#A5B4FC',
     },
   ];
 
@@ -1049,19 +1071,19 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   </div>
                 </div>
 
-                {/* Color Palette Choices - 3 Curated Themes */}
+                {/* Color Palette Choices - 4 Curated Top-App Themes */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] flex items-center gap-1.5 uppercase tracking-wide">
+                    <span className="text-xs font-bold text-[var(--color-primary-dark)] flex items-center gap-1.5 uppercase tracking-wide">
                       <Palette className="w-3.5 h-3.5" />
-                      <span>Curated Themes</span>
+                      <span>App Themes</span>
                     </span>
                     <span className="text-[10px] text-[var(--color-text-muted)] font-medium">
-                      3 balanced Day &amp; Night palettes
+                      4 Day &amp; Night palettes
                     </span>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {palettes.map((p) => {
                       const isSelected = paletteTheme === p.id;
                       return (
@@ -1069,27 +1091,58 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                           key={p.id}
                           type="button"
                           onClick={() => onChangePaletteTheme(p.id)}
-                          className={`flex items-center justify-between p-3.5 rounded-2xl border text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.99] cursor-pointer ${
+                          className={`flex flex-col justify-between p-3 rounded-2xl border text-left transition-[background-color,border-color,transform] duration-150 active:scale-[0.99] cursor-pointer ${
                             isSelected
                               ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-1 ring-[var(--color-primary)]/40 shadow-xs'
                               : 'border-[var(--color-card-border)] bg-[var(--color-canvas)] hover:border-[var(--color-primary)]/50'
                           }`}
                         >
-                          <div className="flex items-center gap-3.5 min-w-0">
-                            {/* Dual Day / Night mini-surface preview */}
-                            <div className="w-12 h-11 rounded-xl shrink-0 overflow-hidden border border-[var(--color-card-border)] shadow-2xs flex">
-                              <div className="flex-1 h-full p-1 flex flex-col justify-between" style={{ backgroundColor: p.canvasLight }}>
-                                <div className="w-full h-2.5 rounded-xs" style={{ backgroundColor: p.cardLight }} />
-                                <div className="w-3/4 h-1.5 rounded-full" style={{ backgroundColor: p.color }} />
+                          {/* Dual Day / Night Mini App Mockup Preview */}
+                          <div className="w-full h-16 rounded-xl overflow-hidden border border-[var(--color-card-border)] flex mb-2.5 shadow-2xs">
+                            {/* Day Side */}
+                            <div
+                              className="flex-1 h-full relative flex flex-col justify-between p-1.5"
+                              style={{
+                                background: `linear-gradient(180deg, ${p.topLight} 0%, ${p.topLight} 44%, ${p.canvasLight} 78%, ${p.canvasLight} 100%)`,
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="w-6 h-1 rounded-full opacity-75" style={{ backgroundColor: p.color }} />
+                                <span className="text-[8px] font-bold opacity-60 text-slate-700">Day</span>
                               </div>
-                              <div className="flex-1 h-full p-1 flex flex-col justify-between" style={{ backgroundColor: p.canvasDark }}>
-                                <div className="w-full h-2.5 rounded-xs" style={{ backgroundColor: p.cardDark }} />
-                                <div className="w-3/4 h-1.5 rounded-full" style={{ backgroundColor: p.chartLine }} />
+                              <div
+                                className="w-full rounded-md p-1.5 shadow-2xs flex items-center justify-between"
+                                style={{ backgroundColor: p.cardLight }}
+                              >
+                                <span className="w-7 h-1.5 rounded-full bg-slate-300" />
+                                <span className="w-4 h-2 rounded-xs" style={{ backgroundColor: p.color }} />
                               </div>
                             </div>
 
+                            {/* Night Side */}
+                            <div
+                              className="flex-1 h-full relative flex flex-col justify-between p-1.5 border-l border-black/10"
+                              style={{
+                                background: `linear-gradient(180deg, ${p.topDark} 0%, ${p.topDark} 44%, ${p.canvasDark} 78%, ${p.canvasDark} 100%)`,
+                              }}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="w-6 h-1 rounded-full opacity-85" style={{ backgroundColor: p.colorDark }} />
+                                <span className="text-[8px] font-bold opacity-65 text-slate-300">Night</span>
+                              </div>
+                              <div
+                                className="w-full rounded-md p-1.5 flex items-center justify-between border border-white/10"
+                                style={{ backgroundColor: p.cardDark }}
+                              >
+                                <span className="w-7 h-1.5 rounded-full bg-slate-600" />
+                                <span className="w-4 h-2 rounded-xs" style={{ backgroundColor: p.colorDark }} />
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-start justify-between gap-2 w-full">
                             <div className="min-w-0">
-                              <div className="flex items-center gap-2 flex-wrap">
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="text-xs font-bold text-[var(--color-text-main)]">
                                   {p.label}
                                 </span>
@@ -1101,15 +1154,15 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                                 {p.desc}
                               </span>
                             </div>
-                          </div>
 
-                          {isSelected ? (
-                            <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 ml-2 shadow-2xs">
-                              <Check className="w-3.5 h-3.5" />
-                            </div>
-                          ) : (
-                            <div className="w-5 h-5 rounded-full border border-[var(--color-card-border)] shrink-0 ml-2" />
-                          )}
+                            {isSelected ? (
+                              <div className="w-5 h-5 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center shrink-0 mt-0.5 shadow-2xs">
+                                <Check className="w-3.5 h-3.5" />
+                              </div>
+                            ) : (
+                              <div className="w-5 h-5 rounded-full border border-[var(--color-card-border)] shrink-0 mt-0.5" />
+                            )}
+                          </div>
                         </button>
                       );
                     })}
@@ -1185,8 +1238,8 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {/* Current Status Badge */}
                   <div className="shrink-0">
                     {photoPermission === 'disabled' && (
-                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-stone-100 dark:bg-stone-800 text-[10px] font-bold text-stone-600 dark:text-stone-300 border border-stone-200 dark:border-stone-700">
-                        <Lock className="w-3 h-3 text-stone-500" />
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-[var(--color-surface)] text-[10px] font-bold text-[var(--color-text-muted)] border border-[var(--color-card-border)]">
+                        <Lock className="w-3 h-3" />
                         Disabled
                       </span>
                     )}
@@ -1207,17 +1260,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
 
                 {/* Granular Permission Options (Mobile App Style) */}
                 <div className="space-y-2">
-                  <span className="text-[11px] font-bold text-[var(--color-text-main,#303832)] block">
+                  <span className="text-[11px] font-bold text-[var(--color-text-main)] block">
                     Permission Access Level:
                   </span>
 
                   {/* 1. Disabled (Default) */}
                   <label
                     onClick={() => handleUpdatePhotoPermission('disabled')}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
                       photoPermission === 'disabled'
-                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
-                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-1 ring-[var(--color-primary)]/30'
+                        : 'border-[var(--color-card-border)] hover:bg-[var(--color-surface)]/50'
                     }`}
                   >
                     <input
@@ -1225,14 +1278,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       name="photo-permission-opt"
                       checked={photoPermission === 'disabled'}
                       onChange={() => handleUpdatePhotoPermission('disabled')}
-                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                      className="mt-0.5 accent-[var(--color-primary)]"
                     />
                     <div className="text-xs flex-1">
-                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                      <div className="font-bold text-[var(--color-text-main)] flex items-center justify-between">
                         <span>Disabled (Zero photo or camera access)</span>
-                        <span className="text-[10px] text-stone-500 font-semibold">Default</span>
+                        <span className="text-[10px] text-[var(--color-text-muted)] font-semibold">Default</span>
                       </div>
-                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                      <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                         Scanner is locked. TinyBloom cannot request, open, or view photos or documents from your device.
                       </p>
                     </div>
@@ -1241,10 +1294,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {/* 2. Limited Access */}
                   <label
                     onClick={() => handleUpdatePhotoPermission('limited')}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
                       photoPermission === 'limited'
-                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
-                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-1 ring-[var(--color-primary)]/30'
+                        : 'border-[var(--color-card-border)] hover:bg-[var(--color-surface)]/50'
                     }`}
                   >
                     <input
@@ -1252,14 +1305,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       name="photo-permission-opt"
                       checked={photoPermission === 'limited'}
                       onChange={() => handleUpdatePhotoPermission('limited')}
-                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                      className="mt-0.5 accent-[var(--color-primary)]"
                     />
                     <div className="text-xs flex-1">
-                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                      <div className="font-bold text-[var(--color-text-main)] flex items-center justify-between">
                         <span>Limited Access (Selected Photos Only)</span>
                         <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">In-Memory Read</span>
                       </div>
-                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                      <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                         Allows you to pick individual screenshots or clinic checkup sheets. Images are processed in temporary memory to read numbers and immediately erased.
                       </p>
                     </div>
@@ -1268,10 +1321,10 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                   {/* 3. Allow Access */}
                   <label
                     onClick={() => handleUpdatePhotoPermission('full')}
-                    className={`flex items-start gap-3 p-3 rounded-xl border transition-all cursor-pointer ${
+                    className={`flex items-start gap-3 p-3 rounded-xl border transition-colors cursor-pointer ${
                       photoPermission === 'full'
-                        ? 'border-[var(--color-primary,#5D7C57)] bg-[var(--color-primary,#91A98B)]/10 ring-1 ring-[var(--color-primary,#91A98B)]/30'
-                        : 'border-stone-200 dark:border-stone-700 hover:bg-stone-50 dark:hover:bg-stone-800/40'
+                        ? 'border-[var(--color-primary)] bg-[var(--color-primary-light)] ring-1 ring-[var(--color-primary)]/30'
+                        : 'border-[var(--color-card-border)] hover:bg-[var(--color-surface)]/50'
                     }`}
                   >
                     <input
@@ -1279,14 +1332,14 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                       name="photo-permission-opt"
                       checked={photoPermission === 'full'}
                       onChange={() => handleUpdatePhotoPermission('full')}
-                      className="mt-0.5 accent-[var(--color-primary,#5D7C57)]"
+                      className="mt-0.5 accent-[var(--color-primary)]"
                     />
                     <div className="text-xs flex-1">
-                      <div className="font-bold text-[var(--color-text-main,#303832)] flex items-center justify-between">
+                      <div className="font-bold text-[var(--color-text-main)] flex items-center justify-between">
                         <span>Allow Photo &amp; Document Access</span>
                         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Full Access</span>
                       </div>
-                      <p className="text-[11px] text-[var(--color-text-muted,#6E7B6C)] mt-0.5 leading-snug">
+                      <p className="text-[11px] text-[var(--color-text-muted)] mt-0.5 leading-snug">
                         Permit fast imports from growth logs, checkup slips, or pediatrician visit summaries anytime.
                       </p>
                     </div>
@@ -1294,17 +1347,17 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                 </div>
 
                 {/* Scanner Launch Button / Locked Banner */}
-                <div className="pt-2 border-t border-[var(--color-primary,#91A98B)]/15">
+                <div className="pt-2 border-t border-[var(--color-card-border)]">
                   {photoPermission === 'disabled' ? (
-                    <div className="p-3 rounded-xl bg-stone-100 dark:bg-stone-800/60 border border-stone-200 dark:border-stone-700 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
-                      <div className="flex items-center gap-2 text-stone-600 dark:text-stone-300">
-                        <Lock className="w-4 h-4 shrink-0 text-stone-400" />
+                    <div className="p-3 rounded-xl bg-[var(--color-surface)] border border-[var(--color-card-border)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2.5 text-xs">
+                      <div className="flex items-center gap-2 text-[var(--color-text-muted)]">
+                        <Lock className="w-4 h-4 shrink-0" />
                         <span>Scanner is disabled to guarantee mobile data privacy.</span>
                       </div>
                       <button
                         type="button"
                         onClick={() => handleUpdatePhotoPermission('limited')}
-                        className="text-[11px] font-bold text-[var(--color-primary-dark,#3D5939)] dark:text-[var(--color-primary,#91A98B)] hover:underline shrink-0 cursor-pointer"
+                        className="text-[11px] font-bold text-[var(--color-primary-dark)] hover:underline shrink-0 cursor-pointer"
                       >
                         Enable Limited Access →
                       </button>
@@ -1536,7 +1589,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
             <div className="space-y-5 max-w-xl mx-auto">
               <div className="bg-[var(--color-card)] p-5 rounded-2xl border border-[var(--color-primary,#91A98B)]/30 space-y-4 shadow-2xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-2xl bg-[#F8F4E8] border border-[var(--color-primary,#91A98B)]/30 p-1 flex items-center justify-center shrink-0">
+                  <div className="w-12 h-12 rounded-2xl bg-[var(--color-surface)] border border-[var(--color-card-border)] p-1 flex items-center justify-center shrink-0">
                     <img
                       src="/assets/images/tinybloom-emblem.png"
                       alt="TinyBloom Icon"

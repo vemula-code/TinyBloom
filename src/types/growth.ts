@@ -6,9 +6,10 @@ export type ChartType = 'weight' | 'height' | 'head' | 'bmi';
 
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type PaletteTheme =
-  | 'sage'
+  | 'amazon-teal'
   | 'apple-health'
-  | 'honey';
+  | 'sage'
+  | 'huckleberry';
 
 export interface BabyProfile {
   id: string;

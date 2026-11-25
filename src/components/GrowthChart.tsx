@@ -481,7 +481,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
   }, [rangeMonths]);
 
   return (
-    <div className="bg-[var(--color-card)] rounded-3xl border border-[var(--color-card-border)] shadow-xs px-2 pt-2.5 pb-3 sm:p-5 transition-colors duration-150 text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
+    <div className="app-card-elevated rounded-3xl px-2 pt-2.5 pb-3 sm:p-5 transition-colors duration-150 text-[var(--color-text-main)] w-full max-w-full overflow-hidden">
       
       {/* 1. Optional Segmented Header Controls (hidden on Home tab when summary cards above already switch) */}
       {showMetricSwitcher && (
@@ -784,7 +784,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 <button
                   type="button"
                   onClick={() => onEditEntry?.(activePoint.entry)}
-                  className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] underline hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1"
+                  className="font-bold text-[var(--color-primary-dark)] underline hover:opacity-80 transition-opacity cursor-pointer flex items-center gap-1"
                 >
                   <Edit2 className="w-3 h-3" />
                   <span>Edit</span>
@@ -808,7 +808,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                   {activePoint.valStr}
                 </div>
                 {activePoint.entry.isPediatricianVisit ? (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] text-[9px] font-bold shrink-0">
+                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] text-[9px] font-bold shrink-0">
                     <Stethoscope className="w-2.5 h-2.5" />
                     <span>Clinic</span>
                   </span>
@@ -825,7 +825,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
                 {activePoint.ageStr}
               </div>
               {activePoint.correctedAgeNote && (
-                <div className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                <div className="text-[11px] font-semibold text-[var(--color-primary-dark)]">
                   {activePoint.correctedAgeNote} (WHO plot)
                 </div>
               )}
@@ -871,7 +871,7 @@ export const GrowthChart: React.FC<GrowthChartProps> = ({
             <button
               type="button"
               onClick={onOpenSettings}
-              className="text-[11px] font-semibold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] hover:underline cursor-pointer"
+              className="text-[11px] font-semibold text-[var(--color-primary-dark)] hover:underline cursor-pointer"
             >
               Timeline: 0–{rangeMonths}m
             </button>

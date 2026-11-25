@@ -162,11 +162,11 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
   }, [entries, activeChartType, unit, profile.gender, profile.name, profile.gestationalWeeks]);
 
   return (
-    <div className="bg-[var(--color-card)] rounded-3xl p-4 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
+    <div className="app-card-elevated rounded-3xl p-4 sm:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border)] pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0">
             <Sparkles className="w-4 h-4" />
           </span>
           <div>
@@ -192,7 +192,7 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
           <button
             type="button"
             onClick={onOpenDetailedAnalysis}
-            className="text-xs font-bold text-[var(--color-primary)] hover:underline flex items-center gap-1 cursor-pointer"
+            className="text-xs font-bold text-[var(--color-primary-dark)] hover:underline flex items-center gap-1 cursor-pointer"
           >
             <span>Detailed Story</span>
             <ArrowRight className="w-3.5 h-3.5" />
@@ -204,31 +204,31 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
       {insights ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="p-3.5 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0 mt-0.5">
               <TrendingUp className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
                 Recent Change &amp; Pace
               </span>
-              <div className="text-sm font-bold text-[var(--color-text-main)] mt-0.5">
+              <div className="text-sm font-bold text-[var(--color-text-main)] mt-0.5 tabular-nums">
                 {insights.deltaHeadline}
               </div>
-              <div className="text-[11px] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold mt-0.5">
+              <div className="text-[11px] text-[var(--color-primary-dark)] font-semibold mt-0.5 tabular-nums">
                 {insights.paceText}
               </div>
             </div>
           </div>
 
           <div className="p-3.5 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] flex items-start gap-3">
-            <div className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0 mt-0.5">
+            <div className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0 mt-0.5">
               <Activity className="w-4 h-4" />
             </div>
             <div className="min-w-0">
               <span className="text-[10px] font-bold uppercase tracking-wider text-[var(--color-text-muted)] block">
                 WHO Curve Channel
               </span>
-              <div className="text-sm font-bold text-[var(--color-text-main)] mt-0.5">
+              <div className="text-sm font-bold text-[var(--color-text-main)] mt-0.5 tabular-nums">
                 {insights.bandSummary}
               </div>
               <div className="text-[11px] text-[var(--color-text-muted)] mt-0.5 flex items-center gap-1.5">
@@ -236,7 +236,7 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
                 {insights.clinicCount > 0 && (
                   <>
                     <span>·</span>
-                    <span className="inline-flex items-center gap-1 text-[var(--color-primary)] font-semibold">
+                    <span className="inline-flex items-center gap-1 text-[var(--color-primary-dark)] font-semibold">
                       <Stethoscope className="w-3 h-3" />
                       {insights.clinicCount} clinic
                     </span>
@@ -250,8 +250,8 @@ export const GrowthInsightsCard: React.FC<GrowthInsightsCardProps> = ({
 
       {/* Reassuring Personalized Context */}
       <div className="p-3.5 rounded-2xl bg-[var(--color-canvas)] border border-[var(--color-card-border)] space-y-1.5">
-        <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
-          <Heart className="w-3.5 h-3.5 text-[var(--color-primary)] shrink-0" />
+        <div className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary-dark)]">
+          <Heart className="w-3.5 h-3.5 text-[var(--color-primary-dark)] shrink-0" />
           <span>Percentile Perspective</span>
         </div>
         <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">

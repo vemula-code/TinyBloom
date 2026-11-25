@@ -191,10 +191,10 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
   return (
     <div className="space-y-6">
       {/* Intro Card */}
-      <div className="bg-[var(--color-card)] rounded-3xl p-6 border border-[var(--color-card-border)] shadow-2xs">
+      <div className="app-card-elevated rounded-3xl p-6">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] font-semibold text-xs tracking-wider uppercase mb-1">
+            <div className="flex items-center gap-2 text-[var(--color-primary-dark)] font-semibold text-xs tracking-wider uppercase mb-1">
               <Sparkles className="w-4 h-4" />
               <span>Personalized Growth Story</span>
             </div>
@@ -290,7 +290,7 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
 
               <div className="mt-4 pt-3 border-t border-[var(--color-card-border)] flex items-center justify-between text-xs">
                 <span className="text-[var(--color-text-muted)]">WHO Percentile:</span>
-                <span className="font-bold text-[var(--color-primary-dark)] dark:text-[var(--color-primary)] bg-[var(--color-primary-light)] px-2.5 py-0.5 rounded-full">
+                <span className="font-bold text-[var(--color-primary-dark)] bg-[var(--color-primary-light)] px-2.5 py-0.5 rounded-full">
                   {latestPercentile?.displayStr}
                 </span>
               </div>
@@ -307,7 +307,7 @@ On the WHO Child Growth Standards for ${profile.gender === 'boy' ? 'boys' : 'gir
                     {diffRecent !== null ? formatDelta(diffRecent) : '—'}
                   </span>
                   {diffRecent !== null && (
-                    <div className="p-1 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] dark:text-[var(--color-primary)]">
+                    <div className="p-1 rounded-lg bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]">
                       {diffRecent > 0 ? (
                         <TrendingUp className="w-4 h-4" />
                       ) : diffRecent < 0 ? (

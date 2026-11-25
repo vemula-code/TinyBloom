@@ -4,102 +4,167 @@
 
 @layer base {
   /* ========================================================
-     THEME 1: Warm Pebble (Soft Linen & Muted Sage · Eye-Soothing Nursery)
+     THEME 1: Coastal Aqua (Amazon / Calm · Crisp Teal Top Wash & Pure White)
      ======================================================== */
-  :root, [data-theme="sage"] {
-    --color-primary: #4B6F58;
-    --color-primary-dark: #33503E;
-    --color-primary-light: rgba(75, 111, 88, 0.11);
-    --color-canvas: #F1EFEA;
-    --color-card: #FAF9F6;
-    --color-surface: #E7E4DC;
-    --color-card-border: #DCD7CC;
-    --color-text-main: #1C221E;
-    --color-text-muted: #5B645E;
-    --color-chart-line: #2C4A6E;
-    --color-chart-curve: #AE9264;
-    --color-chart-median: #8E6E3B;
+  :root, [data-theme="amazon-teal"] {
+    --color-primary: #00768A;
+    --color-primary-dark: #005868;
+    --color-primary-light: rgba(0, 118, 138, 0.10);
+    --color-canvas: #F2F5F7;
+    --color-card: #FFFFFF;
+    --color-surface: #E6EDF0;
+    --color-card-border: rgba(15, 35, 45, 0.09);
+    --color-header-bg: #D6F0F4;
+    --color-backdrop-top: #D6F0F4;
+    --color-backdrop-mid: #EAF7F9;
+    --color-text-main: #0F172A;
+    --color-text-muted: #516170;
+    --color-chart-line: #0284C7;
+    --color-chart-curve: #C2A476;
+    --color-chart-median: #9A7438;
+    --card-shadow: 0 2px 12px -3px rgba(15, 23, 42, 0.06);
   }
-  .dark[data-theme="sage"], html.dark[data-theme="sage"], html.dark:not([data-theme]) {
+  .dark[data-theme="amazon-teal"], html.dark[data-theme="amazon-teal"], html.dark:not([data-theme]) {
     color-scheme: dark;
-    --color-primary: #7BA688;
-    --color-primary-dark: #A5CBB0;
-    --color-primary-light: rgba(123, 166, 136, 0.16);
-    --color-canvas: #111412;
-    --color-card: #181C19;
-    --color-surface: #212723;
-    --color-card-border: #2C342E;
-    --color-text-main: #EAECE9;
-    --color-text-muted: #939E96;
-    --color-chart-line: #8BB6DB;
-    --color-chart-curve: #9B8660;
-    --color-chart-median: #C4A976;
+    --color-primary: #0E7490;
+    --color-primary-dark: #38BDF8;
+    --color-primary-light: rgba(56, 189, 248, 0.14);
+    --color-canvas: #0A0F14;
+    --color-card: #131B22;
+    --color-surface: #1A242E;
+    --color-card-border: rgba(148, 163, 184, 0.14);
+    --color-header-bg: #0C2530;
+    --color-backdrop-top: #0C2B38;
+    --color-backdrop-mid: #0C1821;
+    --color-text-main: #F1F5F9;
+    --color-text-muted: #94A3B8;
+    --color-chart-line: #38BDF8;
+    --color-chart-curve: #9B8765;
+    --color-chart-median: #D1B27E;
+    --card-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.45);
   }
 
   /* ========================================================
-     THEME 2: Nordic Slate (Cool Mist & Deep Steel Indigo · Refined Clinical)
+     THEME 2: Nordic Sky (Apple Health / iOS · Airy Sky Wash & Cobalt)
      ======================================================== */
   [data-theme="apple-health"] {
-    --color-primary: #375A86;
-    --color-primary-dark: #254063;
-    --color-primary-light: rgba(55, 90, 134, 0.11);
-    --color-canvas: #EDF1F6;
-    --color-card: #F8FAFC;
-    --color-surface: #E2E8F0;
-    --color-card-border: #D1DBE6;
-    --color-text-main: #131B26;
-    --color-text-muted: #515F73;
-    --color-chart-line: #274975;
-    --color-chart-curve: #A49272;
-    --color-chart-median: #877149;
+    --color-primary: #1D63ED;
+    --color-primary-dark: #1549B8;
+    --color-primary-light: rgba(29, 99, 237, 0.10);
+    --color-canvas: #F2F4F8;
+    --color-card: #FFFFFF;
+    --color-surface: #E7ECF4;
+    --color-card-border: rgba(15, 23, 42, 0.08);
+    --color-header-bg: #DCEBFF;
+    --color-backdrop-top: #DCEBFF;
+    --color-backdrop-mid: #EDF4FF;
+    --color-text-main: #0F172A;
+    --color-text-muted: #526075;
+    --color-chart-line: #1D63ED;
+    --color-chart-curve: #B89D72;
+    --color-chart-median: #8F6D36;
+    --card-shadow: 0 2px 12px -3px rgba(15, 23, 42, 0.06);
   }
   .dark[data-theme="apple-health"], html.dark[data-theme="apple-health"] {
     color-scheme: dark;
-    --color-primary: #739CD1;
-    --color-primary-dark: #A0C0EA;
-    --color-primary-light: rgba(115, 156, 209, 0.16);
-    --color-canvas: #0E1218;
-    --color-card: #151B24;
-    --color-surface: #1D2532;
-    --color-card-border: #283345;
-    --color-text-main: #EBF0F7;
-    --color-text-muted: #8E9CB0;
-    --color-chart-line: #8BB5EB;
-    --color-chart-curve: #96876B;
-    --color-chart-median: #BFA980;
+    --color-primary: #2563EB;
+    --color-primary-dark: #60A5FA;
+    --color-primary-light: rgba(96, 165, 250, 0.15);
+    --color-canvas: #0A0D14;
+    --color-card: #131926;
+    --color-surface: #1B2336;
+    --color-card-border: rgba(148, 163, 184, 0.14);
+    --color-header-bg: #101E3D;
+    --color-backdrop-top: #11244D;
+    --color-backdrop-mid: #0D1529;
+    --color-text-main: #F1F5F9;
+    --color-text-muted: #93A3B8;
+    --color-chart-line: #60A5FA;
+    --color-chart-curve: #9B8869;
+    --color-chart-median: #CEB382;
+    --card-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.45);
   }
 
   /* ========================================================
-     THEME 3: Velvet Sand (Warm Sandstone & Muted Bronze · Evening Calm)
+     THEME 3: Fresh Meadow (Nara Baby / Headspace · Mint Mist & Emerald)
      ======================================================== */
-  [data-theme="honey"] {
-    --color-primary: #8C5A3C;
-    --color-primary-dark: #694028;
-    --color-primary-light: rgba(140, 90, 60, 0.11);
-    --color-canvas: #F3EFE9;
-    --color-card: #FCFBF8;
-    --color-surface: #E9E2D7;
-    --color-card-border: #DDD4C6;
-    --color-text-main: #241D18;
-    --color-text-muted: #665B52;
-    --color-chart-line: #2F4B60;
-    --color-chart-curve: #AD9168;
-    --color-chart-median: #8C6C3F;
+  [data-theme="sage"] {
+    --color-primary: #157A54;
+    --color-primary-dark: #0F5B3E;
+    --color-primary-light: rgba(21, 122, 84, 0.10);
+    --color-canvas: #F3F6F4;
+    --color-card: #FFFFFF;
+    --color-surface: #E7EFEA;
+    --color-card-border: rgba(16, 40, 28, 0.08);
+    --color-header-bg: #D7F2E4;
+    --color-backdrop-top: #D7F2E4;
+    --color-backdrop-mid: #EBF9F2;
+    --color-text-main: #111D17;
+    --color-text-muted: #52635A;
+    --color-chart-line: #0F766E;
+    --color-chart-curve: #BCA072;
+    --color-chart-median: #91703B;
+    --card-shadow: 0 2px 12px -3px rgba(16, 40, 28, 0.06);
   }
-  .dark[data-theme="honey"], html.dark[data-theme="honey"] {
+  .dark[data-theme="sage"], html.dark[data-theme="sage"] {
     color-scheme: dark;
-    --color-primary: #C89674;
-    --color-primary-dark: #E3BCA0;
-    --color-primary-light: rgba(200, 150, 116, 0.16);
-    --color-canvas: #131110;
-    --color-card: #1B1816;
-    --color-surface: #25201D;
-    --color-card-border: #332C28;
-    --color-text-main: #EFEAE4;
-    --color-text-muted: #A2968C;
-    --color-chart-line: #91B4CC;
-    --color-chart-curve: #9B8565;
-    --color-chart-median: #C5A97E;
+    --color-primary: #0D7A54;
+    --color-primary-dark: #34D399;
+    --color-primary-light: rgba(52, 211, 153, 0.14);
+    --color-canvas: #0A0F0D;
+    --color-card: #121B17;
+    --color-surface: #192620;
+    --color-card-border: rgba(148, 175, 160, 0.14);
+    --color-header-bg: #0D271D;
+    --color-backdrop-top: #0E2E22;
+    --color-backdrop-mid: #0C1A14;
+    --color-text-main: #ECFDF5;
+    --color-text-muted: #8FA89B;
+    --color-chart-line: #34D399;
+    --color-chart-curve: #9A8763;
+    --color-chart-median: #CEB380;
+    --card-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.45);
+  }
+
+  /* ========================================================
+     THEME 4: Twilight Indigo (Huckleberry / Oura · Soft Dusk & Velvet Violet)
+     ======================================================== */
+  [data-theme="huckleberry"] {
+    --color-primary: #4F46E5;
+    --color-primary-dark: #3730A3;
+    --color-primary-light: rgba(79, 70, 229, 0.10);
+    --color-canvas: #F4F3F8;
+    --color-card: #FFFFFF;
+    --color-surface: #EAE8F4;
+    --color-card-border: rgba(30, 27, 75, 0.08);
+    --color-header-bg: #E3E0FC;
+    --color-backdrop-top: #E3E0FC;
+    --color-backdrop-mid: #F1EFFD;
+    --color-text-main: #18162C;
+    --color-text-muted: #5C5975;
+    --color-chart-line: #4F46E5;
+    --color-chart-curve: #B99D73;
+    --color-chart-median: #8E6E3B;
+    --card-shadow: 0 2px 12px -3px rgba(30, 27, 75, 0.06);
+  }
+  .dark[data-theme="huckleberry"], html.dark[data-theme="huckleberry"] {
+    color-scheme: dark;
+    --color-primary: #5B52F0;
+    --color-primary-dark: #A5B4FC;
+    --color-primary-light: rgba(165, 180, 252, 0.15);
+    --color-canvas: #0B0A14;
+    --color-card: #151326;
+    --color-surface: #1E1B36;
+    --color-card-border: rgba(165, 180, 252, 0.14);
+    --color-header-bg: #1B1642;
+    --color-backdrop-top: #211B52;
+    --color-backdrop-mid: #120F29;
+    --color-text-main: #F3F4FF;
+    --color-text-muted: #9D99BD;
+    --color-chart-line: #818CF8;
+    --color-chart-curve: #9B8869;
+    --color-chart-median: #CEB382;
+    --card-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.5);
   }
 
   /* Universal theme-aware surface & contrast safeguards */
@@ -137,11 +202,6 @@
     color: var(--color-text-muted) !important;
   }
 
-  .dark .bg-\[\#FFF9F0\],
-  .dark .bg-\[\#FFF9F0\]\/60 {
-    background-color: var(--color-surface) !important;
-  }
-
   .dark input,
   .dark select,
   .dark textarea {
@@ -156,7 +216,7 @@
   }
 
   body {
-    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: var(--color-canvas);
     color: var(--color-text-main);
     -webkit-tap-highlight-color: transparent;
@@ -171,8 +231,25 @@
   }
 
   h1, h2, h3, h4, .font-heading {
-    font-family: 'Nunito', 'Inter', system-ui, sans-serif;
+    font-family: 'Plus Jakarta Sans', 'Nunito', system-ui, sans-serif;
+    letter-spacing: -0.015em;
   }
+}
+
+/* Atmospheric top backdrop wash (Amazon / Apple Health / Oura style) */
+.app-top-backdrop {
+  background: linear-gradient(
+    180deg,
+    var(--color-backdrop-top) 0%,
+    var(--color-backdrop-mid) 52%,
+    var(--color-canvas) 100%
+  );
+}
+
+.app-card-elevated {
+  background-color: var(--color-card);
+  border: 1px solid var(--color-card-border);
+  box-shadow: var(--card-shadow);
 }
 
 /* Compositor-only (transform + opacity) native-feel transitions */

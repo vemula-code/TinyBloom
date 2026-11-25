@@ -140,33 +140,40 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
   return (
     <div className="w-full">
       {/* 3 Metrics ALWAYS Side-by-Side in 3 columns on Mobile & Desktop */}
-      <div className="grid grid-cols-3 gap-1.5 sm:gap-2.5 w-full">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full">
         {/* Metric 1: Weight */}
         <button
           type="button"
           onClick={() => onSelectMetric && onSelectMetric('weight')}
-          className={`flex flex-col justify-between py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
+          className={`flex flex-col justify-between py-2 px-2.5 sm:py-2.5 sm:px-3.5 rounded-2xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
             selectedMetric === 'weight'
-              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/40 bg-[var(--color-primary-light)] shadow-xs'
+              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/35 bg-[var(--color-card)] shadow-sm'
               : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}
-          <div className="flex items-center gap-1 min-w-0 w-full">
-            <span className={`p-0.5 rounded shrink-0 ${selectedMetric === 'weight' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
-              <Scale className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
-              Weight
-            </span>
+          <div className="flex items-center justify-between gap-1 min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`p-1 rounded-lg shrink-0 ${selectedMetric === 'weight' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
+                <Scale className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
+                Weight
+              </span>
+            </div>
+            {weightData?.gainStr && (
+              <span className="hidden sm:inline text-[10px] font-semibold text-[var(--color-primary-dark)] tabular-nums shrink-0">
+                {weightData.gainStr}
+              </span>
+            )}
           </div>
 
-          {/* Value + Percentile Badge (zero truncation) */}
-          <div className="mt-1 flex items-baseline justify-between gap-1 w-full min-w-0">
-            <span className="text-[12px] sm:text-sm font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
+          {/* Value + Percentile Badge */}
+          <div className="mt-1.5 flex items-baseline justify-between gap-1 w-full min-w-0">
+            <span className="text-[13px] sm:text-base font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
               {weightData ? weightData.displayVal : '—'}
             </span>
-            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded font-bold shrink-0 tabular-nums ${selectedMetric === 'weight' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-main)]'}`}>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md font-bold shrink-0 tabular-nums ${selectedMetric === 'weight' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]'}`}>
               <span className="sm:hidden">{weightData?.percentile || '—'}</span>
               <span className="hidden sm:inline">{weightData?.percentileFull || '—'}</span>
             </span>
@@ -177,28 +184,35 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
         <button
           type="button"
           onClick={() => onSelectMetric && onSelectMetric('height')}
-          className={`flex flex-col justify-between py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
+          className={`flex flex-col justify-between py-2 px-2.5 sm:py-2.5 sm:px-3.5 rounded-2xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
             selectedMetric === 'height'
-              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/40 bg-[var(--color-primary-light)] shadow-xs'
+              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/35 bg-[var(--color-card)] shadow-sm'
               : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}
-          <div className="flex items-center gap-1 min-w-0 w-full">
-            <span className={`p-0.5 rounded shrink-0 ${selectedMetric === 'height' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
-              <Ruler className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
-              Length
-            </span>
+          <div className="flex items-center justify-between gap-1 min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`p-1 rounded-lg shrink-0 ${selectedMetric === 'height' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
+                <Ruler className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
+                Length
+              </span>
+            </div>
+            {heightData?.gainStr && (
+              <span className="hidden sm:inline text-[10px] font-semibold text-[var(--color-primary-dark)] tabular-nums shrink-0">
+                {heightData.gainStr}
+              </span>
+            )}
           </div>
 
-          {/* Value + Percentile Badge (zero truncation) */}
-          <div className="mt-1 flex items-baseline justify-between gap-1 w-full min-w-0">
-            <span className="text-[12px] sm:text-sm font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
+          {/* Value + Percentile Badge */}
+          <div className="mt-1.5 flex items-baseline justify-between gap-1 w-full min-w-0">
+            <span className="text-[13px] sm:text-base font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
               {heightData ? heightData.displayVal : '—'}
             </span>
-            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded font-bold shrink-0 tabular-nums ${selectedMetric === 'height' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-main)]'}`}>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md font-bold shrink-0 tabular-nums ${selectedMetric === 'height' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]'}`}>
               <span className="sm:hidden">{heightData?.percentile || '—'}</span>
               <span className="hidden sm:inline">{heightData?.percentileFull || '—'}</span>
             </span>
@@ -209,28 +223,35 @@ export const PercentileSummaryCards: React.FC<PercentileSummaryCardsProps> = ({
         <button
           type="button"
           onClick={() => onSelectMetric && onSelectMetric('head')}
-          className={`flex flex-col justify-between py-1.5 px-2 sm:py-2 sm:px-3 rounded-xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
+          className={`flex flex-col justify-between py-2 px-2.5 sm:py-2.5 sm:px-3.5 rounded-2xl text-left transition-[background-color,border-color,transform] duration-150 border relative cursor-pointer select-none active:scale-[0.98] ${
             selectedMetric === 'head'
-              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/40 bg-[var(--color-primary-light)] shadow-xs'
+              ? 'border-[var(--color-primary)] ring-1 ring-[var(--color-primary)]/35 bg-[var(--color-card)] shadow-sm'
               : 'border-[var(--color-card-border)] bg-[var(--color-card)] hover:border-[var(--color-primary)]/40 shadow-2xs'
           }`}
         >
           {/* Top row: Icon & Label */}
-          <div className="flex items-center gap-1 min-w-0 w-full">
-            <span className={`p-0.5 rounded shrink-0 ${selectedMetric === 'head' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
-              <CircleDot className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
-            </span>
-            <span className="text-[9px] sm:text-[10px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
-              Head
-            </span>
+          <div className="flex items-center justify-between gap-1 min-w-0 w-full">
+            <div className="flex items-center gap-1.5 min-w-0">
+              <span className={`p-1 rounded-lg shrink-0 ${selectedMetric === 'head' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-muted)]'}`}>
+                <CircleDot className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              </span>
+              <span className="text-[10px] sm:text-[11px] font-bold font-heading text-[var(--color-text-muted)] uppercase tracking-wide truncate">
+                Head
+              </span>
+            </div>
+            {headData?.gainStr && (
+              <span className="hidden sm:inline text-[10px] font-semibold text-[var(--color-primary-dark)] tabular-nums shrink-0">
+                {headData.gainStr}
+              </span>
+            )}
           </div>
 
-          {/* Value + Percentile Badge (zero truncation) */}
-          <div className="mt-1 flex items-baseline justify-between gap-1 w-full min-w-0">
-            <span className="text-[12px] sm:text-sm font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
+          {/* Value + Percentile Badge */}
+          <div className="mt-1.5 flex items-baseline justify-between gap-1 w-full min-w-0">
+            <span className="text-[13px] sm:text-base font-extrabold font-heading text-[var(--color-text-main)] tracking-tight whitespace-nowrap tabular-nums">
               {headData ? headData.displayVal : '—'}
             </span>
-            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.2 rounded font-bold shrink-0 tabular-nums ${selectedMetric === 'head' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-surface)] text-[var(--color-text-main)]'}`}>
+            <span className={`text-[9px] sm:text-[10px] px-1.5 py-0.5 rounded-md font-bold shrink-0 tabular-nums ${selectedMetric === 'head' ? 'bg-[var(--color-primary)] text-white' : 'bg-[var(--color-primary-light)] text-[var(--color-primary-dark)]'}`}>
               <span className="sm:hidden">{headData?.percentile || '—'}</span>
               <span className="hidden sm:inline">{headData?.percentileFull || '—'}</span>
             </span>

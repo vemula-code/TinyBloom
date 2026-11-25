@@ -48,11 +48,11 @@ export const CheckupPrepCard: React.FC<CheckupPrepCardProps> = ({
   };
 
   return (
-    <div className="bg-[var(--color-card)] rounded-3xl p-4 sm:p-6 border border-[var(--color-card-border)] shadow-2xs space-y-4">
+    <div className="app-card-elevated rounded-3xl p-4 sm:p-6 space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-card-border)] pb-3">
         <div className="flex items-center gap-2.5">
-          <span className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
+          <span className="w-8 h-8 rounded-xl bg-[var(--color-primary-light)] text-[var(--color-primary-dark)] flex items-center justify-center shrink-0">
             <Stethoscope className="w-4 h-4" />
           </span>
           <div>
@@ -77,7 +77,7 @@ export const CheckupPrepCard: React.FC<CheckupPrepCardProps> = ({
           <button
             type="button"
             onClick={onOpenUniversalGuide}
-            className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary)] hover:underline cursor-pointer"
+            className="flex items-center gap-1 text-xs font-bold text-[var(--color-primary-dark)] hover:underline cursor-pointer"
           >
             <span>0–36m Guide</span>
             <ArrowRight className="w-3.5 h-3.5" />
